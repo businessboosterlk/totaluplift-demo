@@ -1951,7 +1951,7 @@ function renderDashCommand(){
   +'<div class="hm-cell"><div class="hm-label">Active '+CFG.contactWord.plural.toLowerCase()+'</div><div class="hm-val"><span data-to="'+members.length+'" data-fmt="int">'+members.length+'</span></div>'
   +'<div class="hm-sub">'+(st.owing.length+st.partial.length)+' still to collect · '+risky.length+' at risk</div></div>';
  document.getElementById('dashKpis').innerHTML=
-  kpiC('At-risk '+CFG.contactWord.plural.toLowerCase(),risky.length,risky.length?'open Member Pulse':'nobody slipping',risky.length>0,I.pulse)
+  kpiC('At-risk '+CFG.contactWord.plural.toLowerCase(),risky.length,risky.length?lkr(pulseRevenueAtRisk(pd))+'/month at risk':'nobody slipping',risky.length>0,I.pulse)
   +kpiC('Trial funnel value',lkr(funnelVal),funnel.length+' open '+CFG.entity.plural.toLowerCase(),false,I.trend)
   +kpiC('New joins in '+MN[AS_OF.getMonth()],joins,joins?'from the enquiry funnel':'none yet this month',false,I.users)
   +kpiC('Check-ins today',todayCheckins().length,'logged at the front desk',false,I.enter);
@@ -3322,6 +3322,12 @@ function memberOwing(id){
  const p=memberPlan(id);if(!p||!recChargedIn(p,ymNow()))return false;
  return recPaid(p.id,ymNow())<recFee(p);
 }
+function pulseRevenueAtRisk(pd){
+ /* monthly membership money sitting in the at-risk + critical bands - derived,
+    never stored, so it can never go stale */
+ return (pd||[]).filter(x=>x.band==='risk'||x.band==='critical')
+  .reduce((s,x)=>{const p=memberPlan(x.c.id);return s+(p&&p.status==='active'?recFee(p):0);},0);
+}
 function bandColor(b){return b==='healthy'?'var(--green)':b==='watch'?'var(--amber)':b==='risk'?'var(--brand)':'var(--danger)';}
 function bandLabel(b){return b==='healthy'?'Healthy':b==='watch'?'Watch':b==='risk'?'At risk':'Critical';}
 /* pulseData: ONE pass over the check-in log, then a derived row per member.
@@ -3400,7 +3406,9 @@ function renderPulse(){
  document.getElementById('pulseBands').innerHTML=['healthy','watch','risk','critical'].map(b=>
   '<button class="pband'+(PULSE_FILTER===b?' on':'')+'" onclick="pulseFilter(\''+b+'\')">'
   +'<div class="pv">'+by[b].length+'</div><div class="pl"><span class="dot" style="background:'+bandColor(b)+'"></span>'+bandLabel(b)+'</div></button>').join('');
- document.getElementById('pulseHint').textContent='Bands: in within '+P.healthy+'d healthy · '+(P.healthy+1)+'-'+P.watch+'d watch · '+(P.watch+1)+'-'+P.risk+'d at risk · '+(P.risk+1)+'d+ (or owing and '+P.owingAbsent+'d+ away) critical. Edit in Customize.';
+ const rar=pulseRevenueAtRisk(pd);
+ document.getElementById('pulseHint').innerHTML=(rar?'<b style="color:var(--danger)">'+lkr(rar)+' of monthly '+CFG.recurring.label.toLowerCase()+' revenue sits in the at-risk and critical bands.</b> ':'')
+  +'Bands: in within '+P.healthy+'d healthy · '+(P.healthy+1)+'-'+P.watch+'d watch · '+(P.watch+1)+'-'+P.risk+'d at risk · '+(P.risk+1)+'d+ (or owing and '+P.owingAbsent+'d+ away) critical. Edit in Customize.';
  let show=PULSE_FILTER==='attention'?[...by.critical,...by.risk,...by.watch]:by[PULSE_FILTER];
  document.getElementById('pulseList').innerHTML=show.length?mapSafe(show,x=>pulseRow(x,false))
   :emptyC(I.check,'Nothing here','No '+CFG.contactWord.plural.toLowerCase()+' in this band right now.');
@@ -3608,6 +3616,11 @@ async function runSelfTest(opts){
      ok('Pulse: cancel outcome flips roster + ledger status, undo restores',gone&&cancel.c.status==='active'&&memberPlan(cancel.c.id).status==='active');
     }finally{window.confirm=cfOrig;}
    }
+   const rar2=pulseRevenueAtRisk(pd);
+   const manualRar=pd.filter(x=>x.band==='risk'||x.band==='critical').reduce((s,x)=>{const p=memberPlan(x.c.id);return s+(p&&p.status==='active'?recFee(p):0);},0);
+   ok('Pulse: revenue-at-risk reconciles to the band fees',rar2===manualRar&&rar2>=0,lkr(rar2));
+   go('pulse');
+   ok('Pulse: revenue-at-risk is shown on the board',rar2===0||(document.getElementById('pulseHint').innerHTML||'').indexOf('revenue')>-1);
    const t0=DB.get('tasks').length;
    pulseTask(pd[0].c.id);
    ok('Pulse: assign-to-trainer creates the task for the right trainer',DB.get('tasks').length===t0+1&&DB.get('tasks')[0].who===pd[0].c.owner);

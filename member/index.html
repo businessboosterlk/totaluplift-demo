@@ -274,6 +274,52 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .toast .un{background:var(--surface-3);border-radius:8px;padding:5px 11px;font-weight:800;font-size:12px;white-space:nowrap}
 .empty{text-align:center;padding:30px 16px;color:var(--faint);font-size:12.5px}
 .empty .t{font-size:13.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
+/* ── NEXT-UP HOOK CHIPS ───────────────────────────────────── */
+.hooks{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.hooks:empty{display:none}
+.hk{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:7px 13px;color:var(--muted);line-height:1.35}
+.hk b{color:var(--txt);font-variant-numeric:tabular-nums}
+.hk .ic{width:13px;height:13px;color:var(--brand)}
+.hk.best .ic{color:var(--amber)}
+
+/* ── DESKTOP (>=960px): left rail + two-column pages.
+   Mobile DOM order is untouched; grid areas re-place it. ── */
+@media(min-width:960px){
+ body{padding-bottom:36px;padding-left:86px}
+ .app{max-width:1080px;padding:0 28px}
+ .nav{left:0;right:auto;top:0;bottom:0;width:86px;flex-direction:column;justify-content:center;gap:4px;border-top:none;border-right:1px solid var(--line);padding-bottom:0}
+ .nav button{flex:0 0 auto;padding:15px 4px}
+ .topbar{padding:22px 0 18px}
+ #pg-today.on{display:grid;grid-template-columns:1.04fr 1fr;column-gap:22px;align-items:start;
+  grid-template-areas:"g g" "p p" "score sess" "score tiles" "score ask" "shb shg" "build grid"}
+ #pg-today>.greet{grid-area:g}
+ #pg-today>.promise{grid-area:p;max-width:80%}
+ .td-score{grid-area:score}
+ #tdSess{grid-area:sess;margin-top:0}
+ #tdTiles{grid-area:tiles}
+ #tdAsk{grid-area:ask}
+ .sh-build{grid-area:shb}
+ .td-build{grid-area:build}
+ .sh-grid{grid-area:shg;margin-top:22px}
+ .td-grid{grid-area:grid}
+ #pg-log.on{display:grid;grid-template-columns:1.04fr 1fr;column-gap:22px;align-items:start;
+  grid-template-areas:"g g" "p p" "hero hero" "shm shb2" "meals body" "meals shw" "meals water"}
+ #pg-log>.greet{grid-area:g}
+ #pg-log>.promise{grid-area:p}
+ #lgHero{grid-area:hero}
+ .sh-meals{grid-area:shm}
+ #lgMeals{grid-area:meals}
+ .sh-body{grid-area:shb2}
+ #lgBody{grid-area:body}
+ .sh-water{grid-area:shw}
+ .td-water{grid-area:water}
+ #plEx{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+ #plEx .ex{margin-bottom:0}
+ #stTiles{grid-template-columns:repeat(4,1fr)!important}
+ #stBody{max-width:760px}
+ .shot{width:150px}
+}
+
 /* ── SELF-TEST REPORT ─────────────────────────────────────── */
 .st-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
 .st-p{background:var(--surface);border:1px solid var(--line);border-radius:18px;width:560px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
@@ -306,20 +352,21 @@ input,textarea{font-family:inherit;color:var(--txt)}
   <div class="page on" id="pg-today">
     <div class="greet" id="tdGreet"></div>
     <div class="promise" id="tdPromise"></div>
-    <div class="card pad">
+    <div class="card pad td-score">
       <div class="score-wrap">
         <div class="ring" id="tdRing"></div>
         <div class="bars" id="tdBars"></div>
       </div>
       <div class="why" id="tdWhy"></div>
       <div class="stat3" id="tdStats"></div>
+      <div class="hooks" id="tdHooks"></div>
     </div>
     <button class="sess" id="tdSess" onclick="go('plan')"></button>
     <div class="tiles" id="tdTiles"></div>
     <button class="ask" id="tdAsk" onclick="askTrainer()"></button>
 
-    <div class="sec-h"><h3>The build</h3><span class="hint" id="bdHint"></span></div>
-    <div class="card pad">
+    <div class="sec-h sh-build"><h3>The build</h3><span class="hint" id="bdHint"></span></div>
+    <div class="card pad td-build">
       <div class="build-top">
         <div class="shot" id="bdShot"></div>
         <div class="build-r">
@@ -337,8 +384,8 @@ input,textarea{font-family:inherit;color:var(--txt)}
       <div class="phases" id="bdPhases"></div>
     </div>
 
-    <div class="sec-h"><h3 id="gridTitle"></h3><span class="hint" id="gridHint"></span></div>
-    <div class="card pad">
+    <div class="sec-h sh-grid"><h3 id="gridTitle"></h3><span class="hint" id="gridHint"></span></div>
+    <div class="card pad td-grid">
       <div class="grid90" id="grid90"></div>
       <div class="legend" id="gridLegend"></div>
     </div>
@@ -349,12 +396,12 @@ input,textarea{font-family:inherit;color:var(--txt)}
     <div class="greet" id="lgDate"></div>
     <div class="promise" style="font-size:26px;margin-bottom:16px">Log today</div>
     <div class="card pad log-hero" id="lgHero"></div>
-    <div class="sec-h"><h3>Meals</h3><span class="hint">tap to log, tick when done</span></div>
+    <div class="sec-h sh-meals"><h3>Meals</h3><span class="hint">tap to log, tick when done</span></div>
     <div id="lgMeals"></div>
-    <div class="sec-h"><h3>Body</h3></div>
+    <div class="sec-h sh-body"><h3>Body</h3></div>
     <div class="two" id="lgBody"></div>
-    <div class="sec-h"><h3>Water</h3><span class="hint" id="lgWaterHint"></span></div>
-    <div class="card pad"><div class="water" id="lgWater"></div></div>
+    <div class="sec-h sh-water"><h3>Water</h3><span class="hint" id="lgWaterHint"></span></div>
+    <div class="card pad td-water"><div class="water" id="lgWater"></div></div>
   </div>
 
   <!-- ══ PLAN ══ -->
@@ -586,6 +633,47 @@ function streakDays(){
  }
  return n;
 }
+function bestStreak(){
+ /* longest run of "showed up" days, same rule as streakDays */
+ const ds=DB.get('days');let best=0,run=0;
+ ds.forEach((d,i)=>{
+  const ok=d.meals.length>0||d.session||(!d.planned&&d.steps>2000);
+  const isToday=i===ds.length-1;
+  if(ok)run++;else if(!isToday)run=0;   /* an unfinished today never breaks a run */
+  if(run>best)best=run;
+ });
+ return best;
+}
+/* pace projection: straight line through the member's OWN loss so far.
+   Labelled "at your current pace" - an estimate, never a promise. */
+function paceInfo(){
+ const m=DB.get('member');
+ const rate=weightLost()/Math.max(1,m.day);
+ if(rate<=0||weightToGo()<=0)return null;
+ const eta=Math.round(weightToGo()/rate);
+ if(eta>365)return null;                /* too far out to be worth saying */
+ return {days:eta,date:fmtD(shiftISO(todayISO(),eta))};
+}
+/* the nearest PR within honest reach (working weight within 5 kg of the PR) */
+function prReach(){
+ let best=null;
+ DB.get('exercises').forEach(e=>{
+  const diff=Math.round((e.pr-e.kg)*10)/10;
+  if(diff>0&&diff<=5&&(!best||diff<best.diff))best={n:e.n,diff:diff};
+ });
+ return best;
+}
+function hookChips(){
+ const chips=[];
+ const cur=streakDays(),best=bestStreak();
+ if(best>cur&&cur>0)chips.push('<span class="hk best">'+I.check+'<span><b>'+(best-cur)+' day'+(best-cur===1?'':'s')+'</b> to beat your best streak of <b>'+best+'</b></span></span>');
+ else if(cur>0&&cur>=best)chips.push('<span class="hk best">'+I.check+'<span>This is your <b>best streak yet</b>. Keep it alive.</span></span>');
+ const pr=prReach();
+ if(pr)chips.push('<span class="hk">'+I.play+'<span><b>'+pr.diff+' kg</b> from a '+pr.n+' PR</span></span>');
+ const pace=paceInfo();
+ if(pace)chips.push('<span class="hk">'+I.scale+'<span>On pace for <b>'+DB.get('member').goalWeight.toFixed(1)+' kg</b> around <b>'+pace.date+'</b>, at your current pace</span></span>');
+ return chips.join('');
+}
 function weightLost(){const m=DB.get('member');return Math.round((m.startWeight-todayRow().weight)*10)/10;}
 function weightToGo(){const m=DB.get('member');return Math.max(0,Math.round((todayRow().weight-m.goalWeight)*10)/10);}
 function daysLeft(){return Math.max(0,daysBetween(todayISO(),DB.get('member').goalDate));}
@@ -671,7 +759,7 @@ function renderToday(){
  document.getElementById('tdWhy').innerHTML='<b>How this is worked out:</b> Move '+Math.round(s.moveWeight*100)+'% (steps vs '+(s.stepGoal/1000)+'k and today\'s session), Fuel '+Math.round(s.fuelWeight*100)+'% (meals logged and water), Rest '+Math.round(s.restWeight*100)+'% (sleep vs 7.5 hours). No hidden maths: log more, it goes up.';
  document.getElementById('tdStats').innerHTML=
   '<div class="st"><div class="v good">'+weightLost().toFixed(1)+'<span style="font-size:11px"> kg</span></div><div class="l">Lost</div></div>'
-  +'<div class="st"><div class="v">'+streakDays()+'</div><div class="l">Day streak</div></div>'
+  +'<div class="st"><div class="v">'+streakDays()+'</div><div class="l">Streak · best '+bestStreak()+'</div></div>'
   +'<div class="st"><div class="v">'+weightToGo().toFixed(1)+'<span style="font-size:11px"> kg</span></div><div class="l">To go</div></div>';
  /* today's session */
  const done=!!d.session,rest=!d.planned;
@@ -694,6 +782,7 @@ function renderToday(){
   '<div class="av">'+m.trainer.split(' ').map(x=>x[0]).slice(0,2).join('')+'</div>'
   +'<div style="min-width:0"><div class="l">Ask anytime</div><div class="n">'+m.trainer.split(' ')[0]+', your trainer</div><div class="m">Form, swaps, why you feel flat. A real answer from the person who wrote your plan.</div></div>'
   +'<div class="go">'+I.wa+'</div>';
+ document.getElementById('tdHooks').innerHTML=hookChips();
  renderBuild();renderGrid();
 }
 function showNudge(){
@@ -880,7 +969,7 @@ function renderPlan(){
   +'</div></div>');
  const d=todayRow();
  document.getElementById('plFinish').innerHTML=d.session
-  ? '<div class="card pad" style="border-color:var(--green);text-align:center"><div style="color:var(--green);font-weight:800;font-size:14px">'+I.check+' Session logged</div><div style="font-size:12px;color:var(--muted);margin-top:6px">Your trainer can see it, and your check-in is recorded at the gym.</div><div style="margin-top:12px"><button class="btn" onclick="unfinishSession()">Undo session</button></div></div>'
+  ? '<div class="card pad" style="border-color:var(--green);text-align:center"><div style="color:var(--green);font-weight:800;font-size:14px">'+I.check+' Session logged</div><div style="font-size:12px;color:var(--muted);margin-top:6px">Your trainer can see it, and your check-in is recorded at the gym.</div><div class="row2" style="margin-top:12px"><button class="btn primary" onclick="shareSession()">'+I.wa+'Share it</button><button class="btn" onclick="unfinishSession()">Undo session</button></div></div>'
   : '<button class="btn primary" style="padding:15px" onclick="finishSession()">'+I.check+'Finish session ('+dn+' of '+tot+' sets)</button>';
 }
 function setField(ei,si,f,v){
@@ -909,6 +998,13 @@ function finishSession(){
  d.checkin={at:AS_OF.getHours()+':'+String(AS_OF.getMinutes()).padStart(2,'0'),via:'member app'};
  DB.commit();rerender();
  toastUndo(I.check+' '+DB.get('sessionName')+' logged. Checked in at the gym.',()=>{delete d.session;delete d.checkin;DB.commit();rerender();});
+}
+function shareSession(){
+ const m=DB.get('member');
+ const txt='Day '+m.day+' at '+CFG.gym.name+': '+DB.get('sessionName')+' done. '
+  +sessionDone()+' sets logged, '+weightLost().toFixed(1)+' kg down, '+streakDays()+'-day streak.';
+ window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+ toast(I.check+' Share it with whoever keeps you honest');
 }
 function unfinishSession(){
  const d=todayRow();if(!d.session)return;
@@ -1084,6 +1180,17 @@ async function runSelfTest(){
    ok('Stats: a day expands to show its meals, and closes',openOk&&document.querySelectorAll('#stBody .day-b').length===0);}
   stMode('month');const monthOk=document.querySelectorAll('#stBody .day').length>0;stMode(snapMode);
   ok('Stats: by-month view renders',monthOk);
+  /* hooks */
+  ok('Hooks: best streak is never below the current streak',bestStreak()>=streakDays(),bestStreak()+' vs '+streakDays());
+  const pace=paceInfo();
+  ok('Hooks: pace projection is honest (only shown while losing, always future-dated)',pace===null||(pace.days>0&&pace.days<=365),pace?pace.days+'d':'hidden');
+  const pr2=prReach();
+  ok('Hooks: PR-within-reach only fires within 5 kg',pr2===null||(pr2.diff>0&&pr2.diff<=5),pr2?pr2.n+' '+pr2.diff:'none in reach');
+  go('today');
+  ok('Hooks: next-up chips render on Today',document.querySelectorAll('#tdHooks .hk').length>=1,String(document.querySelectorAll('#tdHooks .hk').length));
+  (function(){const opO=window.open;let u='';window.open=function(x){u=x||'';return null;};
+   try{shareSession();}finally{window.open=opO;}
+   ok('Hooks: share builds a wa.me text with the member\'s real day',u.indexOf('https://wa.me/?text=')===0&&decodeURIComponent(u).indexOf('Day '+DB.get('member').day)>-1,u.slice(0,50));})();
   /* flags */
   ok('Flags: every unverified module defaults OFF',Object.keys(CFG.flags).every(k=>CFG.flags[k]===false),Object.keys(CFG.flags).join(','));
   /* every page renders, no overflow */
