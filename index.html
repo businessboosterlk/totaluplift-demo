@@ -126,6 +126,12 @@ input,select,textarea{font-family:inherit;color:var(--ink)}
 #login .fld input{background:#f4f5f7;border-color:#e7e9ee;color:#141414}
 #login .fld input:focus{border-color:var(--brand)}
 .login-err{color:var(--danger);font-size:12.5px;font-weight:600;min-height:18px;margin-bottom:8px}
+.login-hint{font-size:11.5px;color:#6b7280;background:#f4f5f7;border:1px solid #e7e9ee;border-radius:8px;padding:8px 11px;margin:-4px 0 10px;display:flex;align-items:center;gap:7px}
+.login-hint b{color:#141414;font-variant-numeric:tabular-nums;letter-spacing:1px}
+.side-demo{padding:9px 14px 12px;border-top:1px solid var(--sidebar-line)}
+.side-demo a{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:600;color:var(--sidebar-faint);text-decoration:none;padding:7px 9px;border-radius:9px;border:1px solid var(--sidebar-line)}
+.side-demo a:hover{color:#fff;border-color:var(--brand)}
+.side-demo a svg{width:14px;height:14px}
 
 /* ============================================================
    APP SHELL - fixed sidebar (grouped + collapsible), frosted
@@ -810,6 +816,7 @@ body.dark .stat-kpi .val{color:#fff}
     <div id="loginStep2" style="display:none">
       <div class="login-h"><div class="uav" id="lgAv" style="width:54px;height:54px;border-radius:15px;font-size:21px;margin:0 auto 12px"></div><h2 id="lgName"></h2><p id="lgRole"></p></div>
       <div class="fld"><label for="lgPw">Password</label><input id="lgPw" type="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="login-hint" id="lgHint" hidden></div>
       <div class="login-err" id="lgErr"></div>
       <button class="btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:14px" onclick="doLogin()">Sign In</button>
       <button class="btn-ghost" style="width:100%;justify-content:center;margin-top:8px;border:none;background:none;box-shadow:none" onclick="backLogin()">&larr; Back</button>
@@ -865,6 +872,7 @@ body.dark .stat-kpi .val{color:#fff}
         <button class="nav-item" data-pg="settings" data-role="owner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
       </div>
     </nav>
+    <div class="side-demo" id="sideDemo" hidden></div>
     <div class="side-foot">
       <div class="av" id="meAv"></div>
       <div style="min-width:0"><div class="nm" id="meName"></div><div class="rl" id="meRole"></div></div>
@@ -1281,7 +1289,9 @@ const CFG={
  lostReasons:['Too expensive','Joined another gym','Too far away','No time right now','No response','Other'],
  waTemplate:'Hi {name}, thank you for asking about Total Uplift. Would you like to book a free trial session this week?',
  data:{mode:'demo',key:'bbgym_v1'},
- demo:{asOf:'2026-07-29'},
+ /* DEMO FURNITURE - shown only while data.mode is 'demo'. A live cast clears
+    these (or flips the mode) and both affordances disappear. */
+ demo:{asOf:'2026-07-29',pinHint:true,memberAppUrl:'member/'},
 };
 
 /* ════════════════════════════════════════════════════════════════════
@@ -1601,8 +1611,12 @@ function renderLogin(){
 }
 function pickUser(id){const s=DB.get('staff').find(x=>x.id===id);if(!s)return;PEND=s;
  document.getElementById('lgAv').textContent=s.name[0];document.getElementById('lgName').textContent=s.name;
- document.getElementById('lgRole').textContent=roleLabel(s.role);
+ document.getElementById('lgRole').textContent=(s.role==='staff'&&s.pos)?posLabel(s.pos):roleLabel(s.role);
  document.getElementById('lgPw').value='';document.getElementById('lgErr').textContent='';
+ const hint=document.getElementById('lgHint');
+ if(hint){const show=CFG.data.mode==='demo'&&CFG.demo.pinHint&&s.pin;
+  hint.hidden=!show;
+  if(show)hint.innerHTML='Demo access for '+s.name.split(' ')[0]+' - PIN <b>'+s.pin+'</b>';}
  document.getElementById('loginStep1').style.display='none';document.getElementById('loginStep2').style.display='block';
  setTimeout(function(){document.getElementById('lgPw').focus();},60);}
 function backLogin(){document.getElementById('loginStep2').style.display='none';document.getElementById('loginStep1').style.display='block';}
@@ -2312,6 +2326,12 @@ function applyChrome(){
  const hs=document.getElementById('stuHeroSub');if(hs)hs.textContent='Make '+CFG.app.client+' yours. Every change is safe to try - undo any edit, or reset any section back to default.';
  document.querySelectorAll('[data-fl]').forEach(el=>{const k=el.dataset.fl;if(CFG.fieldLabels[k])el.textContent=CFG.fieldLabels[k]+(el.hasAttribute('data-fl-cur')?' ('+CFG.currency+')':'');});
  document.querySelectorAll('.imp-btn').forEach(b=>b.style.display=CFG.modules.import?'':'none');
+ const sd=document.getElementById('sideDemo');
+ if(sd){const url=CFG.data.mode==='demo'&&CFG.demo.memberAppUrl;
+  sd.hidden=!url;
+  if(url)sd.innerHTML='<a href="'+url+'" target="_blank" rel="noopener">'
+   +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="11" y1="18.5" x2="13" y2="18.5"/></svg>'
+   +'What the member sees</a>';}
  applyRoleNav();
 }
 /* ── save/undo/reset core: every Studio edit flows through here ── */

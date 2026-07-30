@@ -344,6 +344,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
     <div class="tb-badge" id="tbBadge"></div>
     <div class="tb-prog"><div class="l" id="tbProgL"></div><div class="d" id="tbProgD"></div></div>
     <div class="tb-sp"></div>
+    <a class="tb-btn" id="tbStaff" hidden title="Open the gym's staff view" aria-label="Staff view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="18" x2="12" y2="21"/></svg></a>
     <button class="tb-btn" id="tbBell" aria-label="Notifications" onclick="showNudge()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot" id="tbDot"></span></button>
     <div class="tb-av" id="tbAv"></div>
   </div>
@@ -466,7 +467,8 @@ const CFG={
  flags:{wearables:false,macros:false,sleepTracking:false,challenges:false,bookings:false,payments:false},
  waTrainer:'Hi {trainer}, {name} here from {gym}. Day {day} of my plan. Today: {today}. Score {score}. Question: ',
  data:{mode:'demo',key:'bbgymmember_v1'},
- demo:{asOf:'2026-07-30'},
+ /* DEMO FURNITURE - the staff-view jump exists only while mode is 'demo' */
+ demo:{asOf:'2026-07-30',staffAppUrl:'../'},
 };
 
 /* ════════════════════════════════════════════════════════════════════
@@ -736,6 +738,9 @@ function renderChrome(){
  document.getElementById('tbProgL').textContent=CFG.programme.name;
  document.getElementById('tbProgD').textContent='Day '+m.day+' of '+CFG.programme.days+' · Week '+Math.ceil(m.day/7);
  document.getElementById('tbAv').textContent=m.initial;
+ const st=document.getElementById('tbStaff');
+ if(st){const url=CFG.data.mode==='demo'&&CFG.demo.staffAppUrl;
+  st.hidden=!url;if(url)st.href=url;}
  document.getElementById('tbDot').style.display=DB.get('nudges').length?'':'none';
 }
 function todayHeadline(){
@@ -1191,6 +1196,13 @@ async function runSelfTest(){
   (function(){const opO=window.open;let u='';window.open=function(x){u=x||'';return null;};
    try{shareSession();}finally{window.open=opO;}
    ok('Hooks: share builds a wa.me text with the member\'s real day',u.indexOf('https://wa.me/?text=')===0&&decodeURIComponent(u).indexOf('Day '+DB.get('member').day)>-1,u.slice(0,50));})();
+  /* demo furniture must disappear for a live cast */
+  (function(){
+   const was=CFG.data.mode;CFG.data.mode='local';renderChrome();
+   const gone=document.getElementById('tbStaff').hidden;
+   CFG.data.mode=was;renderChrome();
+   ok('Demo: the staff-view jump is demo-only, hidden on a live cast',gone&&!document.getElementById('tbStaff').hidden);
+  })();
   /* flags */
   ok('Flags: every unverified module defaults OFF',Object.keys(CFG.flags).every(k=>CFG.flags[k]===false),Object.keys(CFG.flags).join(','));
   /* every page renders, no overflow */
