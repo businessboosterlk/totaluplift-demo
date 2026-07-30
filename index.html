@@ -289,6 +289,9 @@ select.filter{appearance:none;-webkit-appearance:none;background-image:url("data
 .mo-switch button[disabled]{opacity:.3;cursor:default}
 .mo-switch button svg{width:15px;height:15px}
 .mo-switch .mo-lbl{font-size:13px;font-weight:700;min-width:110px;text-align:center;font-variant-numeric:tabular-nums}
+.mo-switch select.mo-lbl{appearance:none;-webkit-appearance:none;background-color:transparent;border:none;font-family:inherit;color:var(--ink);cursor:pointer;padding:7px 22px 7px 10px;border-radius:8px;text-align:center;text-align-last:center;min-width:132px;transition:background-color .15s;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 7px center;background-size:11px}
+.mo-switch select.mo-lbl:hover{background:var(--surface-2)}
+.mo-switch select.mo-lbl:focus{outline:none;box-shadow:var(--ring)}
 .rp-cmp-ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .rp-cmp-ctl .filter{padding:7px 11px;font-size:12.5px;font-weight:600}
 .rp-cmp-ctl .rp-cmp-vs{font-size:12.5px;color:var(--muted);font-weight:600}
@@ -930,13 +933,13 @@ body.dark .stat-kpi .val{color:#fff}
       <!-- ══ REPORTS (month-over-month analytics + trends, always-on) ══ -->
       <div class="page" id="page-reports">
         <div class="toolbar">
-          <div class="mo-switch"><button id="rpPrev" aria-label="Previous month" onclick="rpShift(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button><span class="mo-lbl" id="rpLbl"></span><button id="rpNext" aria-label="Next month" onclick="rpShift(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button></div>
+          <div class="mo-switch"><button id="rpPrev" aria-label="Previous month" onclick="rpShift(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button><select class="mo-lbl" id="rpYmSel" aria-label="Month to report on" onchange="rpSetYm(this.value)"></select><button id="rpNext" aria-label="Next month" onclick="rpShift(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button></div>
           <div class="sp"></div>
           <button class="btn-ghost" onclick="printReport()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print / PDF</button>
           <button class="btn-ghost" onclick="exportReport()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
         </div>
         <div class="stat-kpis" id="rpKpis"></div>
-        <div class="card" style="margin-bottom:20px" id="rpCmpCard"><div class="card-h" style="flex-wrap:wrap;gap:10px"><h3 id="rpCmpHint">Compare months</h3><div class="rp-cmp-ctl"><span class="rp-cmp-vs">compare with</span><select id="rpCmpSel" class="filter" onchange="rpSetCmp(this.value)"></select><button class="rp-quick" id="rpqPrev" onclick="rpQuick('prev')">Previous month</button><button class="rp-quick" id="rpqYear" onclick="rpQuick('year')">Same month last year</button></div></div><div class="card-b" style="padding:16px 20px"><div class="cmp-grid" id="rpCmp"></div></div></div>
+        <div class="card" style="margin-bottom:20px" id="rpCmpCard"><div class="card-h" style="flex-wrap:wrap;gap:10px"><h3 id="rpCmpHint">Compare months</h3><span class="hint" id="rpCmpNote">pick any two months, in either direction</span><div class="rp-cmp-ctl"><span class="rp-cmp-vs">compare with</span><select id="rpCmpSel" class="filter" onchange="rpSetCmp(this.value)"></select><button class="rp-quick" id="rpqPrev" onclick="rpQuick('prev')">Previous month</button><button class="rp-quick" id="rpqYear" onclick="rpQuick('year')">Same month last year</button></div></div><div class="card-b" style="padding:16px 20px"><div class="cmp-grid" id="rpCmp"></div></div></div>
         <div class="card" style="margin-bottom:20px"><div class="card-h"><h3>Revenue trend</h3><span class="hint">New-join value, last 6 months</span></div><div class="card-b" id="rpTrend" style="padding:18px 22px 14px"></div></div>
         <div class="grid2" style="margin-bottom:20px">
           <div class="card"><div class="card-h"><h3>Where revenue comes from</h3><span class="hint">By trainer, this month</span></div><div class="card-b" id="rpByOwner"></div></div>
@@ -1455,6 +1458,33 @@ function seedData(){
   if(st==='trial_attended')r.acts.unshift({t:'Trial attended',m:'Came in for the trial session',tm:'recently'});
   return r;
  });
+ /* HISTORICAL JOINS + a few losses across the last 13 months. Without these the
+    revenue trend is one lonely bar and ANY month-vs-month comparison reads LKR 0,
+    which makes a working feature look broken (the flat-chart lesson). Joins here
+    are the acquisition history behind the 120-member roster. */
+ let hid=records.length;
+ for(let back=13;back>=1;back--){
+  const mm=ymShift(ym,-back);
+  const nj=2+Math.floor(rnd()*3);
+  for(let j=0;j<nj;j++){
+   let nm;do{nm=pick(FIRST)+' '+pick(LAST);}while(usedNames[nm]);usedNames[nm]=1;
+   const tier=rnd()<0.6?0:(rnd()<0.75?1:2);
+   const val=TIER_FEE[tier]+CFG.gym.joiningFee;
+   records.push({id:++hid,name:nm,co:CFG.cohorts[tier]+' plan · '+pick(SRC),
+    phone:'076'+String(2000000+Math.floor(rnd()*7999999)),stage:'joined',owner:rnd()<0.7?5:2,
+    value:val,followUp:'',created:dayStr(mm,1+Math.floor(rnd()*26)),rev:spread(val,mm,1),
+    acts:[{t:'Joined',m:'Signed up on the '+CFG.cohorts[tier]+' plan',tm:monthShort(mm)}]});
+  }
+  const nl=1+Math.floor(rnd()*2);   /* 1-2 losses every month: no gym joins 100% of enquiries */
+  for(let k=0;k<nl;k++){
+   let nm;do{nm=pick(FIRST)+' '+pick(LAST);}while(usedNames[nm]);usedNames[nm]=1;
+   records.push({id:++hid,name:nm,co:'Enquiry · '+pick(SRC),
+    phone:'076'+String(2000000+Math.floor(rnd()*7999999)),stage:'lost',owner:5,
+    value:TIER_FEE[0]+CFG.gym.joiningFee,followUp:'',created:dayStr(mm,1+Math.floor(rnd()*26)),
+    rev:null,lostReason:pick(CFG.lostReasons.slice(0,5)),
+    acts:[{t:'Marked lost',m:'Did not join',tm:monthShort(mm)}]});
+  }
+ }
  const staff=[
   {id:1,name:'Roshan Weerakoon', role:'owner',  pin:'1111',active:true},
   {id:2,name:'Dinusha Perera',   role:'manager',pin:'2222',active:true},
@@ -1538,6 +1568,9 @@ const init2=s=>s.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 function fmtNum(v,fmt){if(fmt==='m')return CFG.currency+' '+v.toFixed(2)+'M';if(fmt==='pct')return Math.round(v)+'%';if(fmt==='lkr')return lkr(v);return Math.round(v).toLocaleString();}
 function countUp(el){const to=parseFloat(el.getAttribute('data-to'));const from=parseFloat(el.getAttribute('data-from'))||0;const fmt=el.getAttribute('data-fmt')||'int';const dur=780;let st=null;function tick(now){if(st===null)st=now;const p=Math.min(1,(now-st)/dur);const e=1-Math.pow(1-p,3);el.textContent=fmtNum(from+(to-from)*e,fmt);if(p<1)requestAnimationFrame(tick);else el.textContent=fmtNum(to,fmt);}requestAnimationFrame(tick);}
 function animateCounts(scope){(scope||document).querySelectorAll('[data-to]').forEach(countUp);}
+/* compact money for chart labels: a gym month is tens of thousands, not millions,
+   so a hardcoded /1e6 reads "0.0M" and looks broken. */
+function kLabel(v){v=+v||0;if(v>=1e6)return (v/1e6).toFixed(v>=1e7?0:1)+'M';if(v>=1000)return Math.round(v/1000)+'k';return String(Math.round(v));}
 function barChart(data,h){h=h||140;const W=720;const max=Math.max.apply(null,data.map(d=>d.v).concat([1]));const gap=W/data.length;const bw=Math.min(48,gap*0.5);
  return '<svg viewBox="0 0 '+W+' '+(h+30)+'" style="width:100%;height:auto;display:block" role="img" aria-label="Bar chart">'+data.map(function(d,i){const bh=Math.max(3,d.v/max*h);const cx=i*gap+gap/2;const x=cx-bw/2;
   return '<rect x="'+x+'" y="'+(h-bh)+'" width="'+bw+'" height="'+bh+'" rx="6" fill="'+(d.hi?'var(--brand)':'var(--line)')+'"><animate attributeName="height" from="0" to="'+bh+'" dur="0.7s" fill="freeze"/><animate attributeName="y" from="'+h+'" to="'+(h-bh)+'" dur="0.7s" fill="freeze"/></rect>'
@@ -1924,7 +1957,7 @@ function renderDashCommand(){
   +kpiC('Check-ins today',todayCheckins().length,'logged at the front desk',false,I.enter);
  const data=[];for(let i=5;i>=0;i--){const m=ymShift(ym,-i);
   const v=DB.get('recurringPayments').filter(r=>r.month===m).reduce((s,r)=>s+r.amount,0);
-  data.push({label:MN[+m.split('-')[1]-1],v:v,hi:m===ym,top:(v/1e6).toFixed(1)+'M'});}
+  data.push({label:MN[+m.split('-')[1]-1],v:v,hi:m===ym,top:kLabel(v)});}
  document.getElementById('chartTitle').textContent=CFG.recurring.label+' collections, last 6 months';
  document.getElementById('dashChart').innerHTML=barChart(data,150);
  document.getElementById('chartHint').textContent='Collected per month ('+CFG.currency+')';
@@ -2795,19 +2828,47 @@ function exportCustomers(){exportCSV('customers.csv',['Customer','Detail','Type'
 
 /* ════════ REPORTS - month-over-month analytics + trends (always-on) ════════ */
 let RP_YM=null,RP_CMP=null;
-function rpShift(n){if(!RP_YM)RP_YM=ymNow();const t=ymShift(RP_YM,n);if(t>ymNow())return;RP_YM=t;renderReports();}
-function rpSetCmp(v){RP_CMP=v;renderReports();}
+/* ── the reportable month range, derived from the data (never a magic 18) ── */
+function rpFirstYm(){
+ let m=ymNow();
+ const scan=(arr,f)=>{(arr||[]).forEach(x=>{try{const v=f(x);if(v&&String(v).slice(0,7)<m)m=String(v).slice(0,7);}catch(e){}});};
+ scan(DB.get('records'),r=>r.created);
+ scan(DB.get('recurringPayments'),r=>r.month);
+ scan(DB.get('invoices'),o=>o.date);
+ return m;
+}
+function rpMonths(){
+ const out=[],first=rpFirstYm();
+ for(let m=ymNow();m>=first&&out.length<60;m=ymShift(m,-1))out.push(m);
+ return out;   /* newest first */
+}
+/* arrows step the primary month, clamped to the real data range */
+function rpShift(n){if(!RP_YM)RP_YM=ymNow();const t=ymShift(RP_YM,n);if(t>ymNow()||t<rpFirstYm())return;RP_YM=t;renderReports();}
+function rpSetYm(v){if(!v)return;RP_YM=v;renderReports();}
+function rpSetCmp(v){if(!v)return;RP_CMP=v;renderReports();}
 function rpQuick(kind){if(!RP_YM)RP_YM=ymNow();RP_CMP=kind==='year'?ymShift(RP_YM,-12):ymShift(RP_YM,-1);renderReports();}
-function rpBuildCmpSel(ym,prev){const sel=document.getElementById('rpCmpSel');if(sel){let o='';for(let i=1;i<=18;i++){const m=ymShift(ym,-i);o+='<option value="'+m+'"'+(m===prev?' selected':'')+'>'+monthLbl(m)+'</option>';}sel.innerHTML=o;}
- const qp=document.getElementById('rpqPrev'),qy=document.getElementById('rpqYear');if(qp)qp.classList.toggle('on',prev===ymShift(ym,-1));if(qy)qy.classList.toggle('on',prev===ymShift(ym,-12));}
+/* BOTH selects list the whole range. The compare side may be EARLIER OR LATER
+   than the reported month - the only rule is that they differ. */
+function rpBuildSels(ym,prev){
+ const months=rpMonths();
+ const ysel=document.getElementById('rpYmSel');
+ if(ysel)ysel.innerHTML=months.map(m=>'<option value="'+m+'"'+(m===ym?' selected':'')+'>'+monthLbl(m)+'</option>').join('');
+ const sel=document.getElementById('rpCmpSel');
+ if(sel){const list=months.filter(m=>m!==ym);
+  sel.innerHTML=list.map(m=>'<option value="'+m+'"'+(m===prev?' selected':'')+'>'+monthLbl(m)+'</option>').join('');}
+ const qp=document.getElementById('rpqPrev'),qy=document.getElementById('rpqYear');
+ if(qp)qp.classList.toggle('on',prev===ymShift(ym,-1));
+ if(qy)qy.classList.toggle('on',prev===ymShift(ym,-12));
+}
 function monthWon(ym){return DB.get('records').filter(r=>isWon(r)&&r.created.slice(0,7)===ym);}
 function renderReports(){
  if(!RP_YM)RP_YM=ymNow();
  const ym=RP_YM;
- let prev=RP_CMP||ymShift(ym,-1);if(prev>=ym)prev=ymShift(ym,-1);
+ /* compare month is free (earlier OR later); it may only not BE the reported month */
+ let prev=RP_CMP||ymShift(ym,-1);
+ if(prev===ym)prev=(ym>rpFirstYm())?ymShift(ym,-1):ymShift(ym,1);
  const bLbl=monthShort(prev).split(' ')[0];
- rpBuildCmpSel(ym,prev);
- document.getElementById('rpLbl').textContent=monthLbl(ym);
+ rpBuildSels(ym,prev);
  document.getElementById('rpNext').disabled=ym>=ymNow();
  const won=monthWon(ym),pwon=monthWon(prev);
  const rev=won.reduce((s,r)=>s+r.value,0),prevRev=pwon.reduce((s,r)=>s+r.value,0);
@@ -2826,7 +2887,7 @@ function renderReports(){
  const cmp=[['Revenue',lkr(rev),lkr(prevRev),pct(rev,prevRev),'%'],['Joins',won.length,pwon.length,pct(won.length,pwon.length),'%'],['Avg join value',lkr(aov),lkr(paov),pct(aov,paov),'%'],['Join rate',winRate+'%',pWin+'%',winRate-pWin,'pp']];
  document.getElementById('rpCmp').innerHTML=cmp.map(c=>{const up=c[3]>=0;return '<div class="cmp-item '+(up?'up':'down')+'"><div class="cl">'+c[0]+'</div><div class="cv">'+c[1]+'</div><div class="cvs">vs '+c[2]+'</div><div class="cd '+(up?'up':'down')+'">'+(up?'▲':'▼')+' '+Math.abs(c[3])+c[4]+'</div></div>';}).join('');
  document.getElementById('rpCmpHint').textContent=monthLbl(ym)+' vs '+monthLbl(prev);
- const data=[];for(let i=5;i>=0;i--){const m=ymShift(ym,-i);const v=monthWon(m).reduce((s,r)=>s+r.value,0);data.push({label:MN[+m.split('-')[1]-1],v:v,hi:m===ym,top:(v/1e6).toFixed(1)+'M'});}
+ const data=[];for(let i=5;i>=0;i--){const m=ymShift(ym,-i);const v=monthWon(m).reduce((s,r)=>s+r.value,0);data.push({label:MN[+m.split('-')[1]-1],v:v,hi:m===ym,top:kLabel(v)});}
  document.getElementById('rpTrend').innerHTML=barChart(data,150);
  const owners=DB.get('staff').filter(s=>s.active);
  const byOwner=owners.map(s=>({name:s.name,v:won.filter(r=>r.owner===s.id).reduce((x,r)=>x+r.value,0)})).filter(o=>o.v>0).sort((a,b)=>b.v-a.v);
