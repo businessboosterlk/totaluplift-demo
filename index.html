@@ -3090,6 +3090,26 @@ function generateQuotePDF(id){
  printDoc('Quotation '+qno,inner);
  logFeed(CURRENT.id,'Quote generated',r.name+' · '+lkr(net));DB.commit();toast(I.check+' Quotation ready');
 }
+/* ── RECEIPT: the paper trail a cash-paying member currently never gets ── */
+function paymentReceipt(planId,month){
+ const p=DB.get('recurringPlans').find(x=>x.id===planId);if(!p)return;
+ const rows=DB.get('recurringPayments').filter(r=>r.planId===planId&&r.month===month);
+ if(!rows.length){toast('No payment recorded for that month');return;}
+ const total=rows.reduce((a,r)=>a+r.amount,0);
+ const no='R-'+month.replace('-','')+'-'+String(1000+planId).slice(1);
+ const inner=docHead('RECEIPT')
+  +'<div style="display:flex;justify-content:space-between;margin-bottom:14px;font-size:12.5px">'
+  +'<div><b>Received from</b><br>'+p.name+'<br>'+(p.phone||'')+'</div>'
+  +'<div style="text-align:right"><b>Receipt '+no+'</b><br>Issued '+fmtDate(todayISO())+'</div></div>'
+  +'<table><thead><tr><th>Description</th><th>Recorded by</th><th class="tr">Amount</th></tr></thead><tbody>'
+  +rows.map(r=>'<tr><td>'+CFG.recurring.label+' for '+monthLbl(month)+(r.method?' ('+r.method+')':'')+'</td><td>'+(r.by||'Front desk')+(r.at?'<br><span style="color:#777;font-size:11px">'+r.at+'</span>':'')+'</td><td class="tr">'+lkr(r.amount)+'</td></tr>').join('')
+  +'</tbody></table>'
+  +'<div class="tot"><div class="box"><div class="trow grand"><span>Paid in full</span><span>'+lkr(total)+'</span></div></div></div>'
+  +'<div style="margin-top:16px;font-size:11.5px;color:#666">Keep this receipt. If your access is ever refused for this month, show it at the desk.</div>'
+  +docFoot();
+ printDoc('Receipt '+no,inner);
+ logFeed(CURRENT.id,'Receipt issued',p.name+' · '+monthShort(month));DB.commit();
+}
 function printReport(){
  const ym=RP_YM||ymNow();const won=monthWon(ym);const rev=won.reduce((s,r)=>s+r.value,0);
  const rows=[...won].sort((a,b)=>b.value-a.value).map(r=>'<tr><td>'+r.name+'</td><td>'+(r.co||'')+'</td><td>'+staffById(r.owner).name+'</td><td class="tr">'+lkr(r.value)+'</td></tr>').join('')||'<tr><td colspan="4" style="color:#999">No wins this month</td></tr>';
@@ -3120,11 +3140,14 @@ const RECUR={ym:null,status:'all',cohort:'all',q:'',_last:0,_undo:null,
  setCohort(v){this.cohort=v;renderRecurring();},
  setQ(v){this.q=(v||'').trim().toLowerCase();renderRecurring(true);},
  filt(list){return list.filter(p=>(this.cohort==='all'||String(p.cohort)===this.cohort)&&(!this.q||p.name.toLowerCase().includes(this.q)));},
- mark(id){const p=DB.get('recurringPlans').find(x=>x.id===id);if(!p)return;const due=recFee(p)-recPaid(id,this.ym);if(due<=0)return;const ex=recRow(id,this.ym);if(ex){this._undo={id:ex.id,amt:ex.amount,st:ex.status,created:false};ex.amount+=due;ex.status='paid';ex.paidAt=todayISO();}else{const row={id:DB.nextId('recurringPayments'),planId:id,month:this.ym,amount:due,status:'paid',paidAt:todayISO()};DB.get('recurringPayments').push(row);this._undo={id:row.id,created:true};}logFeed(CURRENT.id,CFG.recurring.label+' collected',p.name+' · '+monthShort(this.ym));
+ mark(id){const p=DB.get('recurringPlans').find(x=>x.id===id);if(!p)return;const due=recFee(p)-recPaid(id,this.ym);if(due<=0)return;const ex=recRow(id,this.ym);
+  /* WHO marked it and WHEN: without this the member has no way to settle a dispute */
+  const stamp={by:CURRENT.name,byId:CURRENT.id,at:feedStamp(),method:'Cash at the desk'};
+  if(ex){this._undo={id:ex.id,amt:ex.amount,st:ex.status,created:false,by:ex.by,at:ex.at,method:ex.method};ex.amount+=due;ex.status='paid';ex.paidAt=todayISO();Object.assign(ex,stamp);}else{const row=Object.assign({id:DB.nextId('recurringPayments'),planId:id,month:this.ym,amount:due,status:'paid',paidAt:todayISO()},stamp);DB.get('recurringPayments').push(row);this._undo={id:row.id,created:true};}logFeed(CURRENT.id,CFG.recurring.label+' collected',p.name+' · '+monthShort(this.ym));
   /* receipt rail: a landed payment is the Fee Clerk's OUTCOME - log the recovered value */
   if(CFG.agents&&CFG.agents.feeChaser.on&&this.ym===ymNow()){logAgent(CFG.agents.feeChaser.label,'Payment recovered',p.name+' · '+feeMonthKey(),due);this._undo.rcpt=DB.get('agent_actions')[0].id;}
   DB.commit();renderRecurring();renderBadges();toast(I.check+' '+p.name.split(' ')[0]+' paid · '+lkr(due)+'<button class="t-act" onclick="RECUR.undo()">Undo</button>',6000);},
- undo(){const u=this._undo;if(!u)return;this._undo=null;const ps=DB.get('recurringPayments');const i=ps.findIndex(r=>r.id===u.id);if(i<0)return;if(u.created)ps.splice(i,1);else{ps[i].amount=u.amt;ps[i].status=u.st;}
+ undo(){const u=this._undo;if(!u)return;this._undo=null;const ps=DB.get('recurringPayments');const i=ps.findIndex(r=>r.id===u.id);if(i<0)return;if(u.created)ps.splice(i,1);else{ps[i].amount=u.amt;ps[i].status=u.st;ps[i].by=u.by;ps[i].at=u.at;ps[i].method=u.method;}
   if(u.rcpt!=null){const aa=DB.get('agent_actions')||[];const j=aa.findIndex(a=>a.id===u.rcpt);if(j>-1)aa.splice(j,1);}   /* receipt reversed with the payment */
   DB.commit();renderRecurring();renderBadges();toast('Undone');},
  remind(id){const p=DB.get('recurringPlans').find(x=>x.id===id);if(!p)return;const ph=(p.phone||'').replace(/\D/g,'').replace(/^0/,'94');if(!ph){toast('No number saved');return;}const due=recFee(p)-recPaid(id,this.ym);const msg=CFG.recurring.waRemind.replace('{name}',p.name.split(' ')[0]).replace('{month}',monthLbl(this.ym).split(' ')[0]).replace('{label}',CFG.recurring.label.toLowerCase()).replace('{amount}',lkr(due));window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg),'_blank');p.reminded=todayISO();DB.commit();}
@@ -3153,7 +3176,8 @@ function renderRecurring(keepFocus){
   let act='';
   if(stt==='owing')act='<button class="btn-mark" onclick="RECUR.mark('+p.id+')">'+I.check+'Mark paid</button><button class="btn-wa" title="Remind on WhatsApp" aria-label="Remind on WhatsApp" onclick="RECUR.remind('+p.id+')">'+I.wa+'</button>';
   else if(stt==='partial')act='<span class="pr-pill pill-partial">'+got.toLocaleString()+' / '+due.toLocaleString()+'</span><button class="btn-mark" onclick="RECUR.mark('+p.id+')">'+I.check+'Complete</button>';
-  else act='<span class="pr-pill pill-paid">'+I.check+'Paid</span>';
+  else act='<span class="pr-pill pill-paid">'+I.check+'Paid</span>'
+   +'<button class="btn-wa" style="background:var(--brand-soft);color:var(--brand)" title="Print receipt" aria-label="Print receipt" onclick="paymentReceipt('+p.id+',\''+ym+'\')">'+I.doc+'</button>';
   return '<div class="pay-row"><div class="pr-av">'+init2(p.name)+'</div><div class="pr-main"><div class="pr-nm">'+p.name+'</div><div class="pr-mt">'+meta+'</div></div><div class="pr-act">'+act+'</div></div>';
  }).join(''):'<div class="empty" style="padding:30px 8px"><div class="es-ic">'+I.money+'</div><div class="es-t">Nothing here</div>No plans match this filter.</div>';
 }
@@ -3857,6 +3881,12 @@ async function runSelfTest(opts){
    if(!RECUR.ym)RECUR.ym=ymNow();
    const stt=recStats(RECUR.ym);
    ok('Recurring: ledger math sane',stt.expected>=0&&stt.outstanding>=0&&stt.collected>=0);
+   if(stt.owing.length){
+    const who=stt.owing[0].id;RECUR.mark(who);
+    const rowNow=recRow(who,RECUR.ym);
+    ok('Receipt: a marked payment records who took it and when',!!rowNow&&rowNow.by===CURRENT.name&&!!rowNow.at,rowNow?rowNow.by+' / '+rowNow.at:'no row');
+    RECUR.undo();
+   }
    if(stt.owing.length){const n0=DB.get('recurringPayments').length;RECUR.mark(stt.owing[0].id);const marked=recPaid(stt.owing[0].id,RECUR.ym)>=recFee(stt.owing[0]);RECUR.undo();
     ok('Recurring: mark-paid + undo',marked&&DB.get('recurringPayments').length===n0);}
   }

@@ -459,6 +459,16 @@ input,textarea{font-family:inherit;color:var(--txt)}
     <div id="plFinish"></div>
   </div>
 
+  <!-- ══ MEMBERSHIP (the member's own money record) ══ -->
+  <div class="page" id="pg-membership">
+    <div class="greet" id="msPlan"></div>
+    <div class="promise" style="font-size:24px;margin-bottom:16px">Your membership</div>
+    <div class="card pad" id="msStatus"></div>
+    <button class="ask" id="msDispute" onclick="disputePayment()"></button>
+    <div class="sec-h"><h3>Payment history</h3><span class="hint" id="msHint"></span></div>
+    <div id="msHistory"></div>
+  </div>
+
   <!-- ══ STATS ══ -->
   <div class="page" id="pg-stats">
     <div class="wknav"><button id="stPrev" aria-label="Previous week" onclick="stShift(-1)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button><span class="lb" id="stLbl"></span><button id="stNext" aria-label="Next week" onclick="stShift(1)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button></div>
@@ -472,6 +482,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
   <button data-pg="today" class="on" onclick="go('today')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>Today</button>
   <button data-pg="log" onclick="go('log')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Log</button>
   <button data-pg="plan" onclick="go('plan')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5h11v11h-11z"/><path d="M3 10v4M21 10v4M6.5 8.5h-2v7h2M17.5 8.5h2v7h-2"/></svg>Plan</button>
+  <button data-pg="membership" onclick="go('membership')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>Membership</button>
   <button data-pg="stats" onclick="go('stats')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Stats</button>
 </nav>
 
@@ -508,7 +519,11 @@ window.__ST_LOG=[];
    ════════════════════════════════════════════════════════════════════ */
 const CFG={
  app:{name:'Total Uplift',tagline:'Member App',version:'gym-member v1'},
- gym:{name:'Total Uplift',phone:'+94775528090'},
+ gym:{name:'Total Uplift',phone:'+94775528090',deskPhone:'0775528090'},
+ /* MEMBERSHIP - the member's own copy of the money record (Scout gap 1+3).
+    A cash-paying member has no card statement to fall back on, so the app IS
+    their receipt book. Mirrors the staff ledger; never invents a payment. */
+ membership:{plan:'Premium',fee:12500,cycle:'month',dueDay:5},
  /* the member's programme */
  programme:{name:'The Uplift Plan',days:90,
   phases:[['Start',0],['Shift',30],['Forge',60],['Forged',90]],
@@ -643,7 +658,22 @@ function seedData(){
  });
  /* progress photos: 4 angles, placeholder silhouettes only */
  const shots=['front','back','left','right'].map((a,i)=>({angle:a,day:day,d1:1}));
+ /* payment history: 14 months of CASH payments taken at the desk, each stamped
+    with who took it. One month is deliberately part-paid so the balance case shows. */
+ const payments=[];
+ const staffNames=['Sachini Fernando','Dinusha Perera','Sachini Fernando','Roshan Weerakoon'];
+ for(let k=13;k>=0;k--){
+  const d=new Date(AS_OF.getFullYear(),AS_OF.getMonth()-k,1);
+  const mo=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  const part=k===4;
+  const amt=part?7500:12500;
+  const dd=1+Math.floor(rnd()*6);
+  payments.push({month:mo,amount:amt,full:!part,date:mo+'-'+String(dd).padStart(2,'0'),
+   method:'Cash at the desk',by:staffNames[Math.floor(rnd()*staffNames.length)],
+   at:(6+Math.floor(rnd()*12))+':'+String(Math.floor(rnd()*60)).padStart(2,'0')+' '+(rnd()<0.4?'AM':'PM')});
+ }
  return {
+  payments:payments,
   member:{name:'Ravindu Dissanayake',first:'Ravindu',initial:'R',phone:'0771000034',
    trainer:'Kasun Bandara',trainerPhone:'0771000003',plan:'Premium',
    start:start,goalDate:goalDate,day:day,
@@ -740,7 +770,7 @@ function phaseIndex(){const d=DB.get('member').day;const ph=CFG.programme.phases
    SECTION 6 - SHELL: routing, toast + undo, safe list mapping
    ════════════════════════════════════════════════════════════════════ */
 let PAGE='today',UNDO=null;
-const RENDERERS={today:renderToday,log:renderLog,plan:renderPlan,stats:renderStats};
+const RENDERERS={today:renderToday,log:renderLog,plan:renderPlan,membership:renderMembership,stats:renderStats};
 const PRISTINE={};
 function snapshotPages(){document.querySelectorAll('.page').forEach(p=>{PRISTINE[p.id.replace('pg-','')]=p.innerHTML;});}
 function healPage(pg){const el=document.getElementById('pg-'+pg);if(el&&el.dataset.err){el.innerHTML=PRISTINE[pg]||el.innerHTML;delete el.dataset.err;}}
@@ -1130,6 +1160,100 @@ function unfinishSession(){
 }
 
 /* ════════════════════════════════════════════════════════════════════
+   SECTION 9B - MEMBERSHIP (Scout gap 1+3: the member's own money record)
+   Nothing here is invented: every row mirrors a payment the gym recorded,
+   with the name of the person who took it. A cash payer finally has proof.
+   ════════════════════════════════════════════════════════════════════ */
+function msPayments(){return (DB.get('payments')||[]).slice().sort((a,b)=>b.month.localeCompare(a.month));}
+function msLastFull(){return msPayments().find(p=>p.full)||null;}
+/* paid-until = the end of the last FULLY paid month. A part payment does not buy time. */
+function msPaidUntil(){
+ const p=msLastFull();if(!p)return null;
+ const parts=p.month.split('-');
+ const d=new Date(+parts[0],+parts[1],0);   /* day 0 of next month = last day of this one */
+ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function msDaysLeft(){const u=msPaidUntil();return u?daysBetween(todayISO(),u):0;}
+function msBalance(){
+ const cur=msPayments().filter(p=>p.month===todayISO().slice(0,7));
+ const paid=cur.reduce((a,p)=>a+p.amount,0);
+ return Math.max(0,CFG.membership.fee-paid);
+}
+function renderMembership(){
+ const c=CFG.membership,left=msDaysLeft(),until=msPaidUntil(),bal=msBalance();
+ document.getElementById('msPlan').textContent=c.plan+' plan · '+lkrM(c.fee)+' a '+c.cycle;
+ const state=bal>0?(left>=0?'part':'due'):'ok';
+ const col=state==='ok'?'var(--green)':(state==='part'?'var(--amber)':'var(--danger)');
+ document.getElementById('msStatus').innerHTML=
+  '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
+  +'<div class="ring" style="width:96px;height:96px">'+ringSvg(Math.max(0,Math.min(100,Math.round(left/30*100))),96,8)
+   +'<div class="mid"><div class="v" style="font-size:24px">'+(left>0?left:0)+'</div><div class="l">'+(Math.abs(left)===1?'day':'days')+'</div></div></div>'
+  +'<div style="flex:1;min-width:150px"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint);font-weight:700">Paid until</div>'
+  +'<div style="font-family:\'Poppins\',sans-serif;font-size:21px;font-weight:800;margin-top:4px">'+(until?fmtD(until):'No payment yet')+'</div>'
+  +'<div style="font-size:12px;color:'+col+';font-weight:600;margin-top:5px">'
+   +(state==='ok'?'Paid up. Nothing owing.':(state==='part'?'Part paid this month. '+lkrM(bal)+' still owing.':lkrM(bal)+' owing for '+MN_FULL[AS_OF.getMonth()]))+'</div></div></div>'
+  +'<div class="why" style="margin-top:14px">Your '+c.cycle+'ly '+c.plan.toLowerCase()+' fee is <b>'+lkrM(c.fee)+'</b>, due around the '+c.dueDay+'th. '
+  +'Every payment below was recorded at the desk by a named person, with the time. Tap any one for a receipt you can keep or send.</div>';
+ document.getElementById('msDispute').innerHTML=
+  '<div class="av">'+I.wa+'</div>'
+  +'<div style="min-width:0"><div class="l">If something looks wrong</div><div class="n">I already paid this</div>'
+  +'<div class="m">Sends the front desk your own record, with dates and who took each payment. No argument, just the facts.</div></div>'
+  +'<div class="go">'+I.arrow+'</div>';
+ const ps=msPayments();
+ document.getElementById('msHint').textContent=ps.length+' payments';
+ document.getElementById('msHistory').innerHTML=ps.length?mapSafe(ps,p=>
+  '<div class="day"><button class="day-h" onclick="receiptFor(\''+p.month+'\')">'
+  +'<span class="dot" style="background:'+(p.full?'var(--green)':'var(--amber)')+'"></span>'
+  +'<span style="min-width:0"><span class="n">'+monthLbl2(p.month)+'</span>'
+  +'<div class="s">'+fmtD(p.date)+' · '+p.method+' · taken by '+p.by.split(' ')[0]+'</div></span>'
+  +'<span class="tg" style="color:'+(p.full?'var(--green)':'var(--amber)')+'">'+lkrM(p.amount)+(p.full?'':' part')+'</span></button></div>')
+  :emptyC2('No payments recorded yet');
+}
+function lkrM(n){return 'LKR '+Math.round(n).toLocaleString('en-LK');}
+function monthLbl2(ym){const p=ym.split('-');return MN_FULL[+p[1]-1]+' '+p[0];}
+function emptyC2(t){return '<div class="empty"><div class="t">'+t+'</div>Once the desk records a payment it appears here.</div>';}
+/* the receipt: printed from the member's own copy, offline, no server */
+function receiptFor(month){
+ const p=msPayments().find(x=>x.month===month);if(!p)return;
+ const mem=DB.get('member');
+ const w=window.open('','_blank');
+ if(!w){toast('Allow pop-ups to open your receipt');return;}
+ const brand=getComputedStyle(document.documentElement).getPropertyValue('--brand').trim()||'#EF3A1B';
+ w.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+ +'<title>Receipt '+month+'</title><style>*{margin:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}'
+ +'body{background:#eee;color:#1a1a1a;padding:18px}.p{max-width:520px;margin:0 auto;background:#fff;padding:26px}'
+ +'.h{display:flex;justify-content:space-between;border-bottom:3px solid '+brand+';padding-bottom:14px;margin-bottom:18px}'
+ +'.co{font-size:19px;font-weight:800}.t{font-size:22px;font-weight:800;letter-spacing:1px}'
+ +'table{width:100%;border-collapse:collapse;margin:12px 0}td{padding:9px 0;border-bottom:1px solid #e6e6e6;font-size:13px}'
+ +'td.r{text-align:right;font-weight:700}.tot{background:'+brand+';color:#fff;padding:12px 14px;display:flex;justify-content:space-between;font-weight:800;margin-top:10px}'
+ +'.f{margin-top:18px;font-size:11px;color:#666;line-height:1.6}button{position:fixed;top:14px;right:14px;background:'+brand+';color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:700}'
+ +'@media print{button{display:none}body{background:#fff;padding:0}}</style></head><body>'
+ +'<button onclick="window.print()">Print or save as PDF</button><div class="p">'
+ +'<div class="h"><div><div class="co">'+CFG.gym.name+'</div><div style="font-size:11px;color:#666;margin-top:4px">'+CFG.gym.phone+'</div></div><div class="t">RECEIPT</div></div>'
+ +'<table><tr><td>Member</td><td class="r">'+mem.name+'</td></tr>'
+ +'<tr><td>For</td><td class="r">'+monthLbl2(month)+' '+CFG.membership.plan.toLowerCase()+'</td></tr>'
+ +'<tr><td>Paid on</td><td class="r">'+fmtD(p.date)+'</td></tr>'
+ +'<tr><td>Method</td><td class="r">'+p.method+'</td></tr>'
+ +'<tr><td>Recorded by</td><td class="r">'+p.by+' at '+p.at+'</td></tr></table>'
+ +'<div class="tot"><span>'+(p.full?'Paid in full':'Part payment')+'</span><span>'+lkrM(p.amount)+'</span></div>'
+ +'<div class="f">Keep this receipt. If your access is ever refused for this month, show it at the desk. '
+ +'Issued from your own copy of the record on '+fmtD(todayISO())+'.</div></div></body></html>');
+ w.document.close();
+}
+/* dispute: send the member's OWN record, so nobody argues from memory */
+function disputePayment(){
+ const mem=DB.get('member'),ps=msPayments().slice(0,3);
+ const lines=ps.map(p=>monthLbl2(p.month)+': '+lkrM(p.amount)+' on '+fmtD(p.date)+', taken by '+p.by);
+ const txt='Hi, '+mem.name+' here. My app shows my membership paid until '
+  +(msPaidUntil()?fmtD(msPaidUntil()):'no payment recorded')+'. My last payments:\n'+lines.join('\n')
+  +'\nCould you check your side please?';
+ const ph=(CFG.gym.deskPhone||'').replace(/\D/g,'').replace(/^0/,'94');
+ if(!ph){toast('No front desk number saved');return;}
+ window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(txt),'_blank');
+ toast(I.check+' Your record is on its way to the front desk');
+}
+
+/* ════════════════════════════════════════════════════════════════════
    SECTION 10 - STATS
    ════════════════════════════════════════════════════════════════════ */
 let ST_WEEK=null,ST_MODE='day',ST_OPEN=null;
@@ -1307,6 +1431,20 @@ async function runSelfTest(){
   (function(){const opO=window.open;let u='';window.open=function(x){u=x||'';return null;};
    try{shareSession();}finally{window.open=opO;}
    ok('Hooks: share builds a wa.me text with the member\'s real day',u.indexOf('https://wa.me/?text=')===0&&decodeURIComponent(u).indexOf('Day '+DB.get('member').day)>-1,u.slice(0,50));})();
+  /* MEMBERSHIP: the member's own money record (Scout gap 1+3) */
+  go('membership');
+  ok('Membership: the tab renders the member\'s own record',document.getElementById('msHistory').innerHTML.indexOf('taken by')>-1);
+  ok('Membership: paid-until comes from the last FULLY paid month',(function(){const lf=msLastFull();const u=msPaidUntil();return !!lf&&!!u&&u.slice(0,7)===lf.month;})(),msPaidUntil()||'none');
+  ok('Membership: a part payment never buys time',(function(){const part=msPayments().find(p=>!p.full);return !part||msPaidUntil()>part.month;})());
+  ok('Membership: balance never goes negative',msBalance()>=0,String(msBalance()));
+  ok('Membership: every payment names who took it and when',msPayments().every(p=>p.by&&p.at&&p.method));
+  (function(){const opO=window.open;let opened=null;window.open=function(){opened={document:{write:function(){},close:function(){}}};return opened;};
+   try{receiptFor(msPayments()[0].month);}finally{window.open=opO;}
+   ok('Membership: a receipt opens for a real payment',!!opened);})();
+  (function(){const opO=window.open;let u='';window.open=function(x){u=x||'';return null;};
+   try{disputePayment();}finally{window.open=opO;}
+   const d=decodeURIComponent(u);
+   ok('Membership: dispute sends the member\'s own record to the desk',u.indexOf('https://wa.me/94')===0&&d.indexOf('taken by')>-1&&d.indexOf(DB.get('member').name)>-1,u.slice(0,46));})();
   /* EDIT: goal, swap, sets */
   go('today');
   const m0=DB.get('member'),gw0=m0.goalWeight,gd0=m0.goalDate;
