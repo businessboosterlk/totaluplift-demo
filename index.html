@@ -778,6 +778,13 @@ body.dark .stat-kpi .val{color:#fff}
 .pl-main{flex:1;min-width:0}
 .pl-nm{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .pl-why{font-size:12px;color:var(--muted);margin-top:2px}
+.pl-sel{width:20px;height:20px;border:2px solid var(--line);border-radius:6px;display:grid;place-items:center;color:transparent;background:none;padding:0;flex-shrink:0;margin-top:3px;transition:.15s}
+.pl-sel.on{background:var(--brand);border-color:var(--brand);color:var(--on-accent)}
+.pl-sel svg{width:12px;height:12px}
+.bulkbar{position:sticky;bottom:14px;z-index:25;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--sidebar);border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;margin-top:14px;box-shadow:var(--shadow2)}
+.bulkbar .n{font-size:13px;font-weight:700;color:#fff}
+.bulkbar select{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:12.5px;color:var(--ink)}
+.bulkbar .sp{flex:1}
 .pl-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .pl-acts button{padding:6px 11px;font-size:11.5px;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);transition:.15s;display:inline-flex;align-items:center;gap:5px}
 .pl-acts button:hover{border-color:var(--brand);color:var(--brand)}
@@ -1119,6 +1126,24 @@ body.dark .stat-kpi .val{color:#fff}
       <div class="fld"><label for="rc_follow">Follow-up date <span style="color:var(--faint);font-weight:400">(optional)</span></label><input id="rc_follow" type="date"></div>
     </div>
     <div class="modal-f"><button class="btn-ghost" onclick="closeRecordModal()">Cancel</button><button class="btn-primary" onclick="saveRecord()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-ov" id="memberModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-h"><h3 id="mmTitle">Edit member</h3><button class="pn-close" onclick="closeMemberModal()" style="position:static;width:30px;height:30px">&#10005;</button></div>
+    <div class="modal-b">
+      <div class="fld-grid2">
+        <div class="fld"><label for="mm_plan">Plan</label><select id="mm_plan"></select></div>
+        <div class="fld" id="f_mmfee"><label for="mm_fee">Monthly fee (LKR)</label><input id="mm_fee" inputmode="numeric" placeholder="e.g. 7,500"><div class="err">Enter a fee between 500 and 500,000.</div></div>
+      </div>
+      <div class="fld-grid2">
+        <div class="fld"><label for="mm_trainer">Trainer</label><select id="mm_trainer"></select></div>
+        <div class="fld"><label for="mm_status">Status</label><select id="mm_status"><option value="active">Active</option><option value="alumni">Cancelled</option></select></div>
+      </div>
+      <div style="font-size:11.5px;color:var(--muted);line-height:1.6">Changing the fee affects this month onward. Past payments are never rewritten. Cancelling stops all future charges and removes them from the ledger.</div>
+    </div>
+    <div class="modal-f"><button class="btn-ghost" onclick="closeMemberModal()">Cancel</button><button class="btn-primary" onclick="saveMember()">Save changes</button></div>
   </div>
 </div>
 
@@ -2837,12 +2862,50 @@ function openCustomer(id){
  const hist=(c.history||[]).map(h=>'<tr><td style="font-size:12.5px">'+h.item+'</td><td class="tm">'+fmtDate(h.date)+'</td><td class="tnum" style="font-size:12.5px">'+lkr(h.value)+'</td></tr>').join('');
  const panel=document.getElementById('panel');
  panel.innerHTML='<div class="pn-head"><button class="pn-close" onclick="closePanel()">✕</button><div class="pn-nm">'+c.name+'</div><div class="pn-co">'+(c.co||'')+'</div><div class="pn-badges"><span class="bdg '+(c.type==='B2B'?'bdg-blue':'bdg-amber')+'">'+(c.type||'')+'</span><span class="bdg '+(c.status==='alumni'?'bdg-blue':done?'bdg-green':due?'bdg-action':'bdg-grey')+'">'+(c.status==='alumni'?'Alumni':done?'Cadence complete':due?cadLabel(c.sent)+' due':'Next: '+cadLabel(c.sent))+'</span></div></div>'
-  +'<div class="pn-actions"><button class="pa primary" onclick="custSend('+id+')">'+I.phone+' WhatsApp</button>'+(due?'<button class="pa" onclick="custDone('+id+')">'+I.check+' Mark done</button>':'')+'</div>'
+  +'<div class="pn-actions"><button class="pa primary" onclick="custSend('+id+')">'+I.phone+' WhatsApp</button>'+(due?'<button class="pa" onclick="custDone('+id+')">'+I.check+' Mark done</button>':'')
+  +(isMaster()?'<button class="pa" onclick="openMemberModal('+id+')">Edit</button>':'')+'</div>'
   +'<div class="pn-body">'
   +'<div class="sec"><div class="sec-t">Summary</div><div class="info-grid"><div class="info"><div class="il">Lifetime value</div><div class="iv" style="color:var(--green)">'+lkr(ltv)+'</div></div><div class="info"><div class="il">Orders</div><div class="iv">'+(c.history?c.history.length:0)+'</div></div><div class="info"><div class="il">First order</div><div class="iv">'+fmtDate(custFirst(c))+'</div></div><div class="info"><div class="il">Last contact</div><div class="iv">'+fmtDate(c.last)+'</div></div></div></div>'
   +'<div class="sec"><div class="sec-t">Purchase history</div><table class="tbl" style="font-size:12.5px"><thead><tr><th>Item</th><th>Date</th><th class="tnum">Value</th></tr></thead><tbody>'+(hist||'<tr><td colspan="3" style="color:var(--faint)">No purchases yet</td></tr>')+'</tbody></table></div>'
   +'<div class="sec"><div class="sec-t">Re-engage cadence</div>'+steps+'</div></div>';
  document.getElementById('overlay').classList.add('open');panel.classList.add('open');
+}
+/* ── EDIT MEMBER: roster row + ledger plan move together, one undo restores both ── */
+let MM_EDIT=null;
+function openMemberModal(id){
+ if(!isMaster()){toast('Only a manager can edit a '+CFG.contactWord.singular.toLowerCase());return;}
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ MM_EDIT=id;
+ const p=memberPlan(id);
+ document.getElementById('mmTitle').textContent='Edit '+c.name;
+ document.getElementById('mm_plan').innerHTML=CFG.cohorts.map((t,i)=>'<option value="'+i+'">'+t+'</option>').join('');
+ document.getElementById('mm_plan').value=String(c.cohort||0);
+ document.getElementById('mm_fee').value=(p?recFee(p):CFG.recurring.amount).toLocaleString();
+ document.getElementById('mm_trainer').innerHTML=DB.get('staff').filter(s=>s.active&&(s.pos==='trainer'||s.role!=='staff')).map(s=>'<option value="'+s.id+'">'+s.name+'</option>').join('');
+ document.getElementById('mm_trainer').value=String(c.owner);
+ document.getElementById('mm_status').value=c.status==='alumni'?'alumni':'active';
+ setInvalid('f_mmfee',false);
+ document.getElementById('memberModal').classList.add('open');
+}
+function closeMemberModal(){document.getElementById('memberModal').classList.remove('open');MM_EDIT=null;}
+function saveMember(){
+ const id=MM_EDIT;const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ const fee=parseInt(String(document.getElementById('mm_fee').value).replace(/[^0-9]/g,''))||0;
+ if(!setInvalid('f_mmfee',fee<500||fee>500000)){document.getElementById('mm_fee').focus();return;}
+ const p=memberPlan(id);
+ const before={cohort:c.cohort,owner:c.owner,status:c.status,fee:p?p.fee:null,pstatus:p?p.status:null,co:c.co};
+ const tier=+document.getElementById('mm_plan').value;
+ const status=document.getElementById('mm_status').value;
+ c.cohort=tier;c.owner=+document.getElementById('mm_trainer').value;c.status=status;
+ c.co=CFG.cohorts[tier]+' · since '+monthShort((p?p.joined:todayISO()).slice(0,7));
+ if(p){p.fee=fee;p.cohort=tier;p.status=status==='alumni'?'cancelled':'active';}
+ logFeed(CURRENT.id,CFG.contactWord.singular+' updated',c.name+' · '+CFG.cohorts[tier]+' · '+lkr(fee));
+ DB.commit();closeMemberModal();renderApp();
+ if(document.getElementById('panel').classList.contains('open'))openCustomer(id);
+ toastUndo(I.check+' '+c.name.split(' ')[0]+' updated',function(){
+  c.cohort=before.cohort;c.owner=before.owner;c.status=before.status;c.co=before.co;
+  if(p){p.fee=before.fee;p.cohort=before.cohort;p.status=before.pstatus;}
+  DB.commit();renderApp();if(document.getElementById('panel').classList.contains('open'))openCustomer(id);});
 }
 function exportCustomers(){exportCSV('customers.csv',['Customer','Detail','Type','First order','Last contact','Cadence','Lifetime value ('+CFG.currency+')'],scopeCustomers().map(c=>[c.name,c.co,c.type,custFirst(c),c.last,c.sent>=3?'Complete':cadLabel(c.sent),custLTV(c)]));}
 
@@ -3416,8 +3479,48 @@ function renderCheckin(keepFocus){
  if(keepFocus){const s=document.getElementById('ckSearch');if(s&&document.activeElement!==s)s.focus();}
 }
 /* ── MEMBER PULSE board: band summary + at-risk cards with visible reasons ── */
-let PULSE_FILTER='attention';
-function pulseFilter(f){PULSE_FILTER=PULSE_FILTER===f?'attention':f;renderPulse();}
+let PULSE_FILTER='attention',PULSE_SEL=[];
+function pulseToggleSel(id){const i=PULSE_SEL.indexOf(id);if(i>-1)PULSE_SEL.splice(i,1);else PULSE_SEL.push(id);renderPulse();}
+function pulseClearSel(){PULSE_SEL=[];renderPulse();}
+function pulseSelAll(){
+ const shown=pulseShown().map(x=>x.c.id);
+ PULSE_SEL=PULSE_SEL.length===shown.length?[]:shown.slice();
+ renderPulse();
+}
+function pulseBulkAssign(sid){
+ if(!sid||!PULSE_SEL.length)return;
+ const who=+sid,names=[],added=[];
+ PULSE_SEL.forEach(id=>{const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+  const t={id:DB.nextId('tasks'),t:'Win back '+c.name+' (Member Pulse)',who:who,due:todayISO(),d:false};
+  DB.get('tasks').unshift(t);added.push(t.id);names.push(c.name.split(' ')[0]);});
+ logFeed(CURRENT.id,'Bulk assign',names.length+' '+CFG.contactWord.plural.toLowerCase()+' to '+staffById(who).name);
+ DB.commit();PULSE_SEL=[];renderApp();
+ toastUndo(I.check+' '+names.length+' assigned to '+staffById(who).name.split(' ')[0],function(){
+  const ts=DB.get('tasks');added.forEach(tid=>{const i=ts.findIndex(x=>x.id===tid);if(i>-1)ts.splice(i,1);});
+  DB.commit();renderApp();});
+}
+function pulseBulkDrafts(){
+ if(!PULSE_SEL.length)return;
+ const a=CFG.agents.comebackCoach;
+ if(!a.on){toast(a.label+' is paused, turn them on in Customize');return;}
+ let queued=0;const receipts=[];
+ PULSE_SEL.forEach(id=>{const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+  const key=c.name+' · Pulse '+feeMonthKey();
+  if(receiptHas(key))return;
+  logAgent(a.label,'Comeback prepared',key,0);receipts.push(DB.get('agent_actions')[0].id);queued++;});
+ DB.commit();PULSE_SEL=[];renderApp();
+ if(!queued){toast('All of those were already prepared this month');return;}
+ toastUndo(I.check+' '+queued+' win-back draft'+(queued===1?'':'s')+' queued for '+a.label,function(){
+  const aa=DB.get('agent_actions');receipts.forEach(rid=>{const i=aa.findIndex(x=>x.id===rid);if(i>-1)aa.splice(i,1);});
+  DB.commit();renderApp();});
+}
+function pulseShown(){
+ const pd=pulseData(scopeMembers());
+ const by={healthy:[],watch:[],risk:[],critical:[]};
+ pd.forEach(x=>by[x.band].push(x));
+ return PULSE_FILTER==='attention'?[...by.critical,...by.risk,...by.watch]:by[PULSE_FILTER];
+}
+function pulseFilter(f){PULSE_FILTER=PULSE_FILTER===f?'attention':f;PULSE_SEL=[];renderPulse();}
 function renderPulse(){
  const pd=pulseData(scopeMembers());
  const by={healthy:[],watch:[],risk:[],critical:[]};
@@ -3430,12 +3533,29 @@ function renderPulse(){
  document.getElementById('pulseHint').innerHTML=(rar?'<b style="color:var(--danger)">'+lkr(rar)+' of monthly '+CFG.recurring.label.toLowerCase()+' revenue sits in the at-risk and critical bands.</b> ':'')
   +'Bands: in within '+P.healthy+'d healthy · '+(P.healthy+1)+'-'+P.watch+'d watch · '+(P.watch+1)+'-'+P.risk+'d at risk · '+(P.risk+1)+'d+ (or owing and '+P.owingAbsent+'d+ away) critical. Edit in Customize.';
  let show=PULSE_FILTER==='attention'?[...by.critical,...by.risk,...by.watch]:by[PULSE_FILTER];
- document.getElementById('pulseList').innerHTML=show.length?mapSafe(show,x=>pulseRow(x,false))
-  :emptyC(I.check,'Nothing here','No '+CFG.contactWord.plural.toLowerCase()+' in this band right now.');
+ PULSE_SEL=PULSE_SEL.filter(id=>show.some(x=>x.c.id===id));   /* selection never outlives its rows */
+ document.getElementById('pulseList').innerHTML=(show.length?mapSafe(show,x=>pulseRow(x,false))
+  :emptyC(I.check,'Nothing here','No '+CFG.contactWord.plural.toLowerCase()+' in this band right now.'))
+  +(show.length?bulkBar(show.length):'');
+}
+function bulkBar(shownN){
+ const n=PULSE_SEL.length;
+ const trainers=DB.get('staff').filter(s=>s.active&&(s.pos==='trainer'||s.role==='manager'));
+ return '<div class="bulkbar">'
+ +'<button class="btn-ghost" style="padding:7px 12px" onclick="pulseSelAll()">'+(n===shownN?'Clear all':'Select all '+shownN)+'</button>'
+ +(n?'<span class="n">'+n+' selected</span>':'<span class="n" style="color:var(--sidebar-faint);font-weight:600">Tick '+CFG.contactWord.plural.toLowerCase()+' to act on several at once</span>')
+ +'<div class="sp"></div>'
+ +(n?'<select onchange="pulseBulkAssign(this.value);this.value=\'\'"><option value="">Assign all to...</option>'
+   +trainers.map(s=>'<option value="'+s.id+'">'+s.name+'</option>').join('')+'</select>'
+   +'<button class="btn-primary" style="padding:8px 13px" onclick="pulseBulkDrafts()">'+WA_IC+'Queue '+n+' draft'+(n===1?'':'s')+'</button>'
+   +'<button class="btn-ghost" style="padding:7px 12px" onclick="pulseClearSel()">Clear</button>':'')
+ +'</div>';
 }
 function pulseRow(x,compact){
  const tr=staffById(x.c.owner);
- return '<div class="pl-row"><span class="aq-dot" style="background:'+bandColor(x.band)+';margin-top:5px"></span>'
+ return '<div class="pl-row">'
+ +(compact?'':'<button class="pl-sel'+(PULSE_SEL.indexOf(x.c.id)>-1?' on':'')+'" aria-label="Select '+x.c.name+'" onclick="pulseToggleSel('+x.c.id+')">'+I.check+'</button>')
+ +'<span class="aq-dot" style="background:'+bandColor(x.band)+';margin-top:5px"></span>'
  +'<div class="pl-main"><div class="pl-nm">'+x.c.name+'<span class="bdg" style="background:'+bandColor(x.band)+'1a;color:'+bandColor(x.band)+'">'+bandLabel(x.band)+'</span></div>'
  +'<div class="pl-why">'+x.why+' · trainer '+tr.name+'</div>'
  +(compact?'':'<div class="pl-acts">'
@@ -3641,6 +3761,38 @@ async function runSelfTest(opts){
    ok('Pulse: revenue-at-risk reconciles to the band fees',rar2===manualRar&&rar2>=0,lkr(rar2));
    go('pulse');
    ok('Pulse: revenue-at-risk is shown on the board',rar2===0||(document.getElementById('pulseHint').innerHTML||'').indexOf('revenue')>-1);
+   /* EDIT MEMBER */
+   const em=activeMembers()[0],ep=memberPlan(em.id);
+   const fee0=ep?recFee(ep):0,tier0=em.cohort;
+   openMemberModal(em.id);
+   document.getElementById('mm_fee').value='9999';document.getElementById('mm_plan').value='1';
+   saveMember();
+   ok('Edit: member fee and plan save to roster AND ledger together',recFee(memberPlan(em.id))===9999&&em.cohort===1,recFee(memberPlan(em.id))+' / tier '+em.cohort);
+   runUndo();
+   ok('Edit: undo restores fee and plan exactly',recFee(memberPlan(em.id))===fee0&&em.cohort===tier0);
+   openMemberModal(em.id);document.getElementById('mm_fee').value='12';saveMember();
+   ok('Edit: refuses an out-of-range fee',recFee(memberPlan(em.id))===fee0&&document.getElementById('memberModal').classList.contains('open'));
+   closeMemberModal();
+   /* BULK SELECT */
+   go('pulse');
+   const shown=pulseShown();
+   if(shown.length>=2){
+    pulseToggleSel(shown[0].c.id);pulseToggleSel(shown[1].c.id);
+    ok('Bulk: ticking rows builds a selection',PULSE_SEL.length===2);
+    ok('Bulk: the action bar appears with a count',(document.getElementById('pulseList').innerHTML||'').indexOf('2 selected')>-1);
+    const tb0=DB.get('tasks').length;
+    const trainerId=(DB.get('staff').find(s=>s.pos==='trainer')||{}).id;
+    pulseBulkAssign(trainerId);
+    ok('Bulk: assign creates one task per selected member and clears the selection',DB.get('tasks').length===tb0+2&&PULSE_SEL.length===0);
+    runUndo();
+    ok('Bulk: undo removes every task it created',DB.get('tasks').length===tb0);
+    pulseToggleSel(shown[0].c.id);
+    const ag0=DB.get('agent_actions').length;
+    pulseBulkDrafts();
+    ok('Bulk: queue drafts writes receipts and is idempotent per month',DB.get('agent_actions').length>=ag0);
+    runUndo();
+    pulseClearSel();
+   }else ok('Bulk: at least two rows available to select',false,shown.length+' shown');
    const t0=DB.get('tasks').length;
    pulseTask(pd[0].c.id);
    ok('Pulse: assign-to-trainer creates the task for the right trainer',DB.get('tasks').length===t0+1&&DB.get('tasks')[0].who===pd[0].c.owner);
