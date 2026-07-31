@@ -536,7 +536,9 @@ const CFG={
  waTrainer:'Hi {trainer}, {name} here from {gym}. Day {day} of my plan. Today: {today}. Score {score}. Question: ',
  data:{mode:'demo',key:'bbgymmember_v1'},
  /* DEMO FURNITURE - the staff-view jump exists only while mode is 'demo' */
- demo:{asOf:'2026-07-30',staffAppUrl:'../'},
+ /* ONE CLOCK across both surfaces: they are two views of one gym, so a
+    different demo date on each would silently drop every synced event. */
+ demo:{asOf:'2026-07-29',staffAppUrl:'../'},
 };
 
 /* ════════════════════════════════════════════════════════════════════
@@ -683,6 +685,42 @@ function seedData(){
           {t:'Session moved',m:'Kasun moved Friday push to 6:30 PM.',when:'Yesterday'}],
  };
 }
+
+
+/* ════════════════════════════════════════════════════════════════════
+   THE BRIDGE - demo-only, same-origin channel so the member, the trainer
+   and the gym read ONE record. Live builds swap this for the shared
+   Supabase tables; the shape is deliberately the same.
+   Every access is guarded: no localStorage, corrupt JSON or a hostile
+   value must never break either surface.
+   ════════════════════════════════════════════════════════════════════ */
+const BRIDGE_KEY='tu_demo_bridge_v1';
+function bridgeOn(){return CFG.data.mode==='demo';}
+function bridgeRead(){
+ if(!bridgeOn())return {checkins:[],summary:null,notes:[]};
+ let raw=null;
+ try{raw=localStorage.getItem(BRIDGE_KEY);}catch(e){return {checkins:[],summary:null,notes:[]};}
+ if(!raw)return {checkins:[],summary:null,notes:[]};
+ let d;try{d=JSON.parse(raw);}catch(e){return {checkins:[],summary:null,notes:[]};}
+ if(!d||typeof d!=='object')return {checkins:[],summary:null,notes:[]};
+ const today=todayISO();
+ /* today-scoped: yesterday's demo never dirties today's */
+ const ck=Array.isArray(d.checkins)?d.checkins.filter(x=>x&&x.date===today):[];
+ const nt=Array.isArray(d.notes)?d.notes.filter(x=>x&&x.date===today):[];
+ const sm=(d.summary&&d.summary.date===today)?d.summary:null;
+ return {checkins:ck,summary:sm,notes:nt};
+}
+function bridgeWrite(patch){
+ if(!bridgeOn())return false;
+ try{
+  const cur=bridgeRead();
+  const next={checkins:cur.checkins,summary:cur.summary,notes:cur.notes};
+  Object.keys(patch||{}).forEach(k=>{next[k]=patch[k];});
+  localStorage.setItem(BRIDGE_KEY,JSON.stringify(next));
+  return true;
+ }catch(e){return false;}
+}
+function bridgeClear(){try{localStorage.removeItem(BRIDGE_KEY);}catch(e){}}
 
 /* ════════════════════════════════════════════════════════════════════
    SECTION 5 - THE UPLIFT SCORE (deterministic, rules visible on tap)
@@ -868,6 +906,18 @@ function renderToday(){
   '<div class="tile"><div class="h">'+I.steps+'</div><div class="v">'+d.steps.toLocaleString()+'</div><div class="l">'+Math.round(d.steps/CFG.score.stepGoal*100)+'% of '+(CFG.score.stepGoal/1000)+'k</div></div>'
   +'<div class="tile"><div class="h">'+I.scale+(dw?'<span class="dl '+(dw<0?'dn':'up')+'">'+(dw>0?'+':'')+dw.toFixed(1)+'</span>':'')+'</div><div class="v">'+d.weight.toFixed(1)+'<span class="u"> kg</span></div><div class="l">Weight</div></div>'
   +'<div class="tile"><div class="h">'+I.heart+'</div><div class="v">'+(56+Math.round(d.sleep>7?0:2))+'<span class="u"> bpm</span></div><div class="l">Resting HR</div></div>';
+ /* the trainer's note back: the other half of "everyone synced" */
+ const tn=trainerNote();
+ const askEl=document.getElementById('tdAsk');
+ const oldNote=document.getElementById('tdNote');if(oldNote)oldNote.remove();
+ if(tn){
+  const n=document.createElement('div');n.id='tdNote';n.className='card pad';
+  n.style.cssText='margin-top:14px;border-color:var(--brand)';
+  n.innerHTML='<div style="font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand);font-weight:700">Note from '+tn.from.split(' ')[0]+'</div>'
+   +'<div style="font-size:14px;margin-top:6px;line-height:1.5">'+String(tn.text).replace(/</g,'&lt;')+'</div>'
+   +'<div style="font-size:11px;color:var(--faint);margin-top:6px">'+tn.at+'</div>';
+  askEl.parentNode.insertBefore(n,askEl);
+ }
  /* ask your trainer: a HUMAN, not a bot */
  document.getElementById('tdAsk').innerHTML=
   '<div class="av">'+m.trainer.split(' ').map(x=>x[0]).slice(0,2).join('')+'</div>'
@@ -1135,6 +1185,23 @@ function setTick(ei,si){
  toastUndo(s.done?I.check+' Set '+(si+1)+' logged':'Set '+(si+1)+' cleared,',()=>{Object.assign(s,before);DB.commit();rerender();});
 }
 /* THE LOOP: finishing here creates the check-in the staff Member Pulse reads */
+function nowClock(){let h=AS_OF.getHours();const mm=String(AS_OF.getMinutes()).padStart(2,'0');const ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+mm+' '+ap;}
+function publishToGym(){
+ /* what the gym and the trainer see: a summary, never the member's raw log */
+ const d=todayRow(),mem=DB.get('member');
+ const ex=DB.get('exercises').find(e=>e.sets.some(s=>s.done));
+ const st=ex&&ex.sets.filter(s=>s.done).slice(-1)[0];
+ bridgeWrite({
+  checkins:[{name:mem.name,date:todayISO(),t:nowClock()}],
+  summary:{name:mem.name,date:todayISO(),session:d.session?DB.get('sessionName'):null,
+   streak:streakDays(),score:scoreTotal(d),weight:d.weight,
+   lastSets:ex&&st?ex.n+' '+st.kg+'kg x '+st.reps:null}
+ });
+}
+function trainerNote(){
+ const notes=bridgeRead().notes.filter(n=>n.to===DB.get('member').name);
+ return notes.length?notes[notes.length-1]:null;
+}
 function finishSession(){
  const d=todayRow();
  if(d.session){toast('Already logged today');return;}
@@ -1142,6 +1209,7 @@ function finishSession(){
  if(!dn){toast('Log at least one set first');return;}
  d.session=d.planned||'upper';
  d.checkin={at:AS_OF.getHours()+':'+String(AS_OF.getMinutes()).padStart(2,'0'),via:'member app'};
+ publishToGym();
  DB.commit();rerender();
  toastUndo(I.check+' '+DB.get('sessionName')+' logged. Checked in at the gym.',()=>{delete d.session;delete d.checkin;DB.commit();rerender();});
 }
@@ -1155,7 +1223,7 @@ function shareSession(){
 function unfinishSession(){
  const d=todayRow();if(!d.session)return;
  const was=d.session,ci=d.checkin;
- delete d.session;delete d.checkin;DB.commit();rerender();
+ delete d.session;delete d.checkin;publishToGym();DB.commit();rerender();
  toastUndo('Session unlogged',()=>{d.session=was;d.checkin=ci;DB.commit();rerender();});
 }
 
@@ -1431,6 +1499,27 @@ async function runSelfTest(){
   (function(){const opO=window.open;let u='';window.open=function(x){u=x||'';return null;};
    try{shareSession();}finally{window.open=opO;}
    ok('Hooks: share builds a wa.me text with the member\'s real day',u.indexOf('https://wa.me/?text=')===0&&decodeURIComponent(u).indexOf('Day '+DB.get('member').day)>-1,u.slice(0,50));})();
+  /* SYNC: the member publishes to the gym, the trainer answers */
+  bridgeClear();
+  (function(){
+   const d=todayRow(),was=d.session;
+   if(was){delete d.session;}
+   /* an earlier check already completed this set, so toggling would UNdo it */
+   const e0=DB.get('exercises')[0];e0.sets[0].kg=70;e0.sets[0].reps=8;e0.sets[0].done=true;
+   finishSession();
+   const b=bridgeRead();
+   ok('Sync: finishing a session publishes a check-in the gym can read',b.checkins.some(x=>x.name===DB.get('member').name&&x.date===todayISO()));
+   ok('Sync: it publishes a summary, not the member\'s raw log',!!b.summary&&b.summary.streak>=0&&b.summary.score>=0&&!b.summary.meals,JSON.stringify(b.summary||{}).slice(0,80));
+   runUndo();
+  })();
+  bridgeWrite({notes:[{to:DB.get('member').name,from:'Kasun Bandara',text:'Great session, add 2.5kg next week',date:todayISO(),at:'6:20 PM'}]});
+  go('today');
+  ok('Sync: a note from the trainer shows on Today',!!document.getElementById('tdNote')&&(document.getElementById('tdNote').textContent||'').indexOf('2.5kg')>-1);
+  (function(){try{localStorage.setItem(BRIDGE_KEY,'not json at all');}catch(e){}
+   let ok2=true;try{go('today');}catch(e){ok2=false;}
+   ok('Sync: a corrupt bridge cannot break the member app',ok2&&bridgeRead().notes.length===0);})();
+  bridgeClear();go('today');
+  ok('Sync: with no bridge data the app renders normally',!document.getElementById('tdNote'));
   /* MEMBERSHIP: the member's own money record (Scout gap 1+3) */
   go('membership');
   ok('Membership: the tab renders the member\'s own record',document.getElementById('msHistory').innerHTML.indexOf('taken by')>-1);

@@ -1429,6 +1429,7 @@ function seedData(){
   else if(gr<0.82)gap=8+Math.floor(rnd()*6);                      /* watch 8-13 */
   else if(gr<0.90)gap=14+Math.floor(rnd()*7);                     /* at risk 14-20 */
   else gap=Math.floor(rnd()*7);
+  if(i===4){gap=2;}          /* the linked demo member trains regularly, see below */
   gapOf[i]=gap;
   const perWeek=1+Math.floor(rnd()*4);                            /* 1-4 visits/week */
   if(!cancelled){
@@ -1445,6 +1446,15 @@ function seedData(){
   const pt=tier===2;
   customers.push({id:i,name:nm,co:CFG.cohorts[tier]+(pt?'':' plan')+' · since '+monthShort(joined.slice(0,7)),type:'B2C',phone:phone,email:'',owner:trainer,cohort:tier,sent:backM>=4?3:(backM>=2?2:Math.floor(rnd()*2)),last:isoShift(Math.min(gap===999?30:gap,45)),status:cancelled?'alumni':'active',history:[]});
   plans.push({id:i,name:nm,phone:phone,cohort:tier,fee:TIER_FEE[tier],joined:joined,status:cancelled?'cancelled':'active'});
+ }
+ /* THE LINKED MEMBER: this one person also has the member app, so both surfaces
+    must agree about them exactly. Pinned by index, never left to the PRNG. */
+ if(customers[3]){
+  customers[3].name='Ravindu Dissanayake';customers[3].owner=3;customers[3].cohort=1;
+  customers[3].co='Premium plan · also on the member app';
+  customers[3].status='active';   /* pin the ROSTER status too, or the PRNG can cancel him */
+  customers[3].sent=1;
+  plans[3].name='Ravindu Dissanayake';plans[3].cohort=1;plans[3].fee=12500;plans[3].status='active';
  }
  /* ledger: rows ONLY for active plans, ONLY from the join month; the current
     month runs ~62% collected so the who-owes demo is alive */
@@ -2613,7 +2623,7 @@ function stuSystem(){
  +stuCard('Resets','both ask before doing anything',
   '<div style="display:flex;gap:10px;flex-wrap:wrap;padding:12px 0">'
   +'<button class="btn-ghost" onclick="stuResetAll()">Reset ALL customizations</button>'
-  +'<button class="btn-danger" onclick="if(confirm(\'Reset all in-session edits back to the seeded demo data? Your customizations reset too.\')){DB.reset();applyConfig();renderApp();toast(\'Demo data reset\');}">Reset demo data</button></div>','')
+  +'<button class="btn-danger" onclick="if(confirm(\'Reset all in-session edits back to the seeded demo data? Your customizations reset too.\')){bridgeClear();DB.reset();applyConfig();renderApp();toast(\'Demo data reset\');}">Reset demo data</button></div>','')
  +(CFG.data.mode==='demo'?stuCard('Self-test (dev)','exercises every module, role and safety rail, then restores everything - must be ALL GREEN before any handover',
   '<div style="display:flex;gap:10px;flex-wrap:wrap;padding:12px 0;align-items:center">'
   +'<button class="btn-primary" onclick="runSelfTest({all:true})">Run self-test</button>'
@@ -2867,7 +2877,9 @@ function openCustomer(id){
   +'<div class="pn-body">'
   +'<div class="sec"><div class="sec-t">Summary</div><div class="info-grid"><div class="info"><div class="il">Lifetime value</div><div class="iv" style="color:var(--green)">'+lkr(ltv)+'</div></div><div class="info"><div class="il">Orders</div><div class="iv">'+(c.history?c.history.length:0)+'</div></div><div class="info"><div class="il">First order</div><div class="iv">'+fmtDate(custFirst(c))+'</div></div><div class="info"><div class="il">Last contact</div><div class="iv">'+fmtDate(c.last)+'</div></div></div></div>'
   +'<div class="sec"><div class="sec-t">Purchase history</div><table class="tbl" style="font-size:12.5px"><thead><tr><th>Item</th><th>Date</th><th class="tnum">Value</th></tr></thead><tbody>'+(hist||'<tr><td colspan="3" style="color:var(--faint)">No purchases yet</td></tr>')+'</tbody></table></div>'
-  +'<div class="sec"><div class="sec-t">Re-engage cadence</div>'+steps+'</div></div>';
+  +'<div class="sec"><div class="sec-t">Re-engage cadence</div>'+steps+'</div>'
+  +syncSection(c)
+  +'</div>';
  document.getElementById('overlay').classList.add('open');panel.classList.add('open');
 }
 /* ── EDIT MEMBER: roster row + ledger plan move together, one undo restores both ── */
@@ -2906,6 +2918,49 @@ function saveMember(){
   c.cohort=before.cohort;c.owner=before.owner;c.status=before.status;c.co=before.co;
   if(p){p.fee=before.fee;p.cohort=before.cohort;p.status=before.pstatus;}
   DB.commit();renderApp();if(document.getElementById('panel').classList.contains('open'))openCustomer(id);});
+}
+/* ── LIVE FROM THEIR APP: the trainer sees what the member logged, and can
+   send one note back. This is the whole "everyone synced" promise in one card. ── */
+function syncSection(c){
+ const sm=memberAppSummary(c.name);
+ const notes=bridgeRead().notes.filter(n=>n.to===c.name);
+ if(!sm&&!notes.length&&!bridgeOn())return '';
+ const head='<div class="sec"><div class="sec-t">Live from their app</div>';
+ if(!sm)return head+'<div style="font-size:12.5px;color:var(--muted);line-height:1.6">'
+  +c.name.split(' ')[0]+' has the member app but has not opened it today. '
+  +'Anything they log there shows up here the moment they do.</div>'+noteBox(c)+'</div>';
+ const row=(l,v)=>'<div class="info"><div class="il">'+l+'</div><div class="iv">'+v+'</div></div>';
+ return head
+  +'<div class="info-grid">'
+  +row('Today',sm.session?sm.session+' done':'Not trained yet')
+  +row('Streak',sm.streak+' day'+(sm.streak===1?'':'s'))
+  +row('Their score',sm.score+' / 100')
+  +row('Weight',sm.weight?sm.weight.toFixed(1)+' kg':'not logged')
+  +'</div>'
+  +(sm.lastSets?'<div style="font-size:12px;color:var(--muted);margin-top:10px">Last logged: '+sm.lastSets+'</div>':'')
+  +noteBox(c)+'</div>';
+}
+function noteBox(c){
+ const notes=bridgeRead().notes.filter(n=>n.to===c.name);
+ return '<div style="margin-top:13px">'
+ +(notes.length?'<div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">Your last note: "'+notes[notes.length-1].text+'"</div>':'')
+ +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+ +'<input id="tnNote" placeholder="Send '+c.name.split(' ')[0]+' a note in their app" style="flex:1;min-width:160px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--ink)">'
+ +'<button class="btn-primary" style="padding:9px 14px" onclick="sendNote('+c.id+')">Send</button></div></div>';
+}
+function sendNote(id){
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ const el=document.getElementById('tnNote');const text=(el&&el.value||'').trim();
+ if(!text){toast('Write a note first');return;}
+ if(text.length>200){toast('Keep it under 200 characters');return;}
+ const cur=bridgeRead().notes;
+ const note={to:c.name,from:CURRENT.name,text:text,date:todayISO(),at:feedStamp()};
+ const ok=bridgeWrite({notes:cur.concat([note])});
+ if(!ok){toast('Notes need the demo bridge, which this browser has blocked');return;}
+ logFeed(CURRENT.id,'Note sent',c.name+' · "'+text.slice(0,40)+'"');DB.commit();
+ openCustomer(id);
+ toastUndo(I.check+' Note sent to '+c.name.split(' ')[0]+'\'s app',function(){
+  bridgeWrite({notes:cur});openCustomer(id);});
 }
 function exportCustomers(){exportCSV('customers.csv',['Customer','Detail','Type','First order','Last contact','Cadence','Lifetime value ('+CFG.currency+')'],scopeCustomers().map(c=>[c.name,c.co,c.type,custFirst(c),c.last,c.sent>=3?'Complete':cadLabel(c.sent),custLTV(c)]));}
 
@@ -3411,6 +3466,42 @@ function downloadImportTemplate(){
 }
 
 
+
+/* ════════════════════════════════════════════════════════════════════
+   THE BRIDGE - demo-only, same-origin channel so the member, the trainer
+   and the gym read ONE record. Live builds swap this for the shared
+   Supabase tables; the shape is deliberately the same.
+   Every access is guarded: no localStorage, corrupt JSON or a hostile
+   value must never break either surface.
+   ════════════════════════════════════════════════════════════════════ */
+const BRIDGE_KEY='tu_demo_bridge_v1';
+function bridgeOn(){return CFG.data.mode==='demo';}
+function bridgeRead(){
+ if(!bridgeOn())return {checkins:[],summary:null,notes:[]};
+ let raw=null;
+ try{raw=localStorage.getItem(BRIDGE_KEY);}catch(e){return {checkins:[],summary:null,notes:[]};}
+ if(!raw)return {checkins:[],summary:null,notes:[]};
+ let d;try{d=JSON.parse(raw);}catch(e){return {checkins:[],summary:null,notes:[]};}
+ if(!d||typeof d!=='object')return {checkins:[],summary:null,notes:[]};
+ const today=todayISO();
+ /* today-scoped: yesterday's demo never dirties today's */
+ const ck=Array.isArray(d.checkins)?d.checkins.filter(x=>x&&x.date===today):[];
+ const nt=Array.isArray(d.notes)?d.notes.filter(x=>x&&x.date===today):[];
+ const sm=(d.summary&&d.summary.date===today)?d.summary:null;
+ return {checkins:ck,summary:sm,notes:nt};
+}
+function bridgeWrite(patch){
+ if(!bridgeOn())return false;
+ try{
+  const cur=bridgeRead();
+  const next={checkins:cur.checkins,summary:cur.summary,notes:cur.notes};
+  Object.keys(patch||{}).forEach(k=>{next[k]=patch[k];});
+  localStorage.setItem(BRIDGE_KEY,JSON.stringify(next));
+  return true;
+ }catch(e){return false;}
+}
+function bridgeClear(){try{localStorage.removeItem(BRIDGE_KEY);}catch(e){}}
+
 /* ════════════════════════════════════════════════════════════════════
    SECTION 9G - GYM CORE (archetype 4): CHECK-INS + MEMBER PULSE
    The check-in is the heartbeat: one front-desk tap feeds the Pulse
@@ -3422,7 +3513,16 @@ function downloadImportTemplate(){
    ════════════════════════════════════════════════════════════════════ */
 function activeMembers(){return (DB.get('customers')||[]).filter(c=>c.status!=='alumni');}
 function scopeMembers(){const all=activeMembers();return isMaster()?all:all.filter(c=>c.owner===CURRENT.id);}
-function todayCheckins(){return (DB.get('checkins')||[]).filter(k=>k.date===todayISO());}
+function todayCheckins(){
+ const own=(DB.get('checkins')||[]).filter(k=>k.date===todayISO());
+ /* check-ins the member logged in their own app land here too: one event, one record */
+ const viaApp=bridgeRead().checkins.map(x=>{
+  const c=(DB.get('customers')||[]).find(y=>y.name===x.name);
+  return c?{id:'app-'+c.id,m:c.id,date:x.date,t:x.t,via:'member app'}:null;
+ }).filter(Boolean).filter(x=>!own.some(o=>o.m===x.m));
+ return own.concat(viaApp);
+}
+function memberAppSummary(name){const sm=bridgeRead().summary;return (sm&&sm.name===name)?sm:null;}
 function memberPlan(id){return (DB.get('recurringPlans')||[]).find(p=>p.id===id);}
 function memberOwing(id){
  if(!CFG.modules.recurring)return false;
@@ -3440,7 +3540,8 @@ function bandLabel(b){return b==='healthy'?'Healthy':b==='watch'?'Watch':b==='ri
 /* pulseData: ONE pass over the check-in log, then a derived row per member.
    why = the visible reason ("Last visit 16 days ago · was 3x/week · Membership owing"). */
 function pulseData(list){
- const ck=DB.get('checkins')||[];const last={},cnt28={};
+ const ck=(DB.get('checkins')||[]).concat(todayCheckins().filter(k=>k.via==='member app'));
+ const last={},cnt28={};
  ck.forEach(k=>{if(!last[k.m]||k.date>last[k.m])last[k.m]=k.date;
   if(daysBetween(k.date,todayISO())<=28)cnt28[k.m]=(cnt28[k.m]||0)+1;});
  const P=CFG.pulse;
@@ -3817,6 +3918,29 @@ async function runSelfTest(opts){
     runUndo();
     pulseClearSel();
    }else ok('Bulk: at least two rows available to select',false,shown.length+' shown');
+   /* THE BRIDGE: one record across both surfaces */
+   const linked=DB.get('customers').find(x=>x.name==='Ravindu Dissanayake');
+   ok('Sync: the linked member exists and both surfaces agree on their trainer',!!linked&&staffById(linked.owner).name==='Kasun Bandara',linked?staffById(linked.owner).name:'missing');
+   if(linked){
+    bridgeClear();
+    const before=todayCheckins().length;
+    bridgeWrite({checkins:[{name:linked.name,date:todayISO(),t:'6:12 PM'}]});
+    ok('Sync: a check-in logged in the member app appears in the gym record',todayCheckins().length===before+1&&todayCheckins().some(k=>k.via==='member app'));
+    ok('Sync: it also moves their Pulse band',pulseData([linked])[0].days===0,'days since visit '+pulseData([linked])[0].days);
+    bridgeWrite({summary:{name:linked.name,date:todayISO(),session:'Upper Body',streak:12,score:64,weight:86.4,lastSets:'Bench 72kg x 9'}});
+    openCustomer(linked.id);
+    ok('Sync: the trainer sees what the member logged',(document.getElementById('panel').innerHTML||'').indexOf('Live from their app')>-1&&(document.getElementById('panel').innerHTML||'').indexOf('Bench 72kg')>-1);
+    const nb=document.getElementById('tnNote');if(nb)nb.value='Great session, add 2.5kg next week';
+    sendNote(linked.id);
+    ok('Sync: a trainer note reaches the bridge for the member app',bridgeRead().notes.some(n=>n.to===linked.name&&n.text.indexOf('2.5kg')>-1));
+    runUndo();
+    ok('Sync: undo removes the note',!bridgeRead().notes.length);
+    /* a corrupt bridge must never break the app */
+    try{localStorage.setItem(BRIDGE_KEY,'{not json');}catch(e){}
+    let survived=true;try{todayCheckins();go('pulse');}catch(e){survived=false;}
+    ok('Sync: a corrupt bridge degrades quietly, never breaks the app',survived&&bridgeRead().checkins.length===0);
+    bridgeClear();closePanel();
+   }
    const t0=DB.get('tasks').length;
    pulseTask(pd[0].c.id);
    ok('Pulse: assign-to-trainer creates the task for the right trainer',DB.get('tasks').length===t0+1&&DB.get('tasks')[0].who===pd[0].c.owner);
