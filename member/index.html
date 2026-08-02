@@ -274,6 +274,64 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .toast .un{background:var(--surface-3);border-radius:8px;padding:5px 11px;font-weight:800;font-size:12px;white-space:nowrap}
 .empty{text-align:center;padding:30px 16px;color:var(--faint);font-size:12.5px}
 .empty .t{font-size:13.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
+/* ── MOTION: arrival, ring draw, count-up. All reduced-motion safe. ── */
+@keyframes riseIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.page.on>*{animation:riseIn .38s var(--ease) backwards}
+.page.on>*:nth-child(1){animation-delay:.02s}
+.page.on>*:nth-child(2){animation-delay:.06s}
+.page.on>*:nth-child(3){animation-delay:.10s}
+.page.on>*:nth-child(4){animation-delay:.14s}
+.page.on>*:nth-child(5){animation-delay:.18s}
+.page.on>*:nth-child(n+6){animation-delay:.22s}
+@media(prefers-reduced-motion:reduce){.page.on>*{animation:none}}
+.ring svg circle.prog{transition:stroke-dashoffset 1.05s var(--ease)}
+.ring .v{font-variant-numeric:tabular-nums}
+
+/* ── REST TIMER: the most-used control in a gym ── */
+.restbar{position:fixed;left:0;right:0;bottom:78px;z-index:40;display:none;justify-content:center;padding:0 14px;pointer-events:none}
+.restbar.on{display:flex}
+@media(min-width:960px){.restbar{bottom:22px;left:86px}}
+.rest-in{pointer-events:auto;display:flex;align-items:center;gap:14px;background:color-mix(in srgb,var(--ink-deep) 96%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:var(--radius);padding:11px 15px;box-shadow:0 14px 40px rgba(0,0,0,.55);max-width:520px;width:100%}
+.rest-ring{position:relative;width:44px;height:44px;flex-shrink:0}
+.rest-ring .t{position:absolute;inset:0;display:grid;place-items:center;font-family:'Poppins',sans-serif;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.rest-x{flex:1;min-width:0}
+.rest-x .l{font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--faint);font-weight:700}
+.rest-x .n{font-size:13.5px;font-weight:700;margin-top:2px}
+.rest-b{padding:9px 13px;border-radius:10px;font-size:12px;font-weight:700;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);flex-shrink:0}
+.rest-b:hover{border-color:var(--brand);color:var(--brand)}
+.rest-b.go{background:var(--accent-grad);border-color:transparent;color:var(--on-accent)}
+
+/* ── PLATE CALCULATOR ── */
+.plates{grid-column:1 / -1;display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:-2px 0 8px 46px;font-size:10.5px;color:var(--faint)}
+.plate{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:20px;padding:0 6px;border-radius:4px;background:var(--surface-3);border:1px solid var(--line);font-weight:800;font-size:10px;color:var(--txt);font-variant-numeric:tabular-nums}
+.plate.b{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 45%,transparent);color:var(--brand)}
+
+/* ── PR MOMENT ── */
+.pr-hit{display:flex;align-items:center;gap:8px;margin:0 16px 12px;background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 45%,transparent);border-radius:var(--r-sm);padding:9px 12px;font-size:12px;font-weight:700;color:var(--brand);animation:riseIn .3s var(--ease)}
+.pr-hit .ic{width:14px;height:14px}
+
+/* ── SESSION SUMMARY SHEET ── */
+.sum-big{font-family:'Poppins',sans-serif;font-size:38px;font-weight:800;line-height:1;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.sum-c{background:var(--surface-2);border-radius:var(--r-md);padding:13px 14px}
+.sum-c .l{font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--faint);font-weight:700}
+.sum-c .v{font-family:'Poppins',sans-serif;font-size:19px;font-weight:800;margin-top:5px;font-variant-numeric:tabular-nums}
+.sum-c .v.up{color:var(--green)}
+.sum-pr{background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 40%,transparent);border-radius:var(--r-md);padding:11px 13px;font-size:12.5px;font-weight:700;color:var(--brand);margin-bottom:12px}
+
+/* ── 90-DAY GRID: months, so it reads as a calendar ── */
+.g-months{display:flex;gap:4px;margin-bottom:6px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);font-weight:700}
+.g-months span{flex:1;min-width:0}
+.gd.today{animation:pulseToday 2.4s ease-in-out infinite}
+@keyframes pulseToday{0%,100%{box-shadow:inset 0 0 0 2px var(--brand)}50%{box-shadow:inset 0 0 0 2px var(--brand),0 0 9px var(--brand-glow)}}
+@media(prefers-reduced-motion:reduce){.gd.today{animation:none}}
+
+/* ── HOOK CHIPS: hooks should look like hooks ── */
+.hk{background:var(--surface-2);border-color:var(--line)}
+.hk.best{background:var(--amber-soft);border-color:color-mix(in srgb,var(--amber) 40%,transparent);color:var(--txt)}
+.hk.pr{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 40%,transparent);color:var(--txt)}
+.hk.pace{background:var(--green-soft);border-color:color-mix(in srgb,var(--green) 34%,transparent);color:var(--txt)}
+
 /* ── EDIT AFFORDANCES ─────────────────────────────────────── */
 .edit-b{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:5px;transition:.15s}
 .edit-b:hover{border-color:var(--brand);color:var(--brand)}
@@ -486,6 +544,17 @@ input,textarea{font-family:inherit;color:var(--txt)}
   <button data-pg="stats" onclick="go('stats')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Stats</button>
 </nav>
 
+<div class="restbar" id="restBar"><div class="rest-in">
+  <div class="rest-ring" id="restRing"></div>
+  <div class="rest-x"><div class="l" id="restLbl">Rest</div><div class="n" id="restNext"></div></div>
+  <button class="rest-b" onclick="restAdd(30)">+30s</button>
+  <button class="rest-b go" onclick="restSkip()">Skip</button>
+</div></div>
+
+<div class="sheet-ov" id="sumSheet" onclick="if(event.target===this)closeSummary()">
+  <div class="sheet" role="dialog" aria-label="Session summary"><div id="sumBody"></div></div>
+</div>
+
 <div class="sheet-ov" id="goalSheet" onclick="if(event.target===this)closeGoal()">
   <div class="sheet" role="dialog" aria-label="Edit your goal">
     <h3>Your goal</h3>
@@ -640,6 +709,7 @@ function seedData(){
   const mealsLogged=rnd()<0.82?4:(rnd()<0.6?3:2);
   days.push({date:date,steps:steps,weight:w,water:Math.min(8,4+Math.floor(rnd()*5)),
    meals:mealSet.slice(0,mealsLogged),session:isRest?null:(missed?null:dw),planned:isRest?null:dw,
+   volume:isRest||missed?null:3200+Math.floor(rnd()*1900),
    sleep:Math.round((6.2+rnd()*2.1)*10)/10});
  }
  /* two honest gap days: nobody logs 34 days straight, and a fake streak
@@ -794,9 +864,9 @@ function hookChips(){
  if(best>cur&&cur>0)chips.push('<span class="hk best">'+I.check+'<span><b>'+(best-cur)+' day'+(best-cur===1?'':'s')+'</b> to beat your best streak of <b>'+best+'</b></span></span>');
  else if(cur>0&&cur>=best)chips.push('<span class="hk best">'+I.check+'<span>This is your <b>best streak yet</b>. Keep it alive.</span></span>');
  const pr=prReach();
- if(pr)chips.push('<span class="hk">'+I.play+'<span><b>'+pr.diff+' kg</b> from a '+pr.n+' PR</span></span>');
+ if(pr)chips.push('<span class="hk pr">'+I.play+'<span><b>'+pr.diff+' kg</b> from a '+pr.n+' PR</span></span>');
  const pace=paceInfo();
- if(pace)chips.push('<span class="hk">'+I.scale+'<span>On pace for <b>'+DB.get('member').goalWeight.toFixed(1)+' kg</b> around <b>'+pace.date+'</b>, at your current pace</span></span>');
+ if(pace)chips.push('<span class="hk pace">'+I.scale+'<span>On pace for <b>'+DB.get('member').goalWeight.toFixed(1)+' kg</b> around <b>'+pace.date+'</b>, at your current pace</span></span>');
  return chips.join('');
 }
 function weightLost(){const m=DB.get('member');return Math.round((m.startWeight-todayRow().weight)*10)/10;}
@@ -837,13 +907,26 @@ function mapSafe(arr,fn){
  return html+(bad?'<div style="color:var(--faint);font-size:11px;padding:8px 0">'+bad+' item'+(bad===1?'':'s')+' could not be displayed</div>':'');
 }
 let _ringN=0;
+function drawRings(scope){
+ (scope||document).querySelectorAll('.ring svg circle.prog[data-off]').forEach(c=>{
+  const to=c.getAttribute('data-off');
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{c.style.strokeDashoffset=to;});});
+ });
+}
+function countUp(el,to,ms){
+ const dur=ms||900;let st=null;
+ if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=to;return;}
+ function tick(now){if(st===null)st=now;const p=Math.min(1,(now-st)/dur);const e=1-Math.pow(1-p,3);
+  el.textContent=Math.round(to*e);if(p<1)requestAnimationFrame(tick);else el.textContent=to;}
+ requestAnimationFrame(tick);
+}
 function ringSvg(pct,size,stroke){
- size=size||112;stroke=stroke||9;
+ size=size||132;stroke=stroke||11;
  const r=(size-stroke)/2,c=2*Math.PI*r,off=c*(1-clamp100(pct)/100);
  const gid='rg'+(++_ringN);   /* unique per ring: a shared id is a duplicate-DOM-id bug */
  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" aria-hidden="true">'
  +'<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="var(--surface-3)" stroke-width="'+stroke+'"/>'
- +'<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="url(#'+gid+')" stroke-width="'+stroke+'" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" transform="rotate(-90 '+size/2+' '+size/2+')"/>'
+ +'<circle class="prog" cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="url(#'+gid+')" stroke-width="'+stroke+'" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+c+'" data-off="'+off+'" transform="rotate(-90 '+size/2+' '+size/2+')"/>'
  +'<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="var(--brand)"/><stop offset="100%" stop-color="var(--brand-dark)"/></linearGradient></defs></svg>';
 }
 function sparkline(hist){
@@ -880,7 +963,8 @@ function renderToday(){
  document.getElementById('tdGreet').textContent=greetWord(AS_OF.getHours())+', '+m.first;
  document.getElementById('tdPromise').innerHTML='<b>'+daysLeft()+' days</b> to your goal. Today: '+todayHeadline()+'.';
  const total=scoreTotal(d),mv=scoreMove(d),fu=scoreFuel(d),re=scoreRest(d);
- document.getElementById('tdRing').innerHTML=ringSvg(total)+'<div class="mid"><div class="v">'+total+'</div><div class="l">Score</div></div>';
+ document.getElementById('tdRing').innerHTML=ringSvg(total)+'<div class="mid"><div class="v" id="tdScoreV">0</div><div class="l">Score</div></div>';
+ drawRings(document.getElementById('tdRing'));countUp(document.getElementById('tdScoreV'),total);
  const bar=(lbl,v,col)=>'<div class="bar"><div class="t"><span>'+lbl+'</span><b>'+v+'<span style="color:var(--faint);font-weight:600"> /100</span></b></div><div class="tr"><div class="fi" style="width:'+v+'%;background:'+col+'"></div></div></div>';
  document.getElementById('tdBars').innerHTML=bar('Move',mv,'var(--brand)')+bar('Fuel',fu,'var(--green)')+bar('Rest',re,'var(--amber)');
  const s=CFG.score;
@@ -1014,6 +1098,13 @@ function renderGrid(){
   html+='<div class="'+cls+'" title="'+fmtD(date)+'"></div>';
  }
  document.getElementById('grid90').innerHTML=html;
+ /* month markers so 90 squares read as a calendar, not pixels */
+ const seen=[],mEl=document.getElementById('grid90').previousElementSibling;
+ for(let i=0;i<CFG.programme.days;i+=15){const d=shiftISO(m.start,i);const lbl=MN[+d.split('-')[1]-1];if(!seen.includes(lbl))seen.push(lbl);}
+ let mm=document.getElementById('gMonths');
+ if(!mm){mm=document.createElement('div');mm.className='g-months';mm.id='gMonths';
+  document.getElementById('grid90').parentNode.insertBefore(mm,document.getElementById('grid90'));}
+ mm.innerHTML=seen.map(x=>'<span>'+x+'</span>').join('');
  document.getElementById('gridLegend').innerHTML=
   '<span><i style="background:var(--brand)"></i>Trained</span>'
   +'<span><i style="background:var(--surface-3)"></i>Rest</span>'
@@ -1036,10 +1127,12 @@ function renderLog(){
  const d=todayRow();
  document.getElementById('lgDate').textContent=DY[AS_OF.getDay()].toUpperCase()+' · '+AS_OF.getDate()+' '+MN_FULL[AS_OF.getMonth()].toUpperCase()+' '+AS_OF.getFullYear();
  const done=logDone(),tot=logTargets(),pct=Math.round(done/tot*100);
- document.getElementById('lgHero').innerHTML=
+ const heroEl=document.getElementById('lgHero');
+ heroEl.innerHTML=
   '<div class="ring">'+ringSvg(pct,74,7)+'<div class="mid"><div class="v">'+pct+'%</div></div></div>'
   +'<div><div class="t">'+(done===0?'Let\'s get started':(done>=tot?'Today is complete':'Keep going'))+'</div>'
   +'<div class="s">'+tot+' things to log today · '+done+' done</div></div>';
+ drawRings(heroEl);
  document.getElementById('lgMeals').innerHTML=mapSafe(MEAL_DEFS,(md,i)=>{
   const val=d.meals[i]||'';
   return '<div class="meal'+(val?' done':'')+'"><div class="h"><div class="ic-b">'+md[1]+'</div>'
@@ -1121,7 +1214,8 @@ function renderPlan(){
   +'<div class="ex-m"><div class="ex-n">'+e.n+'<span class="pr">PR '+e.pr+' kg</span></div>'
   +'<div class="ex-t">'+e.sets.length+' x '+e.reps+' · '+e.kg+' kg · '+e.g+'</div></div>'
   +sparkline(e.hist)+'</div>'
-  +'<div class="cue">'+e.cue+'</div>'
+  +(e.prHit?'<div class="pr-hit">'+I.check+'New personal best: '+e.pr+' kg</div>':'')
+ +'<div class="cue">'+e.cue+'</div>'
  +'<div class="ex-swap">'+I.swap+'<select aria-label="Swap '+e.n+'" onchange="swapExercise('+ix+',this.value)">'
    +'<option value="">Swap this exercise...</option>'
    +swapOptions(e).map(o=>'<option value="'+o.i+'">'+o.n+'</option>').join('')+'</select></div>'
@@ -1131,7 +1225,8 @@ function renderPlan(){
     +'<input inputmode="decimal" placeholder="kg" value="'+(s.kg||'')+'" aria-label="Weight set '+(si+1)+'" onchange="setField('+ix+','+si+',\'kg\',this.value)">'
     +'<div class="x">x</div>'
     +'<input inputmode="numeric" placeholder="'+e.reps+'" value="'+(s.reps||'')+'" aria-label="Reps set '+(si+1)+'" onchange="setField('+ix+','+si+',\'reps\',this.value)">'
-    +'<button class="tick" aria-label="Complete set '+(si+1)+'" onclick="setTick('+ix+','+si+')">'+I.check+'</button></div>').join('')
+    +'<button class="tick" aria-label="Complete set '+(si+1)+'" onclick="setTick('+ix+','+si+')">'+I.check+'</button>'
+    +plateHtml(s.kg)+'</div>').join('')
   +'<div class="set-edit"><button onclick="addSet('+ix+')">+ Add a set</button>'
    +(e.sets.length>1?'<button onclick="removeSet('+ix+')">Remove last set</button>':'')+'</div>'
   +'</div></div>');
@@ -1168,21 +1263,124 @@ function removeSet(ix){
  const gone=e.sets.pop();DB.commit();rerender();
  toastUndo('Set removed',function(){e.sets.push(gone);DB.commit();rerender();});
 }
+/* ── 1. REST TIMER ────────────────────────────────────────────────
+   Ticking a set starts the clock. One interval, always cleared. ── */
+let REST_T=null,REST_LEFT=0,REST_TOTAL=0,REST_NEXT='';
+function restStart(secs,nextLabel){
+ restStop();
+ REST_TOTAL=secs;REST_LEFT=secs;REST_NEXT=nextLabel||'';
+ document.getElementById('restBar').classList.add('on');
+ restPaint();
+ REST_T=setInterval(function(){
+  REST_LEFT--;
+  if(REST_LEFT<=0){restStop();toast(I.check+' Rest done'+(REST_NEXT?' · '+REST_NEXT:''));return;}
+  restPaint();
+ },1000);
+}
+function restPaint(){
+ const pct=REST_TOTAL?Math.round((REST_LEFT/REST_TOTAL)*100):0;
+ const el=document.getElementById('restRing');
+ if(el)el.innerHTML=ringSvg(pct,44,5)+'<div class="t">'+REST_LEFT+'</div>';
+ const lb=document.getElementById('restLbl');if(lb)lb.textContent='Rest · '+REST_TOTAL+'s';
+ const nx=document.getElementById('restNext');if(nx)nx.textContent=REST_NEXT||'Next set when you are ready';
+ if(el)drawRings(el);
+}
+function restAdd(n){if(!REST_T)return;REST_LEFT+=n;REST_TOTAL+=n;restPaint();}
+function restSkip(){restStop();}
+function restStop(){
+ if(REST_T){clearInterval(REST_T);REST_T=null;}
+ REST_LEFT=0;
+ const b=document.getElementById('restBar');if(b)b.classList.remove('on');
+}
+function restRunning(){return !!REST_T;}
+
+/* ── 2. PLATE CALCULATOR ──────────────────────────────────────────
+   What actually goes on each side of a 20 kg bar. Pure arithmetic. ── */
+const BAR_KG=20,PLATES=[20,15,10,5,2.5,1.25];
+function plateBreakdown(total){
+ const t=+total||0;
+ if(t<=BAR_KG)return null;
+ let side=(t-BAR_KG)/2,out=[];
+ if(side<=0)return null;
+ PLATES.forEach(p=>{while(side>=p-0.001){out.push(p);side=Math.round((side-p)*1000)/1000;}});
+ if(side>0.001)return {plates:out,exact:false,short:Math.round(side*2*100)/100};
+ return {plates:out,exact:true,short:0};
+}
+function plateHtml(total){
+ const b=plateBreakdown(total);
+ if(!b)return '';
+ if(!b.plates.length)return '';
+ return '<div class="plates"><span>per side</span>'
+  +b.plates.map(p=>'<span class="plate'+(p>=20?' b':'')+'">'+p+'</span>').join('')
+  +(b.exact?'':'<span>+'+b.short+' kg not loadable</span>')+'</div>';
+}
+
+/* ── 3. LIVE PR DETECTION ─────────────────────────────────────────
+   Heavier than your best, said at the moment it happens. ── */
+function checkPR(e,kg){
+ const k=+kg||0;
+ if(!k||k<=e.pr)return false;
+ e.prevPr=e.pr;e.pr=k;e.prHit=true;
+ return true;
+}
+function clearPR(e){if(e.prevPr!=null){e.pr=e.prevPr;delete e.prevPr;}delete e.prHit;}
+
+/* ── 4. SESSION VOLUME + SUMMARY ──────────────────────────────────
+   Volume is the honest measure of a session: every kilo actually moved. ── */
+function sessionVolume(){
+ return DB.get('exercises').reduce((a,e)=>a+e.sets.filter(s=>s.done).reduce((b,s)=>b+((+s.kg||0)*(+s.reps||0)),0),0);
+}
+function lastVolumeFor(name){
+ const ds=DB.get('days');
+ for(let i=ds.length-2;i>=0;i--){if(ds[i].session===name&&ds[i].volume)return ds[i].volume;}
+ return null;
+}
+function openSummary(){
+ const vol=sessionVolume(),prs=DB.get('exercises').filter(e=>e.prHit);
+ const planned=todayRow().planned||'';
+ const last=lastVolumeFor(planned);
+ const delta=last?Math.round(((vol-last)/last)*100):null;
+ document.getElementById('sumBody').innerHTML=
+  '<h3>'+DB.get('sessionName')+' done</h3>'
+  +'<div class="sub">Session '+DB.get('sessionNo')+' of '+CFG.programme.sessionsTotal+' · logged at '+nowClock()+'</div>'
+  +(prs.length?'<div class="sum-pr">'+I.check+' New personal best: '+prs.map(e=>e.n+' '+e.pr+' kg').join(', ')+'</div>':'')
+  +'<div class="sum-big">'+Math.round(vol).toLocaleString()+'<span style="font-size:16px;font-weight:700;color:var(--muted)"> kg moved</span></div>'
+  +'<div class="sum-grid">'
+   +'<div class="sum-c"><div class="l">Sets logged</div><div class="v">'+sessionDone()+' of '+sessionSets()+'</div></div>'
+   +'<div class="sum-c"><div class="l">Same session last time</div><div class="v'+(delta!==null&&delta>0?' up':'')+'">'
+     +(last?(delta>0?'+':'')+delta+'%':'first time measured')+'</div></div>'
+  +'</div>'
+  +'<div class="acts"><button class="btn" onclick="closeSummary()">Close</button>'
+  +'<button class="btn primary" onclick="closeSummary();shareSession()">'+I.wa+'Share it</button></div>';
+ document.getElementById('sumSheet').classList.add('on');
+}
+function closeSummary(){document.getElementById('sumSheet').classList.remove('on');}
 function setField(ei,si,f,v){
  const e=DB.get('exercises')[ei];if(!e||!e.sets[si])return;
  const n=parseFloat(String(v).replace(/[^0-9.]/g,''));
  if(v!==''&&(!isFinite(n)||n<0)){toast('Numbers only');rerender();return;}
  e.sets[si][f]=v===''?'':n;
- if(e.sets[si].kg!==''&&e.sets[si].reps!=='')e.sets[si].done=true;
+ if(e.sets[si].kg!==''&&e.sets[si].reps!==''){
+  const wasDone=e.sets[si].done;e.sets[si].done=true;
+  if(!wasDone&&checkPR(e,e.sets[si].kg))toast(I.check+' New PR on '+e.n+': '+e.sets[si].kg+' kg');
+ }
  DB.commit();rerender();
 }
 function setTick(ei,si){
  const e=DB.get('exercises')[ei];if(!e||!e.sets[si])return;
- const s=e.sets[si],before={kg:s.kg,reps:s.reps,done:s.done};
+ const s=e.sets[si],before={kg:s.kg,reps:s.reps,done:s.done},prBefore=e.pr;
+ let pr=false;
  if(s.done){s.done=false;}
- else{if(s.kg==='')s.kg=e.kg;if(s.reps==='')s.reps=parseInt(String(e.reps).split('-')[0]);s.done=true;}
+ else{
+  if(s.kg==='')s.kg=e.kg;if(s.reps==='')s.reps=parseInt(String(e.reps).split('-')[0]);
+  s.done=true;pr=checkPR(e,s.kg);
+  /* rest starts the moment the set lands, which is when a person actually needs it */
+  const remaining=e.sets.filter(x=>!x.done).length;
+  restStart(60,remaining?'Next: set '+(e.sets.findIndex(x=>!x.done)+1)+' of '+e.n:e.n+' done');
+ }
  DB.commit();rerender();
- toastUndo(s.done?I.check+' Set '+(si+1)+' logged':'Set '+(si+1)+' cleared,',()=>{Object.assign(s,before);DB.commit();rerender();});
+ toastUndo(s.done?(pr?I.check+' Set logged · new PR '+s.kg+' kg':I.check+' Set '+(si+1)+' logged'):'Set '+(si+1)+' cleared,',
+  ()=>{Object.assign(s,before);e.pr=prBefore;delete e.prevPr;delete e.prHit;restStop();DB.commit();rerender();});
 }
 /* THE LOOP: finishing here creates the check-in the staff Member Pulse reads */
 function nowClock(){let h=AS_OF.getHours();const mm=String(AS_OF.getMinutes()).padStart(2,'0');const ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+mm+' '+ap;}
@@ -1208,9 +1406,10 @@ function finishSession(){
  const dn=sessionDone();
  if(!dn){toast('Log at least one set first');return;}
  d.session=d.planned||'upper';
+ d.volume=Math.round(sessionVolume());
  d.checkin={at:AS_OF.getHours()+':'+String(AS_OF.getMinutes()).padStart(2,'0'),via:'member app'};
- publishToGym();
- DB.commit();rerender();
+ publishToGym();restStop();
+ DB.commit();rerender();openSummary();
  toastUndo(I.check+' '+DB.get('sessionName')+' logged. Checked in at the gym.',()=>{delete d.session;delete d.checkin;DB.commit();rerender();});
 }
 function shareSession(){
@@ -1222,9 +1421,9 @@ function shareSession(){
 }
 function unfinishSession(){
  const d=todayRow();if(!d.session)return;
- const was=d.session,ci=d.checkin;
- delete d.session;delete d.checkin;publishToGym();DB.commit();rerender();
- toastUndo('Session unlogged',()=>{d.session=was;d.checkin=ci;DB.commit();rerender();});
+ const was=d.session,ci=d.checkin,vol=d.volume;
+ delete d.session;delete d.checkin;delete d.volume;publishToGym();DB.commit();rerender();
+ toastUndo('Session unlogged',()=>{d.session=was;d.checkin=ci;d.volume=vol;DB.commit();rerender();});
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -1267,6 +1466,7 @@ function renderMembership(){
   +'<div style="min-width:0"><div class="l">If something looks wrong</div><div class="n">I already paid this</div>'
   +'<div class="m">Sends the front desk your own record, with dates and who took each payment. No argument, just the facts.</div></div>'
   +'<div class="go">'+I.arrow+'</div>';
+ drawRings(document.getElementById('msStatus'));
  const ps=msPayments();
  document.getElementById('msHint').textContent=ps.length+' payments';
  document.getElementById('msHistory').innerHTML=ps.length?mapSafe(ps,p=>
@@ -1457,8 +1657,11 @@ async function runSelfTest(){
   ok('Log: completion never exceeds its target',logDone()<=logTargets(),logDone()+'/'+logTargets());
   /* plan runner + THE LOOP */
   go('plan');
+  /* reset the probe set first: a tick on an already-done set UNticks it, so this
+     check must not depend on whatever ran before it */
+  (function(){const e0=DB.get('exercises')[0];e0.sets[0].done=false;e0.sets[0].kg='';e0.sets[0].reps='';})();
   const tot=sessionSets(),dn0=sessionDone();
-  setTick(0,0);const tickOk=sessionDone()===dn0+1;runUndo();
+  setTick(0,0);const tickOk=sessionDone()===dn0+1;runUndo();restStop();
   ok('Plan: set ticks, progress moves, undo restores',tickOk&&sessionDone()===dn0);
   setField(0,0,'kg','72');setField(0,0,'reps','9');
   ok('Plan: filling weight and reps completes the set',DB.get('exercises')[0].sets[0].done);
@@ -1499,6 +1702,52 @@ async function runSelfTest(){
   (function(){const opO=window.open;let u='';window.open=function(x){u=x||'';return null;};
    try{shareSession();}finally{window.open=opO;}
    ok('Hooks: share builds a wa.me text with the member\'s real day',u.indexOf('https://wa.me/?text=')===0&&decodeURIComponent(u).indexOf('Day '+DB.get('member').day)>-1,u.slice(0,50));})();
+  /* SMART: rest timer, plates, PR, volume */
+  go('plan');
+  (function(){
+   const wd=Array.from(document.querySelectorAll('#plWeek .wd'));
+   const shown=wd.filter(el=>el.offsetParent!==null&&el.getBoundingClientRect().width>0);
+   ok('Week strip: all 7 days are VISIBLE, rest days included',wd.length===7&&shown.length===7,shown.length+' of '+wd.length+' visible');
+  })();
+  (function(){
+   const e=DB.get('exercises')[0];
+   const pr0=e.pr,k0=e.sets[0].kg,d0=e.sets[0].done,r0=e.sets[0].reps;
+   restStop();
+   /* an earlier section may have completed this set; a tick on a done set UNticks it */
+   e.sets[0].done=false;e.sets[0].kg='';e.sets[0].reps='';
+   setTick(0,0);
+   ok('Rest: ticking a set starts the rest clock',restRunning());
+   restAdd(30);ok('Rest: adding time extends it',REST_LEFT>60);
+   restSkip();ok('Rest: skip stops the clock and hides the bar',!restRunning()&&!document.getElementById('restBar').classList.contains('on'));
+   runUndo();
+   ok('Rest: undo of the set also clears the timer',!restRunning()&&e.pr===pr0);
+   e.sets[0].kg=k0;e.sets[0].done=d0;e.sets[0].reps=r0;
+  })();
+  (function(){
+   const b=plateBreakdown(60);
+   ok('Plates: 60 kg on a 20 kg bar is 20 per side',!!b&&b.exact&&b.plates.length===1&&b.plates[0]===20,JSON.stringify(b));
+   const b2=plateBreakdown(72.5);
+   ok('Plates: 72.5 kg resolves exactly',!!b2&&b2.exact&&Math.abs(b2.plates.reduce((a,x)=>a+x,0)-26.25)<0.001,(b2?b2.plates.join('+'):'null'));
+   ok('Plates: the empty bar has no plates',plateBreakdown(20)===null&&plateBreakdown(10)===null);
+   const b3=plateBreakdown(21);
+   ok('Plates: an unloadable weight says so rather than lying',!!b3&&b3.exact===false&&b3.short>0,JSON.stringify(b3));
+  })();
+  (function(){
+   const e=DB.get('exercises')[0],pr0=e.pr;
+   const hit=checkPR(e,pr0+5);
+   ok('PR: beating your best updates the record',hit&&e.pr===pr0+5&&e.prHit===true);
+   ok('PR: matching it does NOT count',!checkPR(e,e.pr));
+   clearPR(e);
+   ok('PR: clearing restores the previous best',e.pr===pr0&&!e.prHit);
+  })();
+  (function(){
+   const e=DB.get('exercises')[0];
+   e.sets[0].kg=50;e.sets[0].reps=10;e.sets[0].done=true;
+   ok('Volume: counts only completed sets, kg times reps',sessionVolume()>=500,String(sessionVolume()));
+   e.sets[0].done=false;e.sets[0].kg='';e.sets[0].reps='';
+   ok('Volume: an empty session is zero, never negative',sessionVolume()>=0);
+   ok('Volume: last-time comparison returns a number or null, never a guess',(function(){const v=lastVolumeFor('upper');return v===null||v>0;})());
+  })();
   /* SYNC: the member publishes to the gym, the trainer answers */
   bridgeClear();
   (function(){
@@ -1590,6 +1839,7 @@ async function runSelfTest(){
  }catch(e){ok('HARNESS: completed without crashing',false,String(e&&e.message||e));}
  finally{
   DB._d=JSON.parse(snap);SHOT_ANGLE=snapAngle;COMPARE=snapCmp;ST_WEEK=snapWk;ST_MODE=snapMode;ST_OPEN=null;
+  restStop();closeSummary();closeGoal();   /* zero footprint: never leave a sheet or a timer running */
   renderChrome();go(snapPage);
   window.__ST_LOG.length=bootLog.length;
  }
