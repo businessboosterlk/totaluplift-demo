@@ -45,7 +45,7 @@ html,body{overflow-x:clip;max-width:100%;width:100%}
 [hidden]{display:none!important}
 svg{flex-shrink:0}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.06s!important}}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased;padding-bottom:78px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased;padding-bottom:calc(86px + env(safe-area-inset-bottom))}
 h1,h2,h3{font-family:'Poppins',sans-serif;letter-spacing:-.4px}
 button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
 input,textarea{font-family:inherit;color:var(--txt)}
@@ -189,7 +189,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .meal .ic-b{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex-shrink:0;background:var(--surface-3);color:var(--muted)}
 .meal .n{font-size:14.5px;font-weight:700}
 .meal .s{font-size:11.5px;color:var(--faint);margin-top:1px}
-.meal .tick{margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--surface-3);border:1px solid var(--line);display:grid;place-items:center;color:transparent;flex-shrink:0;transition:.15s}
+.meal .tick{margin-left:auto;width:44px;height:44px;border-radius:50%;background:var(--surface-3);border:1px solid var(--line);display:grid;place-items:center;color:transparent;flex-shrink:0;transition:.15s}
 .meal.done .tick{background:var(--green);border-color:var(--green);color:#fff}
 .meal input{width:100%;background:var(--surface-2);border:1px solid var(--line2);border-radius:var(--r-sm);padding:11px 12px;font-size:13px;margin-top:11px;outline:none;transition:border-color .15s}
 .meal input:focus{border-color:var(--brand)}
@@ -200,7 +200,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .numf input{width:100%;background:transparent;border:none;font-family:'Poppins';font-size:23px;font-weight:800;padding:7px 0 0;outline:none;font-variant-numeric:tabular-nums}
 .numf .u{font-size:11px;color:var(--muted);font-weight:600}
 .water{display:flex;gap:7px;margin-top:12px}
-.wg{flex:1;aspect-ratio:1/1.7;border-radius:6px;background:var(--surface-3);border:1px solid var(--line);padding:0}
+.wg{flex:1;min-height:44px;aspect-ratio:1/1.7;border-radius:7px;background:var(--surface-3);border:1px solid var(--line);padding:0}
 .wg.on{background:var(--brand);border-color:var(--brand)}
 
 /* ── PLAN TAB (the runner) ────────────────────────────────── */
@@ -233,12 +233,12 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .spark{width:56px;height:26px;flex-shrink:0;opacity:.9}
 .cue{margin:0 16px 12px;background:var(--surface-2);border-left:2px solid var(--brand);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:9px 12px;font-size:11.5px;color:var(--muted);font-style:italic;line-height:1.5}
 .sets{padding:0 16px 14px}
-.set{display:grid;grid-template-columns:46px 1fr 14px 1fr 32px;gap:8px;align-items:center;margin-bottom:8px}
+.set{display:grid;grid-template-columns:46px 1fr 14px 1fr 44px;gap:8px;align-items:center;margin-bottom:9px}
 .set .sl{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);font-weight:700}
 .set .x{text-align:center;color:var(--faint);font-size:11px}
-.set input{width:100%;background:var(--surface-2);border:1px solid var(--line2);border-radius:9px;padding:10px 8px;font-size:13px;text-align:center;outline:none;font-variant-numeric:tabular-nums;transition:border-color .15s}
+.set input{width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line2);border-radius:10px;padding:11px 8px;font-size:14px;text-align:center;outline:none;font-variant-numeric:tabular-nums;transition:border-color .15s}
 .set input:focus{border-color:var(--brand)}
-.set .tick{width:30px;height:30px;border-radius:9px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:transparent;transition:.15s;padding:0}
+.set .tick{width:44px;height:44px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:transparent;transition:.15s;padding:0}
 .set.done .tick{background:var(--green);border-color:var(--green);color:#fff}
 .set.done input{border-color:var(--green-soft);color:var(--muted)}
 
@@ -288,7 +288,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .ring .v{font-variant-numeric:tabular-nums}
 
 /* ── REST TIMER: the most-used control in a gym ── */
-.restbar{position:fixed;left:0;right:0;bottom:78px;z-index:40;display:none;justify-content:center;padding:0 14px;pointer-events:none}
+.restbar{position:fixed;left:0;right:0;bottom:calc(86px + env(safe-area-inset-bottom));z-index:40;display:none;justify-content:center;padding:0 14px;pointer-events:none}
 .restbar.on{display:flex}
 @media(min-width:960px){.restbar{bottom:22px;left:86px}}
 .rest-in{pointer-events:auto;display:flex;align-items:center;gap:14px;background:color-mix(in srgb,var(--ink-deep) 96%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:var(--radius);padding:11px 15px;box-shadow:0 14px 40px rgba(0,0,0,.55);max-width:520px;width:100%}
@@ -337,7 +337,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .edit-b:hover{border-color:var(--brand);color:var(--brand)}
 .edit-b .ic{width:12px;height:12px}
 .st{position:relative}
-.st .edit-b{position:absolute;top:9px;right:9px;padding:3px 7px;font-size:10px}
+.st .edit-b{position:absolute;top:4px;right:4px;padding:9px 11px;font-size:10px;min-height:34px}
 .sheet-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:80;display:none;align-items:flex-end;justify-content:center}
 .sheet-ov.on{display:flex}
 @media(min-width:720px){.sheet-ov.on{align-items:center}}
@@ -353,10 +353,10 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .sheet .acts{display:flex;gap:9px;margin-top:6px}
 .sheet .acts .btn{flex:1}
 .ex-swap{margin:0 16px 12px;display:flex;align-items:center;gap:8px}
-.ex-swap select{flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:12px;color:var(--muted);outline:none;font-family:inherit}
+.ex-swap select{flex:1;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px 10px;font-size:12.5px;color:var(--muted);outline:none;font-family:inherit}
 .ex-swap select:focus{border-color:var(--brand)}
 .set-edit{display:flex;gap:7px;margin-top:9px}
-.set-edit button{flex:1;padding:8px;font-size:11.5px;font-weight:700;border-radius:9px;border:1px dashed var(--line);background:none;color:var(--muted)}
+.set-edit button{flex:1;min-height:44px;padding:11px 8px;font-size:12px;font-weight:700;border-radius:10px;border:1px dashed var(--line);background:none;color:var(--muted)}
 .set-edit button:hover{border-color:var(--brand);color:var(--brand);border-style:solid}
 
 /* ── NEXT-UP HOOK CHIPS ───────────────────────────────────── */
@@ -922,7 +922,9 @@ function countUp(el,to,ms){
 }
 function ringSvg(pct,size,stroke){
  size=size||132;stroke=stroke||11;
- const r=(size-stroke)/2,c=2*Math.PI*r,off=c*(1-clamp100(pct)/100);
+ /* inset by 1: r + stroke/2 must stay INSIDE the viewBox or the outer edge
+    gets antialiased away and the track reads as notched */
+ const r=(size-stroke)/2-1,c=2*Math.PI*r,off=c*(1-clamp100(pct)/100);
  const gid='rg'+(++_ringN);   /* unique per ring: a shared id is a duplicate-DOM-id bug */
  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" aria-hidden="true">'
  +'<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="var(--surface-3)" stroke-width="'+stroke+'"/>'
@@ -1702,6 +1704,19 @@ async function runSelfTest(){
   (function(){const opO=window.open;let u='';window.open=function(x){u=x||'';return null;};
    try{shareSession();}finally{window.open=opO;}
    ok('Hooks: share builds a wa.me text with the member\'s real day',u.indexOf('https://wa.me/?text=')===0&&decodeURIComponent(u).indexOf('Day '+DB.get('member').day)>-1,u.slice(0,50));})();
+  /* iPhone-class defects: reserve for the nav, and thumb-sized controls */
+  (function(){
+   const navH=document.querySelector('.nav').getBoundingClientRect().height;
+   const pad=parseFloat(getComputedStyle(document.body).paddingBottom)||0;
+   ok('Layout: the page reserves at least the nav height, so nothing hides behind it',pad>=navH,'pad '+Math.round(pad)+' vs nav '+Math.round(navH));
+   const c=document.querySelector('#tdRing svg circle'),svg=document.querySelector('#tdRing svg');
+   if(c&&svg){const outer=(+svg.getAttribute('width'))/2+(+c.getAttribute('r'))+(+c.getAttribute('stroke-width'))/2;
+    ok('Ring: the stroke stays inside its own viewBox',outer<=+svg.getAttribute('width'),'outer '+outer+' of '+svg.getAttribute('width'));}
+   go('plan');
+   const tiny=Array.from(document.querySelectorAll('#pg-plan button,#pg-plan input,#pg-plan select'))
+    .filter(el=>{const b=el.getBoundingClientRect();return b.width>0&&b.height>0&&b.height<44;});
+   ok('Touch: every control on the workout runner is at least 44px tall',tiny.length===0,tiny.length+' too small: '+tiny.slice(0,3).map(e=>(e.className||e.tagName)+' h'+Math.round(e.getBoundingClientRect().height)).join(', '));
+  })();
   /* SMART: rest timer, plates, PR, volume */
   go('plan');
   (function(){
