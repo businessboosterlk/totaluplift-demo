@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0E141B">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="robots" content="noindex,nofollow">
 <title>Total Uplift - Member App</title>
 <!-- ════════════════════════════════════════════════════════════════════
@@ -587,7 +590,7 @@ window.__ST_LOG=[];
    SECTION 1 - CFG: the per-client configuration block
    ════════════════════════════════════════════════════════════════════ */
 const CFG={
- app:{name:'Total Uplift',tagline:'Member App',version:'gym-member v1'},
+ app:{name:'Total Uplift',tagline:'Member App',version:'gym-member v1',build:'2026-08-02.1'},
  gym:{name:'Total Uplift',phone:'+94775528090',deskPhone:'0775528090'},
  /* MEMBERSHIP - the member's own copy of the money record (Scout gap 1+3).
     A cash-paying member has no card statement to fall back on, so the app IS
@@ -1011,6 +1014,12 @@ function renderToday(){
   +'<div class="go">'+I.wa+'</div>';
  document.getElementById('tdHooks').innerHTML=hookChips();
  renderBuild();renderGrid();
+ /* build stamp: so a screenshot can always answer "which version is this" */
+ let bs=document.getElementById('buildStamp');
+ if(!bs){bs=document.createElement('div');bs.id='buildStamp';
+  bs.style.cssText='text-align:center;font-size:10px;color:var(--faint);padding:18px 0 4px;letter-spacing:.4px';
+  document.getElementById('pg-today').appendChild(bs);}
+ bs.textContent=CFG.gym.name+' · build '+CFG.app.build;
 }
 function showNudge(){
  const n=DB.get('nudges');
