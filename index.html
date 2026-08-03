@@ -789,6 +789,17 @@ body.dark .stat-kpi .val{color:#fff}
 .pl-acts button{padding:6px 11px;font-size:11.5px;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);transition:.15s;display:inline-flex;align-items:center;gap:5px}
 .pl-acts button:hover{border-color:var(--brand);color:var(--brand)}
 .pl-acts button.wa{color:var(--green)}.pl-acts button.wa:hover{border-color:var(--green);background:var(--green-soft)}
+.day-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line2);cursor:pointer;transition:.12s}
+.day-row:last-child{border:none}
+.day-row:hover{background:var(--surface-2);margin:0 -12px;padding-left:12px;padding-right:12px;border-radius:9px}
+.day-time{width:62px;flex-shrink:0;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted)}
+.day-main{flex:1;min-width:0}
+.day-nm{font-size:13.5px;font-weight:700}
+.day-sub{font-size:11.5px;color:var(--muted);margin-top:1px}
+.day-st{font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:6px;white-space:nowrap;flex-shrink:0}
+.day-st.in{background:var(--green-soft);color:var(--green)}
+.day-st.due{background:var(--brand-soft);color:var(--brand)}
+.day-st.late{background:var(--danger-soft);color:var(--danger)}
 .cls-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
 .cls-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--shadow-xs)}
 .cls-nm{font-size:14px;font-weight:700}
@@ -973,7 +984,7 @@ body.dark .stat-kpi .val{color:#fff}
           <button class="btn-ghost imp-btn" onclick="openImport('customers')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import</button>
           <button class="btn-ghost" onclick="exportCustomers()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
         </div>
-        <div class="card"><table class="tbl"><thead><tr><th>Customer</th><th>Cadence</th><th>Next action</th><th>Status</th><th class="tnum">Lifetime value</th></tr></thead><tbody id="cusBody"></tbody></table><div id="cusEmpty"></div></div>
+        <div class="card"><table class="tbl"><thead><tr id="cusHead"></tr></thead><tbody id="cusBody"></tbody></table><div id="cusEmpty"></div></div>
       </div>
 
       <!-- ══ QUOTES (module: quote generator + branded PDF) ══ -->
@@ -1126,6 +1137,17 @@ body.dark .stat-kpi .val{color:#fff}
       <div class="fld"><label for="rc_follow">Follow-up date <span style="color:var(--faint);font-weight:400">(optional)</span></label><input id="rc_follow" type="date"></div>
     </div>
     <div class="modal-f"><button class="btn-ghost" onclick="closeRecordModal()">Cancel</button><button class="btn-primary" onclick="saveRecord()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-ov" id="sessionModal">
+  <div class="modal" style="width:440px">
+    <div class="modal-h"><h3 id="smTitle">Log a session</h3><button class="pn-close" onclick="closeSessionModal()" style="position:static;width:30px;height:30px">&#10005;</button></div>
+    <div class="modal-b">
+      <div class="fld"><label for="sm_note">What did they do?</label><input id="sm_note" placeholder="e.g. Upper body, bench 3x8 at 60kg" maxlength="120"></div>
+      <div style="font-size:11.5px;color:var(--muted);line-height:1.6">This records the session as a check-in, so their attendance, their standing on Member Pulse and their own app all update from this one action.</div>
+    </div>
+    <div class="modal-f"><button class="btn-ghost" onclick="closeSessionModal()">Cancel</button><button class="btn-primary" onclick="saveClientSession()">Log session</button></div>
   </div>
 </div>
 
@@ -1418,7 +1440,10 @@ function seedData(){
   const tier=rnd()<0.60?0:(rnd()<0.72?1:2);
   const backM=Math.floor(rnd()*14);                 /* joined 0..13 months ago */
   const joined=dayStr(ymShift(ym,-backM),1+Math.floor(rnd()*26));
-  const cancelled=backM>=3&&rnd()<0.09;             /* ~10 alumni, all joined 3mo+ back */
+  /* member 4 is the LINKED demo member (also on the member app): never cancelled,
+     trains regularly. Pin it here, before cancellation decides whether check-ins
+     are generated at all. */
+  const cancelled=(i!==4)&&backM>=3&&rnd()<0.09;    /* ~10 alumni, all joined 3mo+ back */
   const trainer=rnd()<0.5?3:4;
   const phone='077'+String(2000000+Math.floor(rnd()*7999999));
   /* check-in gap engineering: most healthy, deliberate watch / at-risk / critical tails */
@@ -2041,10 +2066,18 @@ function renderDashTrainer(){
   +kpiC('Renewals due',renewals.length,CFG.recurring.label.toLowerCase()+' owing this month',false,I.money)
   +kpiC('My open tasks',myTasks.length,myTasks.length?'in your list below':'all done',false,I.check)
   +kpiC('Checked in today',todayCheckins().filter(k=>mine.some(c=>c.id===k.m)).length,'of your clients',false,I.enter);
- document.getElementById('chartTitle').textContent='My clients to win back';
- document.getElementById('chartHint').textContent='reasons shown, nothing hidden';
- document.getElementById('dashChart').innerHTML=risky.length?risky.slice(0,6).map(x=>pulseRow(x,true)).join('')
-  :emptyC(I.check,'All training','Every one of your clients has been in recently.');
+ /* THE DAY comes first: a trainer works through a sequence, not a list */
+ const day=trainerDay();
+ const inN=day.filter(r=>r.status==='in').length,lateN=day.length-inN;
+ document.getElementById('chartTitle').textContent='Your day';
+ document.getElementById('chartHint').textContent=inN+' in today · '+lateN+' overdue';
+ document.getElementById('dashChart').innerHTML=day.length?mapSafe(day,r=>
+  '<div class="day-row" onclick="openCustomer('+r.c.id+')">'
+  +'<div class="day-time"'+(r.status==='late'?' style="color:var(--danger)"':'')+'>'+r.lead+'</div>'
+  +'<div class="day-main"><div class="day-nm">'+r.c.name+'</div>'
+  +'<div class="day-sub">'+(r.why||'')+'</div></div>'
+  +'<span class="day-st '+r.status+'">'+(r.status==='in'?'Trained':'Overdue')+'</span></div>')
+  :emptyC(I.check,'Nobody in yet, nobody overdue','Check-ins appear here as your clients arrive.');
  const q=renewals.slice(0,5);
  document.getElementById('actionQueue').innerHTML=q.length?q.map(c=>
   '<div class="aq-item" style="cursor:default"><span class="aq-dot" style="background:var(--amber)"></span>'
@@ -2837,11 +2870,47 @@ function renderCustomers(){
  const totLTV=all.reduce((s,c)=>s+custLTV(c),0);
  const orders=all.reduce((s,c)=>s+(c.history?c.history.length:0),0);
  const dueN=dueCustomers();
- document.getElementById('cusKpis').innerHTML=
-  statKpi(CFG.contactWord.plural,all.length,'',null,'var(--brand)')
-  +statKpi('Lifetime value',lkr(totLTV),'',null,'var(--green)')
-  +statKpi('Avg order',orders?lkr(totLTV/orders):'-','',null,'var(--amber)')
-  +statKpi('Due today',dueN,dueN?'re-engage now':'all scheduled',dueN?'down':'flat',dueN?'var(--danger)':'var(--faint)');
+ if(isTrainerView()){
+  /* a trainer's numbers are about attendance, never about money */
+  const pdAll=pulseData(all);
+  const trained=all.filter(c=>memberSessionsIn(c.id,ymNow())>0).length;
+  const slipping=pdAll.filter(x=>x.band==='risk'||x.band==='critical').length;
+  const sess=all.reduce((a,c)=>a+memberSessionsIn(c.id,ymNow()),0);
+  document.getElementById('cusKpis').innerHTML=
+   statKpi('My clients',all.length,'',null,'var(--brand)')
+   +statKpi('Trained this month',trained+' of '+all.length,'',null,'var(--green)')
+   +statKpi('Sessions logged',sess,'across your clients',null,'var(--amber)')
+   +statKpi('Slipping',slipping,slipping?'reach out today':'nobody slipping',slipping?'down':'flat',slipping?'var(--danger)':'var(--faint)');
+ }else{
+  document.getElementById('cusKpis').innerHTML=
+   statKpi(CFG.contactWord.plural,all.length,'',null,'var(--brand)')
+   +statKpi('Lifetime value',lkr(totLTV),'',null,'var(--green)')
+   +statKpi('Avg order',orders?lkr(totLTV/orders):'-','',null,'var(--amber)')
+   +statKpi('Due today',dueN,dueN?'re-engage now':'all scheduled',dueN?'down':'flat',dueN?'var(--danger)':'var(--faint)');
+ }
+ const head=document.getElementById('cusHead');
+ if(head)head.innerHTML=isTrainerView()
+  ?'<th>Client</th><th>Last session</th><th class="tnum">This month</th><th>Standing</th><th>Plan</th>'
+  :'<th>'+CFG.contactWord.singular+'</th><th>Cadence</th><th>Next action</th><th>Status</th><th class="tnum">Lifetime value</th>';
+ /* TRAINER: sorted by who needs attention first, not by next commercial touch */
+ if(isTrainerView()){
+  const pd={};pulseData(list).forEach(x=>pd[x.c.id]=x);
+  const rank={critical:0,risk:1,watch:2,healthy:3};
+  const arrT=[...list].sort((a,b)=>(rank[(pd[a.id]||{}).band]||9)-(rank[(pd[b.id]||{}).band]||9));
+  document.getElementById('cusBody').innerHTML=mapSafe(arrT,c=>{
+   const x=pd[c.id]||{band:'healthy',days:999,freq:0};
+   const lv=memberLastVisit(c.id);
+   const sess=memberSessionsIn(c.id,ymNow());
+   return '<tr onclick="openCustomer('+c.id+')"><td><div class="tn">'+c.name.toString()+'</div>'
+    +'<div class="tm">'+(x.freq?x.freq+'x a week lately':'no pattern yet')+'</div></td>'
+    +'<td style="font-size:12.5px;color:'+(x.days>13?'var(--danger)':'var(--muted)')+'">'+(lv?fmtDate(lv)+' · '+x.days+'d ago':'never')+'</td>'
+    +'<td class="tnum">'+sess+'</td>'
+    +'<td><span class="bdg" style="background:'+bandColor(x.band)+'1a;color:'+bandColor(x.band)+'">'+bandLabel(x.band)+'</span></td>'
+    +'<td class="tm">'+cohortLabel(c.cohort)+'</td></tr>';
+  },'tr');
+  document.getElementById('cusEmpty').innerHTML=arrT.length?'':emptyC(I.users,'No clients assigned to you','Ask the front desk to assign members to you.');
+  return;
+ }
  const arr=[...list].sort((a,b)=>(custNext(a)||'9999').localeCompare(custNext(b)||'9999'));
  document.getElementById('cusBody').innerHTML=mapSafe(arr,c=>{
   const done=c.sent>=3,due=custDue(c)&&c.status!=='alumni',next=custNext(c);
@@ -2855,12 +2924,73 @@ function renderCustomers(){
  },'tr');
  document.getElementById('cusEmpty').innerHTML=arr.length?'':emptyC(I.users,'No '+CFG.contactWord.plural.toLowerCase(),'Won deals become '+CFG.contactWord.plural.toLowerCase()+' here for repeat business.');
 }
+/* ── LOG A SESSION FOR A CLIENT: the ones who will never open an app were
+   invisible until now. Writes the same check-in event the member app writes. ── */
+let SM_ID=null;
+function openSessionModal(id){
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ SM_ID=id;
+ document.getElementById('smTitle').textContent='Log a session for '+c.name.split(' ')[0];
+ document.getElementById('sm_note').value='';
+ document.getElementById('sessionModal').classList.add('open');
+ setTimeout(function(){document.getElementById('sm_note').focus();},60);
+}
+function closeSessionModal(){document.getElementById('sessionModal').classList.remove('open');SM_ID=null;}
+function saveClientSession(){
+ const id=SM_ID,c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ const note=(document.getElementById('sm_note').value||'').trim();
+ const already=todayCheckins().some(k=>k.m===id);
+ if(already){toast(c.name.split(' ')[0]+' is already checked in today');closeSessionModal();return;}
+ const row={id:DB.nextId('checkins'),m:id,date:todayISO(),t:ckTime(),via:'trainer',note:note};
+ DB.get('checkins').unshift(row);
+ logFeed(CURRENT.id,'Session logged',c.name+(note?' · '+note:''));
+ DB.commit();closeSessionModal();renderApp();
+ if(document.getElementById('panel').classList.contains('open'))openCustomer(id);
+ toastUndo(I.check+' Session logged for '+c.name.split(' ')[0],function(){
+  const ks=DB.get('checkins');const i=ks.findIndex(k=>k.id===row.id);if(i>-1)ks.splice(i,1);
+  const fs=DB.get('activity');const j=fs.findIndex(a=>a.t==='Session logged');if(j>-1)fs.splice(j,1);
+  DB.commit();renderApp();if(document.getElementById('panel').classList.contains('open'))openCustomer(id);});
+}
+
+/* ── THE TRAINER'S CLIENT RECORD: training first, money never ── */
+function openClientTrainer(c){
+ const x=pulseData([c])[0]||{band:'healthy',days:999,freq:0,why:''};
+ const lv=memberLastVisit(c.id);
+ const thisMo=memberSessionsIn(c.id,ymNow()),lastMo=memberSessionsIn(c.id,ymShift(ymNow(),-1));
+ const panel=document.getElementById('panel');
+ const info=(l,v,col)=>'<div class="info"><div class="il">'+l+'</div><div class="iv"'+(col?' style="color:'+col+'"':'')+'>'+v+'</div></div>';
+ panel.innerHTML='<div class="pn-head"><button class="pn-close" onclick="closePanel()" aria-label="Close">&#10005;</button>'
+  +'<div class="pn-nm">'+c.name+'</div><div class="pn-co">'+cohortLabel(c.cohort)+' · your client</div>'
+  +'<div class="pn-badges"><span class="bdg" style="background:'+bandColor(x.band)+'1a;color:'+bandColor(x.band)+'">'+bandLabel(x.band)+'</span>'
+  +(memberOwing(c.id)?'<span class="bdg bdg-grey">'+CFG.recurring.label+' owing, front desk handles it</span>':'')+'</div></div>'
+  +'<div class="pn-actions">'
+  +'<button class="pa primary" onclick="pulseWA('+c.id+','+(x.days===999?0:x.days)+')">'+I.phone+' Message</button>'
+  +'<button class="pa" onclick="openSessionModal('+c.id+')">'+I.check+' Log a session</button>'
+  +'<button class="pa" onclick="pulseTask('+c.id+')">'+I.doc+' Task for me</button>'
+  +'</div>'
+  +'<div class="pn-body">'
+  +'<div class="sec"><div class="sec-t">Training</div><div class="info-grid">'
+   +info('Last session',lv?fmtDate(lv):'never',x.days>13?'var(--danger)':'')
+   +info('Days since',x.days===999?'never been in':x.days+' days',x.days>13?'var(--danger)':'')
+   +info('Sessions this month',thisMo,thisMo<lastMo?'var(--amber)':'var(--green)')
+   +info('Last month',lastMo)
+  +'</div>'
+  +'<div style="font-size:12px;color:var(--muted);margin-top:11px;line-height:1.6">'+x.why+'</div>'
+  +(function(){const noted=(DB.get('checkins')||[]).filter(k=>k.m===c.id&&k.note).slice(0,3);
+    return noted.length?'<div style="margin-top:13px"><div class="sec-t" style="margin-bottom:7px">Recent sessions you logged</div>'
+     +noted.map(k=>'<div style="font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--line2)"><b>'+fmtDate(k.date)+'</b> · '+k.note+'</div>').join('')+'</div>':'';})()
+  +'</div>'
+  +syncSection(c)
+  +'</div>';
+ document.getElementById('overlay').classList.add('open');panel.classList.add('open');
+}
 function custWA(c,msg){const ph=(c.phone||'').replace(/\D/g,'').replace(/^0/,'94');if(!ph){toast('No number saved');return;}window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg),'_blank');}
 function custSend(id){const c=DB.get('customers').find(x=>x.id===id);if(!c||c.sent>=3)return;custWA(c,'Hi '+c.name.split(' ')[0]+', checking in from '+CFG.company.name+'. We would love to help you again.');custDone(id,true);}
 function custDone(id,silent){const c=DB.get('customers').find(x=>x.id===id);if(!c||c.sent>=3)return;const label=cadLabel(c.sent);c.sent++;c.last=todayISO();delete c.snooze;logFeed(c.owner,label+' sent','to '+c.name);DB.commit();renderApp();if(document.getElementById('panel').classList.contains('open'))openCustomer(id);if(!silent)toast(I.check+' '+label+' done for '+c.name.split(' ')[0]);}
 function custSnooze(id){const c=DB.get('customers').find(x=>x.id===id);if(!c||c.sent>=3)return;c.snooze=addDaysStr(todayISO(),7);DB.commit();renderApp();if(document.getElementById('panel').classList.contains('open'))openCustomer(id);toast(I.check+' Snoozed 7 days');}
 function openCustomer(id){
  const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ if(isTrainerView())return openClientTrainer(c);
  const done=c.sent>=3,due=custDue(c)&&c.status!=='alumni',ltv=custLTV(c);
  const steps=[0,1,2].map(i=>{
   const st=c.sent>i?'done':(c.sent===i?(due?'due':'next'):'pending');
@@ -3030,7 +3160,25 @@ function renderReports(){
  const owners=DB.get('staff').filter(s=>s.active);
  const byOwner=owners.map(s=>({name:s.name,v:won.filter(r=>r.owner===s.id).reduce((x,r)=>x+r.value,0)})).filter(o=>o.v>0).sort((a,b)=>b.v-a.v);
  const maxO=Math.max.apply(null,byOwner.map(o=>o.v).concat([1]));
- document.getElementById('rpByOwner').innerHTML=byOwner.length?byOwner.map(o=>'<div class="fn-row"><div class="fn-name">'+o.name+'</div><div class="fn-bar"><div class="fn-fill" style="width:'+(o.v/maxO*100)+'%"></div></div><div class="fn-v">'+lkr(o.v)+'</div></div>').join(''):emptyC(I.users,'No wins yet','Closed deals split by owner appear here.');
+ /* per-person revenue IS a team profit table, and the manager is not supposed to
+    see one. Owners keep it; managers get join sources instead, which is ops-useful
+    and attributes nothing to a colleague. */
+ const byOwnerCard=document.getElementById('rpByOwner').closest('.card');
+ const cardTitle=byOwnerCard?byOwnerCard.querySelector('h3'):null;
+ const cardHint=byOwnerCard?byOwnerCard.querySelector('.hint'):null;
+ if(CURRENT.role==='owner'){
+  if(cardTitle)cardTitle.textContent='Where revenue comes from';
+  if(cardHint)cardHint.textContent='By trainer, this month';
+  document.getElementById('rpByOwner').innerHTML=byOwner.length?byOwner.map(o=>'<div class="fn-row"><div class="fn-name">'+o.name+'</div><div class="fn-bar"><div class="fn-fill" style="width:'+(o.v/maxO*100)+'%"></div></div><div class="fn-v">'+lkr(o.v)+'</div></div>').join(''):emptyC(I.users,'No joins yet','Joins split by trainer appear here.');
+ }else{
+  if(cardTitle)cardTitle.textContent='Where joins come from';
+  if(cardHint)cardHint.textContent='By source, this month';
+  const bySrc={};
+  won.forEach(r=>{const parts=String(r.co||'').split('·');const s=(parts[parts.length-1]||'other').trim();bySrc[s]=(bySrc[s]||0)+1;});
+  const srcs=Object.keys(bySrc).map(k=>({name:k,v:bySrc[k]})).sort((a,b)=>b.v-a.v);
+  const maxS=Math.max.apply(null,srcs.map(s=>s.v).concat([1]));
+  document.getElementById('rpByOwner').innerHTML=srcs.length?srcs.map(s=>'<div class="fn-row"><div class="fn-name">'+s.name+'</div><div class="fn-bar"><div class="fn-fill" style="width:'+(s.v/maxS*100)+'%"></div></div><div class="fn-v">'+s.v+' join'+(s.v===1?'':'s')+'</div></div>').join(''):emptyC(I.users,'No joins yet','Where this month\'s joins came from appears here.');
+ }
  document.getElementById('rpTopHint').textContent=monthLbl(ym);
  const top=[...won].sort((a,b)=>b.value-a.value).slice(0,5);
  document.getElementById('rpTop').innerHTML=top.length?top.map(r=>'<div class="eq-row" onclick="openRecord('+r.id+')"><div class="eq-av">'+init2(r.name)+'</div><div class="eq-main"><div class="eq-nm">'+r.name+'</div><div class="eq-mt">'+(r.co||'')+'</div></div><div class="eq-val">'+lkr(r.value)+'</div></div>').join(''):emptyC(I.trend,'No deals','Wins this month show here.');
@@ -3511,6 +3659,18 @@ function bridgeClear(){try{localStorage.removeItem(BRIDGE_KEY);}catch(e){}}
    card shows its WHY. Thresholds live in CFG.pulse (Studio-editable,
    sanitized on every apply).
    ════════════════════════════════════════════════════════════════════ */
+/* a trainer is staff with the trainer position: their screens are about TRAINING,
+   not about money or lifetime value */
+function isTrainerView(){return CURRENT.role==='staff'&&CURRENT.pos==='trainer';}
+function memberSessionsIn(id,ym){
+ return ((DB.get('checkins')||[]).filter(k=>k.m===id&&k.date.slice(0,7)===ym).length)
+  +(todayCheckins().filter(k=>k.m===id&&k.via==='member app'&&todayISO().slice(0,7)===ym).length);
+}
+function memberLastVisit(id){
+ const ks=(DB.get('checkins')||[]).filter(k=>k.m===id).map(k=>k.date)
+  .concat(todayCheckins().filter(k=>k.m===id).map(k=>k.date));
+ return ks.length?ks.sort().slice(-1)[0]:null;
+}
 function activeMembers(){return (DB.get('customers')||[]).filter(c=>c.status!=='alumni');}
 function scopeMembers(){const all=activeMembers();return isMaster()?all:all.filter(c=>c.owner===CURRENT.id);}
 function todayCheckins(){
@@ -3534,6 +3694,53 @@ function pulseRevenueAtRisk(pd){
     never stored, so it can never go stale */
  return (pd||[]).filter(x=>x.band==='risk'||x.band==='critical')
   .reduce((s,x)=>{const p=memberPlan(x.c.id);return s+(p&&p.status==='active'?recFee(p):0);},0);
+}
+/* ── A CLIENT'S OWN PATTERN: which weekdays they train, and at what hour.
+   Everything below is derived from their check-ins. Nothing is scheduled. ── */
+function ckHour(t){
+ const h=parseInt(String(t))||0;const pm=/PM/i.test(String(t));
+ return (h%12)+(pm?12:0);
+}
+function memberPattern(id){
+ const ks=(DB.get('checkins')||[]).filter(k=>k.m===id);
+ if(ks.length<3)return null;                       /* too little history to claim a pattern */
+ const dows={},hours={};
+ ks.forEach(k=>{const d=new Date(k.date+'T00:00:00').getDay();dows[d]=(dows[d]||0)+1;
+  const h=ckHour(k.t);hours[h]=(hours[h]||0)+1;});
+ const weeks=Math.max(1,Math.round(ks.length/((1+Math.floor(ks.length/7))||1)));
+ /* a weekday counts as "usual" if they trained on it at least a third as often as
+    their most frequent day: that keeps 2 to 4 day splits, drops one-offs */
+ const top=Math.max.apply(null,Object.keys(dows).map(k=>dows[k]));
+ const usualDows=Object.keys(dows).filter(d=>dows[d]>=Math.max(2,top/3)).map(Number);
+ const usualHour=Object.keys(hours).sort((a,b)=>hours[b]-hours[a])[0];
+ return {dows:usualDows,hour:+usualHour,visits:ks.length};
+}
+function hourLabel(h){const ap=h>=12?'PM':'AM';const hh=h%12||12;return hh+' '+ap;}
+/* who this trainer should expect to see today, in time order */
+function trainerDay(){
+ const today=new Date(todayISO()+'T00:00:00').getDay();
+ const nowH=AS_OF.getHours();
+ const inToday={};todayCheckins().forEach(k=>inToday[k.m]=k);
+/* HONEST SCOPE: a gym has no appointments, so this cannot be a schedule. Predicting
+   who "should" arrive produced 29 names from 49 clients, which is a roster wearing a
+   timetable's clothes. So the day is only what is real: who has come in today, and
+   who is genuinely overdue by their OWN rhythm. Nothing is predicted. */
+ const rows=[];
+ const pd={};pulseData(scopeMembers()).forEach(x=>pd[x.c.id]=x);
+ scopeMembers().forEach(c=>{
+  const came=inToday[c.id];
+  if(came){rows.push({c:c,sort:ckHour(came.t),came:came,status:'in',
+   lead:came.t,why:'checked in'+(came.via&&came.via!=='desk'?' from the '+came.via:' at the desk')});return;}
+  const p=memberPattern(c.id),x=pd[c.id]||{days:99,freq:0};
+  if(!p||p.visits<8||!x.freq)return;                /* no rhythm, nothing to be overdue against */
+  const typicalGap=Math.max(2,Math.round(7/x.freq));
+  if(x.days<typicalGap+1)return;                    /* on rhythm: not your problem today */
+  rows.push({c:c,sort:1000-x.days,came:null,status:'late',
+   lead:x.days+'d',why:x.freq+'x a week normally, last in '+x.days+' days ago'});
+ });
+ const inRows=rows.filter(r=>r.status==='in').sort((a,b)=>a.sort-b.sort);
+ const lateRows=rows.filter(r=>r.status==='late').sort((a,b)=>a.sort-b.sort).slice(0,6);
+ return inRows.concat(lateRows);
 }
 function bandColor(b){return b==='healthy'?'var(--green)':b==='watch'?'var(--amber)':b==='risk'?'var(--brand)':'var(--danger)';}
 function bandLabel(b){return b==='healthy'?'Healthy':b==='watch'?'Watch':b==='risk'?'At risk':'Critical';}
@@ -3886,6 +4093,81 @@ async function runSelfTest(opts){
    ok('Pulse: revenue-at-risk reconciles to the band fees',rar2===manualRar&&rar2>=0,lkr(rar2));
    go('pulse');
    ok('Pulse: revenue-at-risk is shown on the board',rar2===0||(document.getElementById('pulseHint').innerHTML||'').indexOf('revenue')>-1);
+   /* TRAINER CLIENT VIEW: training-shaped, money-free */
+   (function(){
+    const tr=DB.get('staff').find(s=>s.pos==='trainer');
+    if(!tr){ok('Trainer view: a trainer exists in seed',false);return;}
+    signIn(tr);go('customers');
+    const head=(document.getElementById('cusHead').textContent||'');
+    ok('Trainer: the client list shows training columns, not money',head.indexOf('Last session')>-1&&head.indexOf('Lifetime value')===-1,head);
+    const kpiTxt=(document.getElementById('cusKpis').textContent||'');
+    ok('Trainer: the KPI strip carries attendance, not lifetime value',kpiTxt.indexOf('Lifetime value')===-1&&kpiTxt.indexOf('Trained this month')>-1,kpiTxt.slice(0,70));
+    const mine=scopeMembers();
+    ok('Trainer: sees only their own clients',mine.every(c=>c.owner===tr.id),mine.length+' clients');
+    if(mine.length){
+     openCustomer(mine[0].id);
+     const html=document.getElementById('panel').innerHTML;
+     ok('Trainer: the client panel leads with training',html.indexOf('Training')>-1&&html.indexOf('Days since')>-1);
+     ok('Trainer: no lifetime value or purchase history anywhere in it',html.indexOf('Lifetime value')===-1&&html.indexOf('Purchase history')===-1);
+     ok('Trainer: can still see what the member logged in their app',html.indexOf('Live from their app')>-1);
+     closePanel();
+    }
+    /* the owner keeps the commercial view */
+    signIn(owner);go('customers');
+    const oh=(document.getElementById('cusHead').textContent||'');
+    ok('Owner: keeps the commercial client list',oh.indexOf('Lifetime value')>-1,oh);
+   })();
+   /* TRAINER MY-DAY + LOG A SESSION */
+   (function(){
+    const tr2=DB.get('staff').find(s=>s.pos==='trainer');
+    if(!tr2)return;
+    signIn(tr2);go('dashboard');
+    const dayRows=document.querySelectorAll('#dashChart .day-row').length;
+    ok('Trainer day: the dashboard leads with the day, in time order',
+      (document.getElementById('chartTitle').textContent||'')==='Your day'&&
+      (dayRows===0||Array.from(document.querySelectorAll('#dashChart .day-time')).map(e=>e.textContent).length===dayRows),
+      dayRows+' rows');
+    const day=trainerDay();
+    ok('Trainer day: every row is a real event or a real overdue, never a prediction',
+      day.every(r=>r.came||(r.status==='late'&&/last in \d+ days ago/.test(r.why))));
+    ok('Trainer day: those who trained come before those who are overdue',
+      (function(){const idx=day.findIndex(r=>r.status==='late');return idx===-1||day.slice(idx).every(r=>r.status==='late');})());
+    ok('Trainer day: stays a day, not the whole roster',day.length<=12,day.length+' rows from '+scopeMembers().length+' clients');
+    ok('Trainer day: every row states its reason',day.every(r=>r.why&&r.why.length>3));
+    /* pattern needs real history, never a guess from one visit */
+    const thin=scopeMembers().find(c=>(DB.get('checkins')||[]).filter(k=>k.m===c.id).length<3);
+    if(thin)ok('Trainer day: a client with almost no history gets no invented pattern',memberPattern(thin.id)===null);
+    /* log a session for a client who is not in today */
+    const target=scopeMembers().find(c=>!todayCheckins().some(k=>k.m===c.id));
+    if(target){
+     const ck0=DB.get('checkins').length,band0=pulseData([target])[0].days;
+     openSessionModal(target.id);
+     document.getElementById('sm_note').value='Upper body, bench 3x8 at 60kg';
+     saveClientSession();
+     const row=DB.get('checkins')[0];
+     ok('Trainer: logging a session writes one check-in stamped as trainer-logged',
+       DB.get('checkins').length===ck0+1&&row.via==='trainer'&&row.note.indexOf('bench')>-1);
+     ok('Trainer: that session moves the client to trained-today',pulseData([target])[0].days===0&&band0!==0);
+     openSessionModal(target.id);saveClientSession();
+     ok('Trainer: cannot double-log the same client on the same day',DB.get('checkins').length===ck0+1);
+     runUndo();
+     ok('Trainer: undo removes the session cleanly',DB.get('checkins').length===ck0);
+    }
+    closePanel();closeSessionModal();
+   })();
+   /* MANAGER: no per-person revenue anywhere they can reach */
+   (function(){
+    if(!mgr){ok('Manager exists in seed',false);return;}
+    signIn(mgr);go('reports');
+    const card=document.getElementById('rpByOwner').closest('.card').textContent;
+    const staffNames=DB.get('staff').filter(s=>s.active).map(s=>s.name);
+    ok('Manager: Reports shows no per-person revenue breakdown',!staffNames.some(n=>card.indexOf(n)>-1),card.slice(0,60));
+    ok('Manager: still gets a useful join-source breakdown instead',card.indexOf('Where joins come from')>-1);
+    signIn(owner);go('reports');
+    const ocard=document.getElementById('rpByOwner').closest('.card').textContent;
+    ok('Owner: still sees revenue by trainer',ocard.indexOf('Where revenue comes from')>-1);
+   })();
+   signIn(owner);
    /* EDIT MEMBER */
    const em=activeMembers()[0],ep=memberPlan(em.id);
    const fee0=ep?recFee(ep):0,tier0=em.cohort;
