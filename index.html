@@ -1140,6 +1140,24 @@ body.dark .stat-kpi .val{color:#fff}
   </div>
 </div>
 
+<div class="modal-ov" id="planModal">
+  <div class="modal" style="width:560px">
+    <div class="modal-h"><h3 id="pmSessTitle">Set their session</h3><button class="pn-close" onclick="closePlanModal()" style="position:static;width:30px;height:30px">&#10005;</button></div>
+    <div class="modal-b" style="max-height:62vh;overflow-y:auto">
+      <div class="fld-grid2">
+        <div class="fld"><label for="pl_name">Session name</label><input id="pl_name" placeholder="e.g. Push day" maxlength="40"></div>
+        <div class="fld"><label for="pl_note">Note for them (optional)</label><input id="pl_note" placeholder="e.g. go lighter, shoulder" maxlength="80"></div>
+      </div>
+      <div class="sec-t" style="margin:6px 0 8px">Exercises</div>
+      <div id="pl_list"></div>
+      <select class="filter" style="width:100%;margin-top:10px" onchange="planPick(this.value);this.value=''">
+        <option value="">Add an exercise...</option>
+      </select>
+    </div>
+    <div class="modal-f"><button class="btn-ghost" onclick="closePlanModal()">Cancel</button><button class="btn-primary" onclick="sendPlan()">Send to their app</button></div>
+  </div>
+</div>
+
 <div class="modal-ov" id="sessionModal">
   <div class="modal" style="width:440px">
     <div class="modal-h"><h3 id="smTitle">Log a session</h3><button class="pn-close" onclick="closeSessionModal()" style="position:static;width:30px;height:30px">&#10005;</button></div>
@@ -2926,6 +2944,71 @@ function renderCustomers(){
 }
 /* ── LOG A SESSION FOR A CLIENT: the ones who will never open an app were
    invisible until now. Writes the same check-in event the member app writes. ── */
+/* the exercise library the trainer builds from, matching the member app's */
+const GYM_EX=[
+ {n:'Flat Bench Press',g:'Chest',sets:4,reps:'8-10',kg:70},
+ {n:'Incline DB Press',g:'Chest',sets:3,reps:'10-12',kg:22},
+ {n:'Seated Cable Row',g:'Back',sets:4,reps:'10-12',kg:55},
+ {n:'Lat Pulldown',g:'Back',sets:3,reps:'10-12',kg:50},
+ {n:'Shoulder Press',g:'Shoulders',sets:3,reps:'8-10',kg:35},
+ {n:'Cable Curl',g:'Arms',sets:3,reps:'12-15',kg:25},
+ {n:'Back Squat',g:'Legs',sets:4,reps:'6-8',kg:90},
+ {n:'Romanian Deadlift',g:'Hamstrings',sets:3,reps:'8-10',kg:80},
+ {n:'Leg Press',g:'Legs',sets:3,reps:'12-15',kg:140},
+ {n:'Calf Raise',g:'Calves',sets:4,reps:'15-20',kg:60},
+];
+let PL_ID=null,PL_EX=[];
+function openPlanModal(id){
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ PL_ID=id;PL_EX=[];
+ document.getElementById('pmSessTitle').textContent='Set a session for '+c.name.split(' ')[0];
+ document.getElementById('pl_name').value='';
+ document.getElementById('pl_note').value='';
+ const sel=document.querySelector('#planModal select');
+ sel.innerHTML='<option value="">Add an exercise...</option>'+GYM_EX.map((x,i)=>'<option value="'+i+'">'+x.n+' · '+x.g+'</option>').join('');
+ renderPlanList();
+ document.getElementById('planModal').classList.add('open');
+}
+function closePlanModal(){document.getElementById('planModal').classList.remove('open');PL_ID=null;PL_EX=[];}
+function planPick(i){
+ if(i==='')return;
+ const x=GYM_EX[+i];if(!x)return;
+ if(PL_EX.length>=8){toast('Eight exercises is plenty for one session');return;}
+ PL_EX.push({n:x.n,sets:x.sets,reps:x.reps,kg:x.kg});
+ renderPlanList();
+}
+function planDrop(i){PL_EX.splice(i,1);renderPlanList();}
+function planSet(i,f,v){
+ if(f==='sets')PL_EX[i].sets=Math.max(1,Math.min(8,parseInt(v)||1));
+ else if(f==='kg'){const n=parseFloat(String(v).replace(/[^0-9.]/g,''));PL_EX[i].kg=isFinite(n)&&n>=0?n:PL_EX[i].kg;}
+ else PL_EX[i].reps=String(v).slice(0,12);
+ renderPlanList();
+}
+function renderPlanList(){
+ document.getElementById('pl_list').innerHTML=PL_EX.length?PL_EX.map((x,i)=>
+  '<div style="display:grid;grid-template-columns:1fr 58px 74px 74px 34px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line2)">'
+  +'<div style="font-size:13px;font-weight:600">'+x.n+'</div>'
+  +'<input class="filter" style="padding:8px" inputmode="numeric" value="'+x.sets+'" onchange="planSet('+i+',\'sets\',this.value)" aria-label="Sets">'
+  +'<input class="filter" style="padding:8px" value="'+x.reps+'" onchange="planSet('+i+',\'reps\',this.value)" aria-label="Reps">'
+  +'<input class="filter" style="padding:8px" inputmode="decimal" value="'+x.kg+'" onchange="planSet('+i+',\'kg\',this.value)" aria-label="Weight">'
+  +'<button class="btn-ghost" style="padding:7px 9px" onclick="planDrop('+i+')" aria-label="Remove">&#10005;</button></div>').join('')
+  +'<div style="font-size:11px;color:var(--faint);margin-top:8px">Columns: sets, reps, target kg</div>'
+  :'<div style="font-size:12.5px;color:var(--muted);padding:8px 0">Nothing added yet. Pick from the list below.</div>';
+}
+function sendPlan(){
+ const c=DB.get('customers').find(x=>x.id===PL_ID);if(!c)return;
+ if(!PL_EX.length){toast('Add at least one exercise');return;}
+ const name=(document.getElementById('pl_name').value||'').trim()||'Session from '+CURRENT.name.split(' ')[0];
+ const note=(document.getElementById('pl_note').value||'').trim();
+ const before=bridgeRead().plan||null;
+ const ok2=bridgeWrite({plan:{for:c.name,session:name,note:note,by:CURRENT.name,date:todayISO(),
+  at:todayISO()+'-'+DB.get('checkins').length+'-'+PL_EX.length,exercises:PL_EX.slice()}});
+ if(!ok2){toast('Sending a session needs the demo bridge, which this browser has blocked');return;}
+ logFeed(CURRENT.id,'Session set',c.name+' · '+name+' ('+PL_EX.length+' exercises)');DB.commit();
+ closePlanModal();renderApp();
+ toastUndo(I.check+' '+name+' sent to '+c.name.split(' ')[0]+'\'s app',function(){
+  bridgeWrite({plan:before});renderApp();});
+}
 let SM_ID=null;
 function openSessionModal(id){
  const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
@@ -2966,7 +3049,8 @@ function openClientTrainer(c){
   +'<div class="pn-actions">'
   +'<button class="pa primary" onclick="pulseWA('+c.id+','+(x.days===999?0:x.days)+')">'+I.phone+' Message</button>'
   +'<button class="pa" onclick="openSessionModal('+c.id+')">'+I.check+' Log a session</button>'
-  +'<button class="pa" onclick="pulseTask('+c.id+')">'+I.doc+' Task for me</button>'
+  +'<button class="pa" onclick="openPlanModal('+c.id+')">'+I.doc+' Set their session</button>'
+  +'<button class="pa" onclick="pulseTask('+c.id+')">Task for me</button>'
   +'</div>'
   +'<div class="pn-body">'
   +'<div class="sec"><div class="sec-t">Training</div><div class="info-grid">'
@@ -2979,7 +3063,11 @@ function openClientTrainer(c){
   +(function(){const noted=(DB.get('checkins')||[]).filter(k=>k.m===c.id&&k.note).slice(0,3);
     return noted.length?'<div style="margin-top:13px"><div class="sec-t" style="margin-bottom:7px">Recent sessions you logged</div>'
      +noted.map(k=>'<div style="font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--line2)"><b>'+fmtDate(k.date)+'</b> · '+k.note+'</div>').join('')+'</div>':'';})()
-  +'</div>'
+  +(function(){const p=bridgeRead().plan;
+     return (p&&p.for===c.name)?'<div class="sec"><div class="sec-t">Session you set</div>'
+      +'<div style="font-size:13px;font-weight:700">'+p.session+'</div>'
+      +'<div style="font-size:12px;color:var(--muted);margin-top:4px">'+p.exercises.map(x=>x.n+' '+x.sets+'x'+x.reps+' at '+x.kg+'kg').join('<br>')+'</div>'
+      +(p.note?'<div style="font-size:12px;color:var(--muted);margin-top:7px">Note: '+p.note+'</div>':'')+'</div>':'';})()
   +syncSection(c)
   +'</div>';
  document.getElementById('overlay').classList.add('open');panel.classList.add('open');
@@ -3636,13 +3724,16 @@ function bridgeRead(){
  const ck=Array.isArray(d.checkins)?d.checkins.filter(x=>x&&x.date===today):[];
  const nt=Array.isArray(d.notes)?d.notes.filter(x=>x&&x.date===today):[];
  const sm=(d.summary&&d.summary.date===today)?d.summary:null;
- return {checkins:ck,summary:sm,notes:nt};
+ /* the plan travels the same channel and is scoped to today like everything else.
+    It was missing from this return, so a sent session vanished silently. */
+ const pl=(d.plan&&d.plan.date===today)?d.plan:null;
+ return {checkins:ck,summary:sm,notes:nt,plan:pl};
 }
 function bridgeWrite(patch){
  if(!bridgeOn())return false;
  try{
   const cur=bridgeRead();
-  const next={checkins:cur.checkins,summary:cur.summary,notes:cur.notes};
+  const next={checkins:cur.checkins,summary:cur.summary,notes:cur.notes,plan:cur.plan};
   Object.keys(patch||{}).forEach(k=>{next[k]=patch[k];});
   localStorage.setItem(BRIDGE_KEY,JSON.stringify(next));
   return true;
@@ -4154,6 +4245,35 @@ async function runSelfTest(opts){
      ok('Trainer: undo removes the session cleanly',DB.get('checkins').length===ck0);
     }
     closePanel();closeSessionModal();
+   })();
+   /* TRAINER SETS THE SESSION */
+   (function(){
+    const tr3=DB.get('staff').find(s=>s.pos==='trainer');if(!tr3)return;
+    signIn(tr3);bridgeClear();
+    const cl=scopeMembers()[0];
+    openPlanModal(cl.id);
+    ok('Set session: opens empty, nothing assumed',PL_EX.length===0);
+    sendPlan();
+    ok('Set session: refuses to send an empty session',!bridgeRead().plan);
+    planPick('0');planPick('4');
+    ok('Set session: picking adds with library defaults',PL_EX.length===2&&PL_EX[0].sets>0&&!!PL_EX[0].reps);
+    planSet(0,'kg','62.5');planSet(0,'sets','3');
+    ok('Set session: targets are editable',PL_EX[0].kg===62.5&&PL_EX[0].sets===3);
+    planSet(0,'kg','abc');
+    ok('Set session: refuses a non-numeric weight',PL_EX[0].kg===62.5);
+    planDrop(1);
+    ok('Set session: an exercise can be removed',PL_EX.length===1);
+    planPick('4');
+    document.getElementById('pl_name').value='Coach Push';
+    sendPlan();
+    const p=bridgeRead().plan;
+    ok('Set session: lands on the bridge for that member, stamped with the trainer',
+      !!p&&p.for===cl.name&&p.session==='Coach Push'&&p.by===tr3.name&&p.exercises.length===2);
+    openCustomer(cl.id);
+    ok('Set session: the trainer can see what they sent',(document.getElementById('panel').innerHTML||'').indexOf('Session you set')>-1);
+    runUndo();
+    ok('Set session: undo withdraws it',!bridgeRead().plan);
+    closePanel();bridgeClear();
    })();
    /* MANAGER: no per-person revenue anywhere they can reach */
    (function(){

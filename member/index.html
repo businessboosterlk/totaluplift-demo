@@ -335,6 +335,20 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .hk.pr{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 40%,transparent);color:var(--txt)}
 .hk.pace{background:var(--green-soft);border-color:color-mix(in srgb,var(--green) 34%,transparent);color:var(--txt)}
 
+/* ── PLAN EDITING ─────────────────────────────────────────── */
+.plan-bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:14px 0 4px}
+.plan-bar .sp{flex:1}
+.ex-edit{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 16px 14px}
+.ex-edit label{display:block;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);font-weight:700;margin-bottom:5px}
+.ex-edit input{width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px 10px;font-size:14px;color:var(--txt);text-align:center;outline:none;font-variant-numeric:tabular-nums}
+.ex-edit input:focus{border-color:var(--brand)}
+.ex-tools{display:flex;gap:7px;padding:0 16px 14px}
+.ex-tools button{min-height:44px;min-width:44px;flex:1;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.ex-tools button:hover{border-color:var(--brand);color:var(--brand)}
+.ex-tools button.rm:hover{border-color:var(--danger);color:var(--danger)}
+.from-trainer{display:flex;align-items:center;gap:9px;background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 42%,transparent);border-radius:var(--r-md);padding:11px 14px;margin-top:12px;font-size:12.5px;font-weight:600}
+.from-trainer .ic{width:15px;height:15px;color:var(--brand);flex-shrink:0}
+
 /* ── EDIT AFFORDANCES ─────────────────────────────────────── */
 .edit-b{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:5px;transition:.15s}
 .edit-b:hover{border-color:var(--brand);color:var(--brand)}
@@ -515,7 +529,9 @@ input,textarea{font-family:inherit;color:var(--txt)}
     <div class="run-h" id="plHead"></div>
     <div class="run-tr"><div class="run-fi" id="plFill"></div></div>
     <div class="run-p" id="plProg"></div>
-    <div class="sec-h"><h3>Exercises</h3><span class="hint">log every set</span></div>
+    <div id="plFromTrainer"></div>
+    <div class="plan-bar"><h3 style="font-size:17px;font-weight:800">Exercises</h3><div class="sp"></div>
+      <button class="btn" style="width:auto;padding:11px 15px" id="plEditBtn" onclick="togglePlanEdit()"></button></div>
     <div id="plEx"></div>
     <div id="plFinish"></div>
   </div>
@@ -781,13 +797,16 @@ function bridgeRead(){
  const ck=Array.isArray(d.checkins)?d.checkins.filter(x=>x&&x.date===today):[];
  const nt=Array.isArray(d.notes)?d.notes.filter(x=>x&&x.date===today):[];
  const sm=(d.summary&&d.summary.date===today)?d.summary:null;
- return {checkins:ck,summary:sm,notes:nt};
+ /* the plan travels the same channel and is scoped to today like everything else.
+    It was missing from this return, so a sent session vanished silently. */
+ const pl=(d.plan&&d.plan.date===today)?d.plan:null;
+ return {checkins:ck,summary:sm,notes:nt,plan:pl};
 }
 function bridgeWrite(patch){
  if(!bridgeOn())return false;
  try{
   const cur=bridgeRead();
-  const next={checkins:cur.checkins,summary:cur.summary,notes:cur.notes};
+  const next={checkins:cur.checkins,summary:cur.summary,notes:cur.notes,plan:cur.plan};
   Object.keys(patch||{}).forEach(k=>{next[k]=patch[k];});
   localStorage.setItem(BRIDGE_KEY,JSON.stringify(next));
   return true;
@@ -881,6 +900,66 @@ function phaseIndex(){const d=DB.get('member').day;const ph=CFG.programme.phases
    SECTION 6 - SHELL: routing, toast + undo, safe list mapping
    ════════════════════════════════════════════════════════════════════ */
 let PAGE='today',UNDO=null;
+/* ── EDIT PLAN: the member owns their programme ── */
+let PLAN_EDIT=false;
+function togglePlanEdit(){PLAN_EDIT=!PLAN_EDIT;restStop();rerender();}
+function planMoveEx(ix,d){
+ const ex=DB.get('exercises'),j=ix+d;
+ if(j<0||j>=ex.length)return;
+ const t=ex[ix];ex[ix]=ex[j];ex[j]=t;
+ ex.forEach((e,i)=>e.i=i+1);
+ DB.commit();rerender();
+}
+function planRemoveEx(ix){
+ const ex=DB.get('exercises');if(ex.length<=1){toast('A session needs at least one exercise');return;}
+ const gone=ex.splice(ix,1)[0];
+ ex.forEach((e,i)=>e.i=i+1);
+ DB.commit();rerender();
+ toastUndo('Removed '+gone.n,function(){ex.splice(ix,0,gone);ex.forEach((e,i)=>e.i=i+1);DB.commit();rerender();});
+}
+function planAddEx(libIdx){
+ if(libIdx==='')return;
+ const lib=EX_LIB[+libIdx];if(!lib)return;
+ const ex=DB.get('exercises');
+ ex.push({i:ex.length+1,n:lib.n,g:lib.g,reps:lib.reps,kg:lib.kg,pr:lib.pr,cue:lib.cue,
+  hist:lib.hist||[lib.kg],sets:Array.from({length:lib.sets},()=>({kg:'',reps:'',done:false}))});
+ DB.commit();rerender();
+ toastUndo(I.check+' '+lib.n+' added',function(){ex.pop();DB.commit();rerender();});
+}
+function planTarget(ix,f,v){
+ const e=DB.get('exercises')[ix];if(!e)return;
+ if(f==='sets'){
+  const n=Math.max(1,Math.min(8,parseInt(v)||1));
+  while(e.sets.length<n)e.sets.push({kg:'',reps:'',done:false});
+  while(e.sets.length>n)e.sets.pop();
+ }else if(f==='kg'){
+  const n=parseFloat(String(v).replace(/[^0-9.]/g,''));
+  if(!isFinite(n)||n<0){toast('Numbers only');rerender();return;}
+  e.kg=n;
+ }else{e.reps=String(v).slice(0,12);}
+ DB.commit();rerender();
+}
+/* the trainer's session, delivered through the same bridge as everything else */
+function trainerPlan(){
+ const p=bridgeRead().plan;
+ return (p&&p.for===DB.get('member').name)?p:null;
+}
+function applyTrainerPlan(){
+ const p=trainerPlan();
+ if(!p||!Array.isArray(p.exercises)||!p.exercises.length)return false;
+ if(DB.get('exercises').some(e=>e.sets.some(s=>s.done)))return false;   /* never overwrite work in progress */
+ if(DB._d.planFrom===p.at)return false;                                  /* already applied */
+ DB._d.sessionName=p.session||DB.get('sessionName');
+ DB._d.exercises=p.exercises.map((x,i)=>{
+  const lib=EX_LIB.find(l=>l.n===x.n)||{};
+  return {i:i+1,n:x.n,g:lib.g||'',reps:x.reps||lib.reps||'8-10',kg:+x.kg||lib.kg||20,
+   pr:lib.pr||+x.kg||20,cue:lib.cue||'',hist:lib.hist||[+x.kg||20],
+   sets:Array.from({length:Math.max(1,+x.sets||3)},()=>({kg:'',reps:'',done:false}))};
+ });
+ DB._d.planFrom=p.at;
+ DB.commit();
+ return true;
+}
 const RENDERERS={today:renderToday,log:renderLog,plan:renderPlan,membership:renderMembership,stats:renderStats};
 const PRISTINE={};
 function snapshotPages(){document.querySelectorAll('.page').forEach(p=>{PRISTINE[p.id.replace('pg-','')]=p.innerHTML;});}
@@ -1203,7 +1282,12 @@ function sessionSets(){return DB.get('exercises').reduce((a,e)=>a+e.sets.length,
 function sessionDone(){return DB.get('exercises').reduce((a,e)=>a+e.sets.filter(s=>s.done).length,0);}
 function exDone(e){return e.sets.every(s=>s.done);}
 function renderPlan(){
+ applyTrainerPlan();
  const m=DB.get('member'),mon=mondayOf(todayISO());
+ const tp=trainerPlan();
+ document.getElementById('plFromTrainer').innerHTML=(tp&&DB._d.planFrom===tp.at)
+  ?'<div class="from-trainer">'+I.check+'<span><b>'+tp.by.split(' ')[0]+'</b> set this session for you'+(tp.note?': '+tp.note:'')+'</span></div>':'';
+ document.getElementById('plEditBtn').innerHTML=PLAN_EDIT?I.check+'Done editing':I.pencil+'Edit plan';
  document.getElementById('plWeek').innerHTML=mapSafe(WEEK_PLAN,(ty,i)=>{
   const date=shiftISO(mon,i),d=dayOf(date);
   const isToday=date===todayISO(),rest=ty==='rest';
@@ -1226,7 +1310,15 @@ function renderPlan(){
   +'<div class="ex-t">'+e.sets.length+' x '+e.reps+' · '+e.kg+' kg · '+e.g+'</div></div>'
   +sparkline(e.hist)+'</div>'
   +(e.prHit?'<div class="pr-hit">'+I.check+'New personal best: '+e.pr+' kg</div>':'')
- +'<div class="cue">'+e.cue+'</div>'
+ +(PLAN_EDIT?'<div class="ex-edit">'
+   +'<div><label>Sets</label><input inputmode="numeric" value="'+e.sets.length+'" onchange="planTarget('+ix+',\'sets\',this.value)"></div>'
+   +'<div><label>Reps</label><input value="'+e.reps+'" onchange="planTarget('+ix+',\'reps\',this.value)"></div>'
+   +'<div><label>Target kg</label><input inputmode="decimal" value="'+e.kg+'" onchange="planTarget('+ix+',\'kg\',this.value)"></div></div>'
+   +'<div class="ex-tools">'
+   +'<button onclick="planMoveEx('+ix+',-1)" aria-label="Move up">Up</button>'
+   +'<button onclick="planMoveEx('+ix+',1)" aria-label="Move down">Down</button>'
+   +'<button class="rm" onclick="planRemoveEx('+ix+')">Remove</button></div>'
+  :'<div class="cue">'+e.cue+'</div>')
  +'<div class="ex-swap">'+I.swap+'<select aria-label="Swap '+e.n+'" onchange="swapExercise('+ix+',this.value)">'
    +'<option value="">Swap this exercise...</option>'
    +swapOptions(e).map(o=>'<option value="'+o.i+'">'+o.n+'</option>').join('')+'</select></div>'
@@ -1242,6 +1334,15 @@ function renderPlan(){
    +(e.sets.length>1?'<button onclick="removeSet('+ix+')">Remove last set</button>':'')+'</div>'
   +'</div></div>');
  const d=todayRow();
+ if(PLAN_EDIT){
+  document.getElementById('plFinish').innerHTML='<div class="card pad" style="margin-top:4px">'
+   +'<div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--faint);font-weight:700;margin-bottom:9px">Add an exercise</div>'
+   +'<select style="width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--txt);font-family:inherit;font-size:13px" onchange="planAddEx(this.value);this.value=\'\'">'
+   +'<option value="">Choose from the library...</option>'
+   +EX_LIB.map((l,i)=>'<option value="'+i+'">'+l.n+' · '+l.g+'</option>').join('')+'</select>'
+   +'<div style="font-size:11.5px;color:var(--muted);margin-top:11px;line-height:1.6">Changes apply to today\'s session. Your trainer can see what you actually logged.</div></div>';
+  return;
+ }
  document.getElementById('plFinish').innerHTML=d.session
   ? '<div class="card pad" style="border-color:var(--green);text-align:center"><div style="color:var(--green);font-weight:800;font-size:14px">'+I.check+' Session logged</div><div style="font-size:12px;color:var(--muted);margin-top:6px">Your trainer can see it, and your check-in is recorded at the gym.</div><div class="row2" style="margin-top:12px"><button class="btn primary" onclick="shareSession()">'+I.wa+'Share it</button><button class="btn" onclick="unfinishSession()">Undo session</button></div></div>'
   : '<button class="btn primary" style="padding:15px" onclick="finishSession()">'+I.check+'Finish session ('+dn+' of '+tot+' sets)</button>';
@@ -1726,6 +1827,54 @@ async function runSelfTest(){
     .filter(el=>{const b=el.getBoundingClientRect();return b.width>0&&b.height>0&&b.height<44;});
    ok('Touch: every control on the workout runner is at least 44px tall',tiny.length===0,tiny.length+' too small: '+tiny.slice(0,3).map(e=>(e.className||e.tagName)+' h'+Math.round(e.getBoundingClientRect().height)).join(', '));
   })();
+  /* EDIT THE PLAN */
+  go('plan');
+  (function(){
+   const ex=DB.get('exercises');
+   const n0=ex.length,first0=ex[0].n;
+   PLAN_EDIT=true;rerender();
+   ok('Plan edit: targets become editable',document.querySelectorAll('#plEx .ex-edit input').length>=3);
+   planAddEx('0');
+   ok('Plan edit: add an exercise from the library',DB.get('exercises').length===n0+1);
+   runUndo();
+   ok('Plan edit: undo removes it again',DB.get('exercises').length===n0);
+   planMoveEx(0,1);
+   ok('Plan edit: reorder swaps and renumbers',DB.get('exercises')[1].n===first0&&DB.get('exercises')[0].i===1&&DB.get('exercises')[1].i===2);
+   planMoveEx(1,-1);
+   planTarget(0,'sets','5');
+   ok('Plan edit: changing sets resizes the set list',DB.get('exercises')[0].sets.length===5);
+   planTarget(0,'sets','3');
+   planTarget(0,'kg','abc');
+   ok('Plan edit: refuses a non-numeric target weight',typeof DB.get('exercises')[0].kg==='number');
+   while(DB.get('exercises').length>1)DB.get('exercises').pop();
+   planRemoveEx(0);
+   ok('Plan edit: refuses to empty the session',DB.get('exercises').length===1);
+   PLAN_EDIT=false;rerender();
+  })();
+  /* THE TRAINER'S SESSION ARRIVES THROUGH THE BRIDGE */
+  bridgeClear();
+  (function(){
+   /* earlier sections leave sets logged, and applyTrainerPlan correctly refuses to
+      overwrite work in progress, so this check must start from a clean session */
+   DB.get('exercises').forEach(e=>e.sets.forEach(x=>{x.done=false;x.kg='';x.reps='';}));
+   const stamp='plan-fixture-1';
+   bridgeWrite({plan:{for:DB.get('member').name,session:'Coach Push',by:'Kasun Bandara',note:'lighter today',
+    date:todayISO(),at:stamp,exercises:[{n:'Flat Bench Press',sets:3,reps:'8-10',kg:60},{n:'Shoulder Press',sets:3,reps:'10',kg:30}]}});
+   delete DB._d.planFrom;
+   const applied=applyTrainerPlan();
+   ok('Trainer plan: arrives and replaces the session',applied&&DB.get('sessionName')==='Coach Push'&&DB.get('exercises').length===2);
+   go('plan');
+   ok('Trainer plan: the member is told who set it',(document.getElementById('plFromTrainer').textContent||'').indexOf('Kasun')>-1);
+   ok('Trainer plan: applying twice does nothing',applyTrainerPlan()===false);
+   DB.get('exercises')[0].sets[0].done=true;
+   delete DB._d.planFrom;
+   ok('Trainer plan: never overwrites a session already being logged',applyTrainerPlan()===false);
+   DB.get('exercises')[0].sets[0].done=false;delete DB._d.planFrom;
+   bridgeWrite({plan:{for:DB.get('member').name,session:'Stale',by:'X',date:shiftISO(todayISO(),-1),at:'old',exercises:[{n:'Lat Pulldown',sets:3,reps:'10',kg:40}]}});
+   ok('Trainer plan: yesterday\'s session is never applied today',trainerPlan()===null&&applyTrainerPlan()===false);
+   DB.get('exercises')[0].sets[0].done=false;
+  })();
+  bridgeClear();
   /* SMART: rest timer, plates, PR, volume */
   go('plan');
   (function(){
