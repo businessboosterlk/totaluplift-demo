@@ -3063,6 +3063,7 @@ function openClientTrainer(c){
   +(function(){const noted=(DB.get('checkins')||[]).filter(k=>k.m===c.id&&k.note).slice(0,3);
     return noted.length?'<div style="margin-top:13px"><div class="sec-t" style="margin-bottom:7px">Recent sessions you logged</div>'
      +noted.map(k=>'<div style="font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--line2)"><b>'+fmtDate(k.date)+'</b> · '+k.note+'</div>').join('')+'</div>':'';})()
+  +'</div>'
   +(function(){const p=bridgeRead().plan;
      return (p&&p.for===c.name)?'<div class="sec"><div class="sec-t">Session you set</div>'
       +'<div style="font-size:13px;font-weight:700">'+p.session+'</div>'
