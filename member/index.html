@@ -26,6 +26,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
+/* the phone tells us how much room its status bar needs. Read it once, here,
+   and everything that has to clear the notch uses var(--sat). Overridable, so
+   the harness can pretend to be a Dynamic Island and prove the layout holds. */
+--sat:env(safe-area-inset-top,0px);
+--sab:env(safe-area-inset-bottom,0px);
 /* ── BRAND (swap these per client) ───────────────────────── */
 --brand:#EF3A1B;            /* the one accent: Total Uplift red-orange */
 --brand-dark:#C22C10;
@@ -56,7 +61,7 @@ html,body{overflow-x:clip;max-width:100%;width:100%}
 [hidden]{display:none!important}
 svg{flex-shrink:0}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.06s!important}}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased;padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased;padding-bottom:calc(86px + var(--sab))}
 h1,h2,h3{font-family:'Poppins',sans-serif;letter-spacing:-.4px}
 button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
 input,textarea{font-family:inherit;color:var(--txt)}
@@ -65,7 +70,9 @@ input,textarea{font-family:inherit;color:var(--txt)}
 
 /* ── APP SHELL ────────────────────────────────────────────── */
 .app{max-width:520px;margin:0 auto;padding:0 16px}
-.topbar{display:flex;align-items:center;gap:12px;padding:16px 0 14px;position:sticky;top:0;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:20}
+/* edge to edge and behind everything: the page is responsible for this strip */
+.statusfill{position:fixed;top:0;left:0;right:0;height:var(--sat);background:var(--bg);z-index:25;pointer-events:none}
+.topbar{display:flex;align-items:center;gap:12px;padding:calc(16px + var(--sat)) 0 14px;position:sticky;top:0;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:20}
 .tb-badge{width:38px;height:38px;border-radius:11px;background:var(--accent-grad);color:var(--on-accent);display:grid;place-items:center;font-family:'Poppins';font-weight:800;font-size:15px;flex-shrink:0;box-shadow:0 4px 14px var(--brand-glow)}
 .tb-prog .l{font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:var(--faint);font-weight:700}
 .tb-prog .d{font-size:14px;font-weight:700;margin-top:2px}
@@ -275,7 +282,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .day-b .ml .v{font-size:12.5px;margin-top:3px;line-height:1.5}
 
 /* ── BOTTOM NAV ───────────────────────────────────────────── */
-.nav{position:fixed;bottom:0;left:0;right:0;background:color-mix(in srgb,var(--ink-deep) 94%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+.nav{position:fixed;bottom:0;left:0;right:0;background:color-mix(in srgb,var(--ink-deep) 94%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line);display:flex;z-index:30;padding-bottom:var(--sab)}
 .nav button{flex:1;padding:11px 4px 13px;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--faint);font-size:10px;font-weight:700;letter-spacing:.4px}
 .nav button .ic{width:21px;height:21px}
 .nav button.on{color:var(--brand-txt)}
@@ -303,7 +310,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .ring .v{font-variant-numeric:tabular-nums}
 
 /* ── REST TIMER: the most-used control in a gym ── */
-.restbar{position:fixed;left:0;right:0;bottom:calc(86px + env(safe-area-inset-bottom));z-index:40;display:none;justify-content:center;padding:0 14px;pointer-events:none}
+.restbar{position:fixed;left:0;right:0;bottom:calc(86px + var(--sab));z-index:40;display:none;justify-content:center;padding:0 14px;pointer-events:none}
 .restbar.on{display:flex}
 @media(min-width:960px){.restbar{bottom:22px;left:86px}}
 .rest-in{pointer-events:auto;display:flex;align-items:center;gap:14px;background:color-mix(in srgb,var(--ink-deep) 96%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:var(--radius);padding:11px 15px;box-shadow:0 14px 40px rgba(0,0,0,.55);max-width:520px;width:100%}
@@ -402,7 +409,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .install .t{font-size:13.5px;font-weight:700}
 .install .s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
 .install button{margin-left:auto;flex-shrink:0;padding:10px 15px;border-radius:10px;font-size:12.5px;font-weight:700;background:var(--accent-grad);color:var(--on-accent);border:none;min-height:44px}
-.offline{position:fixed;top:0;left:0;right:0;z-index:70;background:var(--amber);color:#1a1204;text-align:center;font-size:12px;font-weight:800;padding:7px 12px;display:none}
+.offline{position:fixed;top:var(--sat);left:0;right:0;z-index:70;background:var(--amber);color:#1a1204;text-align:center;font-size:12px;font-weight:800;padding:7px 12px;display:none}
 .offline.on{display:block}
 body.is-offline .topbar{top:30px}
 
@@ -432,7 +439,7 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
 .sheet-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:80;display:none;align-items:flex-end;justify-content:center}
 .sheet-ov.on{display:flex}
 @media(min-width:720px){.sheet-ov.on{align-items:center}}
-.sheet{background:var(--surface);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:520px;padding:20px 18px calc(22px + env(safe-area-inset-bottom));animation:up .24s var(--ease)}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:520px;padding:20px 18px calc(22px + var(--sab));animation:up .24s var(--ease)}
 @media(min-width:720px){.sheet{border-radius:20px}}
 .sheet h3{font-size:17px;font-weight:800;margin-bottom:4px}
 .sheet .sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5}
@@ -642,6 +649,7 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
   <button data-pg="stats" onclick="go('stats')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Stats</button>
 </nav>
 
+<div class="statusfill" aria-hidden="true"></div>
 <div class="offline" id="offlineBar">No signal. You can still log everything, it syncs when you are back.</div>
 <div class="restbar" id="restBar"><div class="rest-in">
   <div class="rest-ring" id="restRing"></div>
@@ -2375,6 +2383,40 @@ async function runSelfTest(){
   ok('Edit: add a set, then undo',added&&DB.get('exercises')[0].sets.length===sets0);
   removeSet(0);const removed=DB.get('exercises')[0].sets.length===sets0-1;runUndo();
   ok('Edit: remove a set, then undo',removed&&DB.get('exercises')[0].sets.length===sets0);
+  /* THE STATUS BAR STRIP. env() cannot be faked, so --sat exists to be faked. */
+  (function(){
+   const root=document.documentElement;
+   const base=document.querySelector('.topbar').getBoundingClientRect();
+   const fill=document.querySelector('.statusfill');
+   ok('Safe area: the page paints the status bar strip itself',!!fill);
+   /* pretend to be a Dynamic Island */
+   root.style.setProperty('--sat','59px');
+   const isl=document.querySelector('.topbar').getBoundingClientRect();
+   ok('Safe area: the topbar moves its content clear of the island',
+     isl.top+59<=isl.top+base.height+1&&(isl.height-base.height)>=58,
+     'grew '+Math.round(isl.height-base.height)+'px');
+   const badge=document.querySelector('.tb-badge');
+   ok('Safe area: nothing in the topbar sits under the island',
+     !badge||badge.getBoundingClientRect().top>=58,
+     badge?Math.round(badge.getBoundingClientRect().top)+'px from the top':'no badge');
+   ok('Safe area: the strip is filled edge to edge, so no page shows through',
+     Math.round(fill.getBoundingClientRect().height)===59
+     &&Math.round(fill.getBoundingClientRect().width)===Math.round(innerWidth));
+   /* and the offline banner belongs below the island, not under it */
+   setOffline(true);
+   const ob=document.getElementById('offlineBar').getBoundingClientRect();
+   ok('Safe area: the offline banner clears the island too',ob.top>=58,Math.round(ob.top)+'px');
+   setOffline(false);
+   /* a flat phone must not gain a gap */
+   root.style.setProperty('--sat','0px');
+   const flat=document.querySelector('.topbar').getBoundingClientRect();
+   ok('Safe area: a phone with no notch gains no empty strip',
+     Math.abs(flat.height-base.height)<1&&document.querySelector('.statusfill').getBoundingClientRect().height===0);
+   root.style.removeProperty('--sat');
+   ok('Safe area: the real inset is read from the device, never guessed from the model',
+     getComputedStyle(root).getPropertyValue('--sat').indexOf('env(')>-1
+     ||/^[\d.]+px$/.test(getComputedStyle(root).getPropertyValue('--sat').trim()));
+  })();
   /* FULLSCREEN: the instruction has to be findable */
   (function(){
    try{localStorage.removeItem('tu_fs_dismissed');}catch(e){}

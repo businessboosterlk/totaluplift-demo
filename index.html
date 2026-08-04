@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0E141B">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -27,6 +32,9 @@
    --brand via color-mix, so 3 hex swaps restyle the whole app.
    ============================================================ */
 :root{
+/* same contract as the member app: the phone reports its own inset */
+--sat:env(safe-area-inset-top,0px);
+--sab:env(safe-area-inset-bottom,0px);
 /* ── BRAND (swap these 3 per client) ─────────────────────── */
 --brand:#EF3A1B;            /* the one accent: Total Uplift red-orange (from their brand) */
 --brand-dark:#C22C10;       /* pressed / gradient base */
@@ -164,7 +172,8 @@ input,select,textarea{font-family:inherit;color:var(--ink)}
 .side-foot .out{margin-left:auto;color:var(--sidebar-faint);cursor:pointer;background:none;border:none;padding:6px;border-radius:8px}.side-foot .out:hover{color:#fff}
 
 .main{margin-left:248px;flex:1;min-width:0}
-.topbar{background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line);padding:0 30px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30}
+.statusfill{position:fixed;top:0;left:0;right:0;height:var(--sat);background:var(--surface);z-index:60;pointer-events:none}
+.topbar{background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line);padding:var(--sat) 30px 0;height:calc(64px + var(--sat));box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30}
 .topbar>div:first-child{min-width:0;flex:1;overflow:hidden}
 .topbar .pt{font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .topbar .ps{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -468,7 +477,7 @@ select.filter{appearance:none;-webkit-appearance:none;background-image:url("data
  .hamb{display:flex}
  .search-wrap{display:none}
  .tb-clock{display:none}
- .topbar{padding:0 16px;height:60px}
+ .topbar{padding:var(--sat) 16px 0;height:calc(60px + var(--sat))}
  .topbar .pt{font-size:16px}.topbar .ps{display:none}
  .content{padding:18px 14px 60px}
  .hero-money{grid-template-columns:1fr}
@@ -1162,6 +1171,7 @@ body.dark .stat-kpi .val{color:#fff}
 </div>
 
 <!-- ══════════ DETAIL PANEL · MODALS · TOAST ══════════ -->
+<div class="statusfill" aria-hidden="true"></div>
 <div class="overlay" id="overlay" onclick="closePanel()"></div>
 <aside class="panel" id="panel" aria-label="Detail panel"></aside>
 
@@ -4831,6 +4841,24 @@ async function runSelfTest(opts){
    ok('Pulse: revenue-at-risk reconciles to the band fees',rar2===manualRar&&rar2>=0,lkr(rar2));
    go('pulse');
    ok('Pulse: revenue-at-risk is shown on the board',rar2===0||(document.getElementById('pulseHint').innerHTML||'').indexOf('revenue')>-1);
+   /* THE STATUS BAR STRIP, staff side */
+   (function(){
+    signIn(owner);go('dashboard');
+    const root=document.documentElement;
+    const base=document.querySelector('.topbar').getBoundingClientRect().height;
+    root.style.setProperty('--sat','59px');
+    const isl=document.querySelector('.topbar').getBoundingClientRect().height;
+    const kid=document.querySelector('.topbar > *').getBoundingClientRect();
+    ok('Safe area: the topbar grows by exactly the inset the phone reports',
+      Math.round(isl-base)===59,'grew '+Math.round(isl-base)+'px');
+    ok('Safe area: nothing in the topbar sits under the island',kid.top>=58,Math.round(kid.top)+'px');
+    ok('Safe area: the strip is painted, so no page shows behind the clock',
+      Math.round(document.querySelector('.statusfill').getBoundingClientRect().height)===59);
+    root.style.setProperty('--sat','0px');
+    ok('Safe area: a phone with no notch gains no empty strip',
+      Math.abs(document.querySelector('.topbar').getBoundingClientRect().height-base)<1);
+    root.style.removeProperty('--sat');
+   })();
    /* THE TRAINER NUDGE */
    (function(){
     const tr6=DB.get('staff').find(x=>x.pos==='trainer');if(!tr6)return;
