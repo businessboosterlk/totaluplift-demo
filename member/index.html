@@ -385,6 +385,18 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .add-own button{min-height:44px;padding:0 18px;border-radius:10px;background:var(--accent-grad);color:var(--on-accent);border:none;font-weight:750;font-size:13px;flex-shrink:0}
 
 /* ── INSTALL + OFFLINE ────────────────────────────────────── */
+/* the fullscreen card. Loud enough to be read once, gone forever after. */
+.fs{background:var(--surface);border:1px solid var(--brand);border-radius:var(--radius);padding:16px 17px;margin-bottom:16px}
+.fs .fhead{display:flex;align-items:flex-start;gap:8px}
+.fs .fhead>div{flex:1;min-width:0}
+.fs .ft{font-size:15px;font-weight:800;letter-spacing:-.2px}
+.fs .fs2{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.55}
+.fs ol{margin:13px 0 0;padding:0;list-style:none;display:grid;gap:9px}
+.fs li{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600}
+.fs li .n{width:22px;height:22px;border-radius:7px;background:var(--brand-soft);color:var(--brand-txt);display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0}
+.fs li svg{width:17px;height:17px;color:var(--brand-txt);flex-shrink:0}
+.fs .x{width:44px;height:44px;margin:-10px -10px 0 0;border-radius:11px;display:grid;place-items:center;color:var(--faint);background:none;border:none;font-size:16px;flex-shrink:0}
+.fs .fbtn{width:100%;min-height:46px;margin-top:13px;border-radius:12px;background:var(--accent-grad);color:var(--on-accent);border:none;font-weight:750;font-size:14px}
 .install{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--brand);border-radius:var(--radius);padding:14px 16px;margin-top:14px}
 .install .ic{width:18px;height:18px;color:var(--brand-txt);flex-shrink:0}
 .install .t{font-size:13.5px;font-weight:700}
@@ -530,6 +542,7 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
 
   <!-- ══ TODAY ══ -->
   <div class="page on" id="pg-today">
+    <div id="installCard"></div>
     <div id="tdAccess"></div>
     <div class="greet" id="tdGreet"></div>
     <div class="promise" id="tdPromise"></div>
@@ -566,7 +579,6 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
       <div class="phases" id="bdPhases"></div>
     </div>
 
-    <div id="installCard"></div>
     <div class="sec-h sh-grid"><h3 id="gridTitle"></h3><span class="hint" id="gridHint"></span></div>
     <div class="card pad td-grid">
       <div class="grid90" id="grid90"></div>
@@ -1244,6 +1256,7 @@ function todayHeadline(){
 }
 /* said out loud on Today, where the score that uses it is shown */
 function renderProvenance(){
+ renderInstall();
  const el=document.getElementById('tdProv');if(!el)return;
  const d=todayRow();
  if(!d.steps){el.innerHTML='';return;}
@@ -1309,7 +1322,7 @@ function renderToday(){
   +'<div style="min-width:0"><div class="l">Ask anytime</div><div class="n">'+m.trainer.split(' ')[0]+', your trainer</div><div class="m">Form, swaps, why you feel flat. A real answer from the person who wrote your plan.</div></div>'
   +'<div class="go">'+I.wa+'</div>';
  document.getElementById('tdHooks').innerHTML=hookChips();
- renderBuild();renderGrid();renderInstall();renderAccessBars();renderProvenance();
+ renderBuild();renderGrid();renderAccessBars();renderProvenance();
  /* build stamp: so a screenshot can always answer "which version is this" */
  let bs=document.getElementById('buildStamp');
  if(!bs){bs=document.createElement('div');bs.id='buildStamp';
@@ -2362,6 +2375,29 @@ async function runSelfTest(){
   ok('Edit: add a set, then undo',added&&DB.get('exercises')[0].sets.length===sets0);
   removeSet(0);const removed=DB.get('exercises')[0].sets.length===sets0-1;runUndo();
   ok('Edit: remove a set, then undo',removed&&DB.get('exercises')[0].sets.length===sets0);
+  /* FULLSCREEN: the instruction has to be findable */
+  (function(){
+   try{localStorage.removeItem('tu_fs_dismissed');}catch(e){}
+   go('today');
+   const card=document.getElementById('installCard');
+   const shown=(card.innerHTML||'').length>0;
+   ok('Fullscreen: the how-to sits at the top of Today, not buried',
+     !shown||card.getBoundingClientRect().top<document.getElementById('tdGreet').getBoundingClientRect().top);
+   if(shown){
+    const t=card.textContent||'';
+    ok('Fullscreen: it says what the member gets, in their words',t.indexOf('fullscreen')>-1||t.indexOf('like an app')>-1);
+    ok('Fullscreen: it gives the actual steps, not just an instruction to install',
+      t.indexOf('Add to Home Screen')>-1||t.indexOf('Add to my phone')>-1||t.indexOf('Install')>-1);
+    dismissInstall();
+    ok('Fullscreen: it can be dismissed and stays dismissed',(document.getElementById('installCard').innerHTML||'')==='');
+    try{localStorage.removeItem('tu_fs_dismissed');}catch(e){}
+    renderInstall();
+   }
+   ok('Fullscreen: an installed app is never told to install',
+     isInstalled()?(document.getElementById('installCard').innerHTML||'')==='':true);
+   try{localStorage.removeItem('tu_fs_dismissed');}catch(e){}
+   renderInstall();
+  })();
   /* A NUMBER A HUMAN TYPED MUST SAY SO */
   (function(){
    const d=todayRow(),was=d.stepSrc,wasN=d.steps;
@@ -2545,8 +2581,9 @@ async function runSelfTest(){
   })();
   /* INSTALL + OFFLINE */
   go('today');
-  ok('Install: the prompt is absent until the browser offers one',
-    !!document.getElementById('installCard')&&(INSTALL_EVT!==null||document.getElementById('installCard').innerHTML.indexOf('<button')===-1));
+  ok('Install: a one-tap Add is only offered when the browser can actually do it',
+    !!document.getElementById('installCard')
+    &&(INSTALL_EVT!==null||(document.getElementById('installCard').textContent||'').indexOf('Add to my phone')===-1));
   (function(){
    setOffline(true);
    ok('Offline: the banner appears and the app still renders',
@@ -2611,22 +2648,43 @@ function stReport(R,failed){
 /* ── INSTALL PROMPT: only shown when the browser says it is installable,
    and never on a device that already has it ── */
 let INSTALL_EVT=null;
+/* the iOS share glyph, drawn, because "tap the share button" means nothing until
+   you can see which button it is */
+const SHARE_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3"/><path d="m8 7 4-4 4 4"/><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/></svg>';
+const PLUS_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>';
+function isInstalled(){
+ return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)
+  ||window.navigator.standalone===true;
+}
+function dismissInstall(){
+ try{localStorage.setItem('tu_fs_dismissed','1');}catch(e){}
+ renderInstall();
+}
+function fsDismissed(){
+ try{return localStorage.getItem('tu_fs_dismissed')==='1';}catch(e){return false;}
+}
 function renderInstall(){
  const el=document.getElementById('installCard');if(!el)return;
- const standalone=window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches
-  ||window.navigator.standalone===true;
+ /* installed already: the card would be telling them to do what they have done */
+ if(isInstalled()||fsDismissed()){el.innerHTML='';return;}
  const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
- if(standalone){el.innerHTML='';return;}
  if(INSTALL_EVT){
-  el.innerHTML='<div class="install">'+I.enter
-   +'<div><div class="t">Add Total Uplift to your phone</div>'
-   +'<div class="s">Opens like an app, and keeps working when the gym has no signal.</div></div>'
-   +'<button onclick="doInstall()">Add</button></div>';
+  el.innerHTML='<div class="fs"><div class="fhead"><div><div class="ft">Use it fullscreen, like an app</div>'
+   +'<div class="fs2">No address bar, its own icon, and it keeps working when the gym has no signal.</div></div>'
+   +'<button class="x" onclick="dismissInstall()" aria-label="Hide this">&#10005;</button></div>'
+   +'<button class="fbtn" onclick="doInstall()">Add to my phone</button></div>';
  }else if(iOS){
-  el.innerHTML='<div class="install"><div>'+I.enter+'</div>'
-   +'<div><div class="t">Add to your home screen</div>'
-   +'<div class="s">Tap the share button, then "Add to Home Screen". It opens like an app and works without signal.</div></div></div>';
- }else el.innerHTML='';
+  el.innerHTML='<div class="fs"><div class="fhead"><div><div class="ft">Use it fullscreen, like an app</div>'
+   +'<div class="fs2">Two taps and the address bar is gone for good. It gets its own icon and keeps working with no signal.</div></div>'
+   +'<button class="x" onclick="dismissInstall()" aria-label="Hide this">&#10005;</button></div>'
+   +'<ol><li><span class="n">1</span>'+SHARE_IC+'<span>Tap Share, at the bottom of Safari</span></li>'
+   +'<li><span class="n">2</span>'+PLUS_IC+'<span>Choose "Add to Home Screen"</span></li>'
+   +'<li><span class="n">3</span><span style="width:17px"></span><span>Open it from your home screen, not Safari</span></li></ol></div>';
+ }else{
+  el.innerHTML='<div class="fs"><div class="fhead"><div><div class="ft">Use it fullscreen, like an app</div>'
+   +'<div class="fs2">In your browser menu choose Install, or Add to Home screen. It gets its own icon and no address bar.</div></div>'
+   +'<button class="x" onclick="dismissInstall()" aria-label="Hide this">&#10005;</button></div></div>';
+ }
 }
 function doInstall(){
  if(!INSTALL_EVT)return;
