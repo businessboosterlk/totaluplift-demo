@@ -1,0 +1,16 @@
+{
+  "name": "Total Uplift",
+  "short_name": "Total Uplift",
+  "description": "Your plan, your progress and your membership, in one place.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B1117",
+  "theme_color": "#0E141B",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

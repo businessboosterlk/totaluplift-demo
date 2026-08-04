@@ -7,6 +7,11 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Total Uplift">
 <meta name="robots" content="noindex,nofollow">
 <title>Total Uplift - Member App</title>
 <!-- ════════════════════════════════════════════════════════════════════
@@ -335,6 +340,16 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .hk.pr{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 40%,transparent);color:var(--txt)}
 .hk.pace{background:var(--green-soft);border-color:color-mix(in srgb,var(--green) 34%,transparent);color:var(--txt)}
 
+/* ── INSTALL + OFFLINE ────────────────────────────────────── */
+.install{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--brand);border-radius:var(--radius);padding:14px 16px;margin-top:14px}
+.install .ic{width:18px;height:18px;color:var(--brand);flex-shrink:0}
+.install .t{font-size:13.5px;font-weight:700}
+.install .s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+.install button{margin-left:auto;flex-shrink:0;padding:10px 15px;border-radius:10px;font-size:12.5px;font-weight:700;background:var(--accent-grad);color:var(--on-accent);border:none;min-height:44px}
+.offline{position:fixed;top:0;left:0;right:0;z-index:70;background:var(--amber);color:#1a1204;text-align:center;font-size:12px;font-weight:800;padding:7px 12px;display:none}
+.offline.on{display:block}
+body.is-offline .topbar{top:30px}
+
 /* ── PLAN EDITING ─────────────────────────────────────────── */
 .plan-bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:14px 0 4px}
 .plan-bar .sp{flex:1}
@@ -502,6 +517,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
       <div class="phases" id="bdPhases"></div>
     </div>
 
+    <div id="installCard"></div>
     <div class="sec-h sh-grid"><h3 id="gridTitle"></h3><span class="hint" id="gridHint"></span></div>
     <div class="card pad td-grid">
       <div class="grid90" id="grid90"></div>
@@ -563,6 +579,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
   <button data-pg="stats" onclick="go('stats')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Stats</button>
 </nav>
 
+<div class="offline" id="offlineBar">No signal. You can still log everything, it syncs when you are back.</div>
 <div class="restbar" id="restBar"><div class="rest-in">
   <div class="rest-ring" id="restRing"></div>
   <div class="rest-x"><div class="l" id="restLbl">Rest</div><div class="n" id="restNext"></div></div>
@@ -1092,7 +1109,7 @@ function renderToday(){
   +'<div style="min-width:0"><div class="l">Ask anytime</div><div class="n">'+m.trainer.split(' ')[0]+', your trainer</div><div class="m">Form, swaps, why you feel flat. A real answer from the person who wrote your plan.</div></div>'
   +'<div class="go">'+I.wa+'</div>';
  document.getElementById('tdHooks').innerHTML=hookChips();
- renderBuild();renderGrid();
+ renderBuild();renderGrid();renderInstall();
  /* build stamp: so a screenshot can always answer "which version is this" */
  let bs=document.getElementById('buildStamp');
  if(!bs){bs=document.createElement('div');bs.id='buildStamp';
@@ -1979,6 +1996,17 @@ async function runSelfTest(){
   ok('Edit: add a set, then undo',added&&DB.get('exercises')[0].sets.length===sets0);
   removeSet(0);const removed=DB.get('exercises')[0].sets.length===sets0-1;runUndo();
   ok('Edit: remove a set, then undo',removed&&DB.get('exercises')[0].sets.length===sets0);
+  /* INSTALL + OFFLINE */
+  go('today');
+  ok('Install: the prompt is absent until the browser offers one',
+    !!document.getElementById('installCard')&&(INSTALL_EVT!==null||document.getElementById('installCard').innerHTML.indexOf('<button')===-1));
+  (function(){
+   setOffline(true);
+   ok('Offline: the banner appears and the app still renders',
+     document.getElementById('offlineBar').classList.contains('on')&&document.getElementById('pg-today').innerHTML.length>200);
+   setOffline(false);
+   ok('Offline: the banner clears when signal returns',!document.getElementById('offlineBar').classList.contains('on'));
+  })();
   /* demo furniture must disappear for a live cast */
   (function(){
    const was=CFG.data.mode;CFG.data.mode='local';renderChrome();
@@ -2032,6 +2060,36 @@ function stReport(R,failed){
  document.body.appendChild(ov);
 }
 
+/* ── INSTALL PROMPT: only shown when the browser says it is installable,
+   and never on a device that already has it ── */
+let INSTALL_EVT=null;
+function renderInstall(){
+ const el=document.getElementById('installCard');if(!el)return;
+ const standalone=window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches
+  ||window.navigator.standalone===true;
+ const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+ if(standalone){el.innerHTML='';return;}
+ if(INSTALL_EVT){
+  el.innerHTML='<div class="install">'+I.enter
+   +'<div><div class="t">Add Total Uplift to your phone</div>'
+   +'<div class="s">Opens like an app, and keeps working when the gym has no signal.</div></div>'
+   +'<button onclick="doInstall()">Add</button></div>';
+ }else if(iOS){
+  el.innerHTML='<div class="install"><div>'+I.enter+'</div>'
+   +'<div><div class="t">Add to your home screen</div>'
+   +'<div class="s">Tap the share button, then "Add to Home Screen". It opens like an app and works without signal.</div></div></div>';
+ }else el.innerHTML='';
+}
+function doInstall(){
+ if(!INSTALL_EVT)return;
+ INSTALL_EVT.prompt();
+ INSTALL_EVT.userChoice.then(function(){INSTALL_EVT=null;renderInstall();});
+}
+function setOffline(off){
+ const b=document.getElementById('offlineBar');if(b)b.classList.toggle('on',!!off);
+ document.body.classList.toggle('is-offline',!!off);
+}
+
 /* ════════════════════════════════════════════════════════════════════
    SECTION 12 - BOOT
    ════════════════════════════════════════════════════════════════════ */
@@ -2039,6 +2097,17 @@ DB.load();
 snapshotPages();
 renderChrome();
 go('today');
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();INSTALL_EVT=e;renderInstall();});
+window.addEventListener('online',function(){setOffline(false);});
+window.addEventListener('offline',function(){setOffline(true);});
+setOffline(navigator.onLine===false);
+/* the service worker is what makes it work with no signal. Registration failing
+   (file:// preview, private mode, an old browser) must never break the app. */
+if('serviceWorker' in navigator&&location.protocol==='https:'){
+ window.addEventListener('load',function(){
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+ });
+}
 if(location.search.indexOf('selftest')>-1)setTimeout(()=>runSelfTest(),160);
 </script>
 </body>
