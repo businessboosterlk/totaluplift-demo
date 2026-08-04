@@ -1684,6 +1684,7 @@ function seedData(){
     reason:'Travelling for work, back next month',by:1,at:addDaysStr(todayISO(),-6)},
    {id:2,m:gateReqM,kind:'gate-request',reason:'Stopped answering, owes two weeks past grace',by:3,at:todayISO()},
   ],
+  nudges:[],
   tasks:[
    {id:1,t:'Call '+owe1.split(' ')[0]+' about the overdue '+CFG.recurring.label.toLowerCase(),who:5,due:todayISO(),d:false},
    {id:2,t:'Win back '+dark1+' (Member Pulse)',who:4,due:todayISO(),d:false},
@@ -3268,6 +3269,7 @@ function openClientTrainer(c){
   +'<button class="pa" onclick="pulseTask('+c.id+')">Task for me</button>'
   +'</div>'
   +'<div class="pn-body">'
+  +nudgeSection(c)
   +'<div class="sec"><div class="sec-t">Training</div><div class="info-grid">'
    +info('Last session',lv?fmtDate(lv):'never',x.days>13?'var(--danger)':'')
    +info('Days since',x.days===999?'never been in':x.days+' days',x.days>13?'var(--danger)':'')
@@ -4365,6 +4367,89 @@ function morningThree(){
   .sort((a,b)=>b.v.score-a.v.score)
   .slice(0,3);
 }
+/* ════════════════════════════════════════════════════════════════════
+   THE NUDGE. Only offered when the data already justifies it, so it stays
+   worth reading. One per member per day: a nudge you can send ten times is
+   spam with a friendly icon on it.
+   ════════════════════════════════════════════════════════════════════ */
+function nowTime(){const d=AS_OF;let h=d.getHours();const mm=('0'+d.getMinutes()).slice(-2);
+ const ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+mm+' '+ap;}
+function nudgedToday(id){
+ return (DB.get('nudges')||[]).some(n=>n.m===id&&n.date===todayISO());
+}
+function nudgeOptions(id){
+ const c=(DB.get('customers')||[]).find(x=>x.id===id);if(!c)return [];
+ const first=c.name.split(' ')[0];
+ const p=pulseData([c])[0]||{days:999,freq:0};
+ const out=[];
+ /* away longer than their OWN rhythm, not longer than some average */
+ if(p.days!==999&&p.freq>0&&p.days>Math.max(4,Math.round(7/p.freq)+2)){
+  out.push({k:'back',score:p.days,label:'They are overdue by their own rhythm',
+   why:p.days+' days since their last session, and they usually train '+p.freq+'x a week',
+   text:first+', you are usually in '+p.freq+' times a week and it has been '+p.days+' days. What day this week works for you?'});
+ }else if(p.days===999){
+  out.push({k:'first',score:50,label:'They have never trained with you',
+   why:'No session logged yet',
+   text:first+', shall we get your first session in this week? Tell me a day and I will set it up.'});
+ }
+ const pl=bridgeRead().plan;
+ if(pl&&pl.for===c.name){
+  out.push({k:'session',score:40,label:'You set them a session today',
+   why:'"'+pl.session+'" is waiting in their app',
+   text:first+', I set up '+pl.session+' for you today. It is in your app whenever you are ready.'});
+ }
+ const sm=bridgeRead().summary;
+ if(sm&&sm.name===c.name&&typeof sm.streak==='number'&&sm.streak>=3){
+  out.push({k:'streak',score:30,label:'They are on a streak worth naming',
+   why:sm.streak+' days running',
+   text:'Nice work '+first+', that is '+sm.streak+' days in a row. Keep it going this week.'});
+ }
+ if(p.days!==999&&p.days<=1){
+  out.push({k:'wellrested',score:10,label:'They trained today',
+   why:'Session logged today',
+   text:'Good session today '+first+'. Get your water and your sleep in tonight and you will feel it tomorrow.'});
+ }
+ return out.sort((a,b)=>b.score-a.score);
+}
+function sendNudge(id,key){
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ if(nudgedToday(id)){toast(c.name.split(' ')[0]+' already had a nudge today');return;}
+ const opts=nudgeOptions(id);
+ const pick=opts.find(o=>o.k===key)||opts[0];
+ if(!pick){toast('Nothing worth nudging about today');return;}
+ const note={to:c.name,from:CURRENT.name,text:pick.text,date:todayISO(),at:nowTime(),kind:'nudge'};
+ const before=(bridgeRead().notes||[]).slice();
+ const ok2=bridgeWrite({notes:before.concat([note])});
+ if(!ok2){toast('Sending a nudge needs the demo bridge, which this browser has blocked');return;}
+ const row={id:DB.nextId('nudges'),m:id,date:todayISO(),by:CURRENT.id,kind:pick.k};
+ DB.get('nudges').push(row);
+ logFeed(CURRENT.id,'Nudge sent',c.name+' · '+pick.k);DB.commit();
+ renderApp();if(document.getElementById('panel').classList.contains('open'))openCustomer(id);
+ toastUndo(I.check+' Sent to '+c.name.split(' ')[0],function(){
+  bridgeWrite({notes:before});
+  const a=DB.get('nudges');a.splice(a.findIndex(x=>x.id===row.id),1);
+  DB.commit();renderApp();
+  if(document.getElementById('panel').classList.contains('open'))openCustomer(id);});
+}
+function nudgeSection(c){
+ const opts=nudgeOptions(c.id),sent=nudgedToday(c.id);
+ if(sent)return '<div class="sec"><div class="sec-t">Nudge</div>'
+  +'<div class="acc"><span class="dotl"></span><span><span class="al">Already nudged today</span>'
+  +'<div class="aw">One a day, so it still means something when it arrives.</div></span></div></div>';
+ if(!opts.length)return '<div class="sec"><div class="sec-t">Nudge</div>'
+  +'<div class="aw" style="color:var(--muted);font-size:12.5px">Nothing to nudge about today. They are training on schedule.</div></div>';
+ const top=opts[0];
+ return '<div class="sec"><div class="sec-t">Nudge</div>'
+  +'<div class="acc"><span class="dotl"></span><span style="min-width:0">'
+  +'<span class="al">'+top.label+'</span><div class="aw">'+top.why+'</div>'
+  +'<div class="m3-say" style="margin-top:9px">"'+top.text+'"</div></span></div>'
+  +'<div class="pn-actions" style="padding:11px 0 0;border:none">'
+  +'<button class="pa primary" onclick="sendNudge('+c.id+',\''+top.k+'\')">'+I.check+' Send this</button>'
+  +mapSafe(opts.slice(1,3),o=>'<button class="pa" onclick="sendNudge('+c.id+',\''+o.k+'\')">'+o.label+'</button>')
+  +'</div>'
+  +'<div style="font-size:11px;color:var(--faint);margin-top:9px;line-height:1.6">'
+  +'Only nudges the data already backs up are offered here, and only one a day. It goes with your name on it.</div></div>';
+}
 function bandColor(b){return b==='healthy'?'var(--green)':b==='watch'?'var(--amber)':b==='risk'?'var(--brand)':'var(--danger)';}
 function bandLabel(b){return b==='healthy'?'Healthy':b==='watch'?'Watch':b==='risk'?'At risk':'Critical';}
 /* pulseData: ONE pass over the check-in log, then a derived row per member.
@@ -4746,6 +4831,46 @@ async function runSelfTest(opts){
    ok('Pulse: revenue-at-risk reconciles to the band fees',rar2===manualRar&&rar2>=0,lkr(rar2));
    go('pulse');
    ok('Pulse: revenue-at-risk is shown on the board',rar2===0||(document.getElementById('pulseHint').innerHTML||'').indexOf('revenue')>-1);
+   /* THE TRAINER NUDGE */
+   (function(){
+    const tr6=DB.get('staff').find(x=>x.pos==='trainer');if(!tr6)return;
+    signIn(tr6);bridgeClear();
+    const nSnap=JSON.stringify(DB.get('nudges'));
+    const mine=scopeMembers();
+    /* every offer must name the reason and carry the words */
+    const allOpts=mine.map(c=>nudgeOptions(c.id)).reduce((a,b)=>a.concat(b),[]);
+    ok('Nudge: every option states why it is being offered',
+      allOpts.every(o=>o.why&&o.why.length>5));
+    ok('Nudge: every option carries the message, not just a label',
+      allOpts.every(o=>o.text&&o.text.length>20));
+    ok('Nudge: options are ranked, most urgent first',
+      mine.every(c=>{const o=nudgeOptions(c.id);return o.every((x,i)=>i===0||o[i-1].score>=x.score);}));
+    /* someone training on schedule is not nudged at all */
+    const onTrack=mine.find(c=>{const p=pulseData([c])[0];return p&&p.days!==999&&p.days<=2;});
+    if(onTrack)ok('Nudge: it never invents a reason for someone training on schedule',
+      !nudgeOptions(onTrack.id).some(o=>o.k==='back'));
+    const target=mine.find(c=>nudgeOptions(c.id).length);
+    if(target){
+     const n0=(bridgeRead().notes||[]).length;
+     sendNudge(target.id);
+     const note=(bridgeRead().notes||[]).slice(-1)[0];
+     ok('Nudge: it reaches the member with the trainer\'s name on it',
+       (bridgeRead().notes||[]).length===n0+1&&note.to===target.name&&note.from===tr6.name&&note.kind==='nudge');
+     ok('Nudge: it is logged against the member',nudgedToday(target.id));
+     const n1=(bridgeRead().notes||[]).length;
+     sendNudge(target.id);
+     ok('Nudge: ONE PER DAY, a second one is refused',(bridgeRead().notes||[]).length===n1);
+     openCustomer(target.id);
+     ok('Nudge: the panel says they have already been nudged',
+       (document.getElementById('panel').textContent||'').indexOf('Already nudged today')>-1);
+     runUndo();
+     ok('Nudge: undo withdraws the message and clears the day',
+       (bridgeRead().notes||[]).length===n0&&!nudgedToday(target.id));
+     closePanel();
+    }
+    const arr=DB.get('nudges');arr.length=0;JSON.parse(nSnap).forEach(r=>arr.push(r));
+    bridgeClear();signIn(owner);
+   })();
    /* F6 GATE LADDER + F7 FREEZE */
    (function(){
     signIn(owner);

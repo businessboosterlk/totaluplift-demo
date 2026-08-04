@@ -347,6 +347,13 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .hk.pr{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 40%,transparent);color:var(--txt)}
 .hk.pace{background:var(--green-soft);border-color:color-mix(in srgb,var(--green) 34%,transparent);color:var(--txt)}
 
+.src{margin-top:12px;padding-top:12px;border-top:1px solid var(--line2)}
+.src label{display:block;font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-bottom:7px}
+.src select{width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--txt);font-family:inherit;font-size:13px}
+.src .note{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:9px}
+.prov{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.5}
+.prov.unset{color:var(--amber)}
+
 /* ── THE GATE LADDER ──────────────────────────────────────── */
 .abar{display:flex;align-items:center;gap:11px;padding:12px 15px;border-radius:var(--radius);margin-bottom:14px;border:1px solid}
 .abar.amber{background:var(--amber-soft);border-color:color-mix(in srgb,var(--amber) 45%,transparent)}
@@ -532,6 +539,7 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
         <div class="bars" id="tdBars"></div>
       </div>
       <div class="why" id="tdWhy"></div>
+      <div class="prov" id="tdProv"></div>
       <div class="stat3" id="tdStats"></div>
       <div class="hooks" id="tdHooks"></div>
     </div>
@@ -608,6 +616,7 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
   <div class="page" id="pg-stats">
     <div class="wknav"><button id="stPrev" aria-label="Previous week" onclick="stShift(-1)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button><span class="lb" id="stLbl"></span><button id="stNext" aria-label="Next week" onclick="stShift(1)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button></div>
     <div class="tiles" id="stTiles" style="grid-template-columns:1fr 1fr"></div>
+    <div id="stTrend"></div>
     <div class="seg"><button id="stSegD" class="on" onclick="stMode('day')">By day</button><button id="stSegM" onclick="stMode('month')">By month</button></div>
     <div id="stBody" style="margin-top:14px"></div>
   </div>
@@ -745,6 +754,9 @@ const DB={_d:null,
  reset(){this._d=seedData();},
 };
 
+/* what people here actually carry. "Phone" covers the built-in counter on any
+   Android; Apple Fitness is the iPhone's own. No logos, no fake integrations. */
+const STEP_SOURCES=['Apple Fitness','Samsung Health','Fitbit','Google Fit','Phone step counter','Counted it myself'];
 const EX_LIB=[
  {n:'Flat Bench Press',g:'Chest',sets:4,reps:'8-10',kg:70,pr:75,cue:'Plant your feet. Drive through the heels, not the toes.'},
  {n:'Incline DB Press',g:'Chest',sets:3,reps:'10-12',kg:22,pr:26,cue:'Stop an inch short of lockout. Keep the tension on the muscle.'},
@@ -1230,6 +1242,16 @@ function todayHeadline(){
  if(!bits.length)bits.push('hold the streak');
  return bits.slice(0,2).join(' and ');
 }
+/* said out loud on Today, where the score that uses it is shown */
+function renderProvenance(){
+ const el=document.getElementById('tdProv');if(!el)return;
+ const d=todayRow();
+ if(!d.steps){el.innerHTML='';return;}
+ el.className='prov'+(d.stepSrc?'':' unset');
+ el.innerHTML=d.stepSrc
+  ?'Steps: '+d.steps.toLocaleString()+', from '+d.stepSrc+', entered by you.'
+  :'Steps: '+d.steps.toLocaleString()+'. Tap Log to say which app this came from.';
+}
 function renderAccessBars(){
  ['tdAccess','msAccess'].forEach(function(id){
   const el=document.getElementById(id);if(el)el.innerHTML=accessBar();
@@ -1287,7 +1309,7 @@ function renderToday(){
   +'<div style="min-width:0"><div class="l">Ask anytime</div><div class="n">'+m.trainer.split(' ')[0]+', your trainer</div><div class="m">Form, swaps, why you feel flat. A real answer from the person who wrote your plan.</div></div>'
   +'<div class="go">'+I.wa+'</div>';
  document.getElementById('tdHooks').innerHTML=hookChips();
- renderBuild();renderGrid();renderInstall();renderAccessBars();
+ renderBuild();renderGrid();renderInstall();renderAccessBars();renderProvenance();
  /* build stamp: so a screenshot can always answer "which version is this" */
  let bs=document.getElementById('buildStamp');
  if(!bs){bs=document.createElement('div');bs.id='buildStamp';
@@ -1427,7 +1449,15 @@ function renderLog(){
  });
  document.getElementById('lgBody').innerHTML=
   '<div class="numf"><div class="l">Weight '+I.scale+'</div><input id="lgW" inputmode="decimal" value="'+d.weight.toFixed(1)+'" onchange="setWeight(this.value)"><div class="u">kg</div></div>'
-  +'<div class="numf"><div class="l">Steps '+I.steps+'</div><input id="lgS" inputmode="numeric" value="'+d.steps+'" onchange="setSteps(this.value)"><div class="u">today</div></div>';
+  +'<div class="numf"><div class="l">Steps '+I.steps+'</div><input id="lgS" inputmode="numeric" value="'+d.steps+'" onchange="setSteps(this.value)"><div class="u">today</div></div>'
+  +'<div class="src"><label for="lgSrc">Where did this come from?</label>'
+  +'<select id="lgSrc" onchange="setStepSource(this.value)">'
+  +'<option value="">Tell us where</option>'
+  +STEP_SOURCES.map(function(s){return '<option value="'+s+'"'+(d.stepSrc===s?' selected':'')+'>'+s+'</option>';}).join('')
+  +'</select>'
+  +'<div class="note">Open your fitness app, read today\'s number, type it here. '
+  +'Nothing reads it automatically: a website is not allowed to see Apple Health or Samsung Health, '
+  +'and we would rather tell you that than pretend.</div></div>';
  document.getElementById('lgWaterHint').textContent=d.water+' of '+CFG.score.waterGoal+' glasses';
  document.getElementById('lgWater').innerHTML=Array.from({length:CFG.score.waterGoal},(_,i)=>
   '<button class="wg'+(i<d.water?' on':'')+'" aria-label="Glass '+(i+1)+'" onclick="setWater('+(i+1)+')"></button>').join('');
@@ -1454,6 +1484,21 @@ function setWeight(v){
  if(!n||n<25||n>300){toast('Enter a weight between 25 and 300 kg');rerender();return;}
  d.weight=Math.round(n*10)/10;DB.commit();rerender();
  toastUndo(I.check+' Weight logged',()=>{d.weight=before;DB.commit();rerender();});
+}
+/* the source travels WITH the number, always */
+function setStepSource(v){
+ const d=todayRow();const was=d.stepSrc;
+ if(!v){delete d.stepSrc;}else{d.stepSrc=String(v).slice(0,30);}
+ DB.commit();rerender();
+ toastUndo(I.check+' Source saved',function(){
+  if(was===undefined)delete d.stepSrc;else d.stepSrc=was;DB.commit();rerender();});
+}
+/* one sentence the app can print anywhere it shows a step count */
+function stepProvenance(d){
+ d=d||todayRow();
+ if(!d.steps)return 'No steps logged yet';
+ return d.stepSrc?d.steps.toLocaleString()+' steps, from '+d.stepSrc
+                  :d.steps.toLocaleString()+' steps, source not set';
 }
 function setSteps(v){
  const d=todayRow();const before=d.steps;
@@ -1875,11 +1920,23 @@ function renderStats(){
  const dSteps=prevAvg?avgSteps-prevAvg:0;
  const planned=wkDays.filter(d=>d.planned).length,didSess=wkDays.filter(d=>d.session).length;
  const full=wkDays.filter(d=>d.meals.length>=CFG.score.mealsPerDay&&(d.session||!d.planned)).length;
+ /* the three questions a member actually has, in the order they ask them */
+ const wNow=wkAvgWeight(ST_WEEK),w4=wkAvgWeight(shiftISO(ST_WEEK,-28));
+ const dW=(wNow!=null&&w4!=null)?Math.round((wNow-w4)*10)/10:null;
+ const goingRight=DB.get('member').goalWeight<DB.get('member').startWeight;
+ const mo=monthOfTraining();
  document.getElementById('stTiles').innerHTML=
-  '<div class="tile"><div class="h"><span class="l" style="margin:0">Meals logged</span></div><div class="v">'+mealsLogged+'</div><div class="l">of '+mealsPossible+' possible</div></div>'
-  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Avg steps</span>'+(dSteps?'<span class="dl '+(dSteps>0?'dn':'up')+'">'+(dSteps>0?'+':'')+(dSteps/1000).toFixed(1)+'k</span>':'')+'</div><div class="v">'+avgSteps.toLocaleString()+'</div><div class="l">'+(prevAvg?'vs '+prevAvg.toLocaleString()+' last week':'this week')+'</div></div>'
-  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Sessions</span></div><div class="v">'+didSess+' / '+planned+'</div><div class="l">'+(wkDays.length-planned)+' rest day'+((wkDays.length-planned)===1?'':'s')+' planned</div></div>'
-  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Full days</span></div><div class="v">'+(wkDays.length?Math.round(full/wkDays.length*100):0)+'%</div><div class="l">'+full+' of '+wkDays.length+' complete</div></div>';
+  '<div class="tile"><div class="h"><span class="l" style="margin:0">Weight</span>'
+   +(dW!==null&&dW!==0?'<span class="dl '+((dW<0)===goingRight?'dn':'up')+'">'+(dW>0?'+':'')+dW.toFixed(1)+'</span>':'')+'</div>'
+   +'<div class="v">'+(wNow!=null?wNow.toFixed(1):'-')+'<span class="u"> kg</span></div>'
+   +'<div class="l">'+(dW===null?'first weeks yet':(dW===0?'level over four weeks':(dW<0?'down':'up')+' '+Math.abs(dW).toFixed(1)+' kg in four weeks'))+'</div></div>'
+  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Sessions</span></div><div class="v">'+didSess+' / '+planned+'</div>'
+   +'<div class="l">'+(wkDays.length-planned)+' rest day'+((wkDays.length-planned)===1?'':'s')+' planned</div></div>'
+  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Showing up</span></div>'
+   +'<div class="v">'+mo.done+' / '+mo.planned+'</div>'
+   +'<div class="l">sessions in the last four weeks</div></div>'
+  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Avg steps</span>'+(dSteps?'<span class="dl '+(dSteps>0?'dn':'up')+'">'+(dSteps>0?'+':'')+(dSteps/1000).toFixed(1)+'k</span>':'')+'</div><div class="v">'+avgSteps.toLocaleString()+'</div><div class="l">'+(prevAvg?'vs '+prevAvg.toLocaleString()+' last week':'this week')+'</div></div>';
+ renderTrend();
  if(ST_MODE==='month'){renderStatsMonth();return;}
  document.getElementById('stBody').innerHTML=wkDays.length?mapSafe([...wkDays].reverse(),d=>{
   const open=ST_OPEN===d.date;
@@ -1890,7 +1947,7 @@ function renderStats(){
   return '<div class="day"><button class="day-h" onclick="stToggle(\''+d.date+'\')">'
   +'<span class="dot" style="background:'+col+'"></span>'
   +'<span style="min-width:0"><span class="n">'+DY[dowOf(d.date)]+' · '+fmtD(d.date)+'</span>'
-  +'<div class="s">'+d.meals.length+' meals · '+d.steps.toLocaleString()+' steps · '+d.weight.toFixed(1)+' kg</div></span>'
+  +'<div class="s">'+d.meals.length+' meals · '+d.steps.toLocaleString()+' steps'+(d.stepSrc?' ('+d.stepSrc+')':'')+' · '+d.weight.toFixed(1)+' kg</div></span>'
   +'<span class="tg">'+tag+'</span></button>'
   +(open?'<div class="day-b">'+MEAL_DEFS.map((md,mi)=>d.meals[mi]?'<div class="ml"><div class="l">'+md[0]+'</div><div class="v">'+d.meals[mi]+'</div></div>':'').join('')
     +'<div class="ml"><div class="l">Sleep</div><div class="v">'+d.sleep.toFixed(1)+' hours</div></div>'
@@ -1898,6 +1955,49 @@ function renderStats(){
     +'</div>':'')
   +'</div>';
  }):'<div class="empty"><div class="t">Nothing logged yet</div>This week has no entries.</div>';
+}
+/* the average weight across a week, so one heavy Sunday does not read as a trend */
+function wkAvgWeight(monday){
+ const ds=DB.get('days').filter(d=>mondayOf(d.date)===mondayOf(monday)&&typeof d.weight==='number');
+ if(!ds.length)return null;
+ return ds.reduce((a,d)=>a+d.weight,0)/ds.length;
+}
+/* the last four weeks of showing up, which predicts results far better than one week */
+function monthOfTraining(){
+ const from=shiftISO(todayISO(),-27);
+ const ds=DB.get('days').filter(d=>d.date>=from&&d.date<=todayISO());
+ return {done:ds.filter(d=>d.session).length,planned:ds.filter(d=>d.planned).length,days:ds.length};
+}
+function weightTrend(){
+ const out=[];
+ stWeeks().forEach(w=>{const v=wkAvgWeight(w);if(v!=null)out.push({w:w,v:v});});
+ return out;
+}
+/* direction, drawn from the real numbers and labelled with the real numbers */
+function renderTrend(){
+ const el=document.getElementById('stTrend');if(!el)return;
+ const t=weightTrend();
+ if(t.length<2){el.innerHTML='';return;}
+ const vals=t.map(x=>x.v),lo=Math.min.apply(null,vals),hi=Math.max.apply(null,vals);
+ const span=(hi-lo)||1,W=100,H=34;
+ const pts=t.map((x,i)=>[(i/(t.length-1))*W,H-((x.v-lo)/span)*H]);
+ const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+ const first=vals[0],last=vals[vals.length-1];
+ const move=Math.round((last-first)*10)/10;
+ const goingRight=DB.get('member').goalWeight<DB.get('member').startWeight;
+ const good=(move<0)===goingRight&&move!==0;
+ el.innerHTML='<div class="card pad" style="margin-top:14px">'
+  +'<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+  +'<div style="font-size:15px;font-weight:800">Where you are heading</div>'
+  +'<div style="font-size:12.5px;color:'+(good?'var(--green)':'var(--muted)')+';font-weight:700">'
+  +(move===0?'level':(move<0?'down ':'up ')+Math.abs(move).toFixed(1)+' kg')+' over '+t.length+' weeks</div></div>'
+  +'<svg viewBox="0 0 100 34" preserveAspectRatio="none" style="width:100%;height:64px;margin-top:12px;overflow:visible" aria-hidden="true">'
+  +'<path d="'+d+'" fill="none" stroke="'+(good?'var(--green)':'var(--brand)')+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'
+  +'<circle cx="'+pts[pts.length-1][0].toFixed(1)+'" cy="'+pts[pts.length-1][1].toFixed(1)+'" r="2.4" fill="'+(good?'var(--green)':'var(--brand)')+'" vector-effect="non-scaling-stroke"/></svg>'
+  +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:8px">'
+  +'<span>'+fmtD(t[0].w)+' · '+first.toFixed(1)+' kg</span><span>now · '+last.toFixed(1)+' kg</span></div>'
+  +'<div class="why" style="margin-top:12px">One dot a week, averaged, so a heavy Sunday does not look like a trend. '
+  +'Only weeks you actually weighed in are drawn.</div></div>';
 }
 function renderStatsMonth(){
  const ds=DB.get('days');const by={};
@@ -2262,6 +2362,64 @@ async function runSelfTest(){
   ok('Edit: add a set, then undo',added&&DB.get('exercises')[0].sets.length===sets0);
   removeSet(0);const removed=DB.get('exercises')[0].sets.length===sets0-1;runUndo();
   ok('Edit: remove a set, then undo',removed&&DB.get('exercises')[0].sets.length===sets0);
+  /* A NUMBER A HUMAN TYPED MUST SAY SO */
+  (function(){
+   const d=todayRow(),was=d.stepSrc,wasN=d.steps;
+   setSteps('8420');
+   setStepSource('');
+   go('today');
+   ok('Steps: with no source the app admits it does not know',
+     (document.getElementById('tdProv').textContent||'').indexOf('which app this came from')>-1);
+   setStepSource('Apple Fitness');
+   go('today');
+   ok('Steps: with a source the app names it and says a human entered it',
+     (document.getElementById('tdProv').textContent||'').indexOf('from Apple Fitness')>-1
+     &&(document.getElementById('tdProv').textContent||'').indexOf('entered by you')>-1);
+   ok('Steps: the sentence is available anywhere the number is shown',
+     stepProvenance(d).indexOf('from Apple Fitness')>-1);
+   go('stats');
+   ok('Steps: the day list carries the source too, not just Today',
+     (document.getElementById('stBody').textContent||'').indexOf('Apple Fitness')>-1);
+   runUndo();
+   ok('Steps: undo restores the previous source',todayRow().stepSrc!=='Apple Fitness');
+   /* the app must never claim a connection it does not have */
+   go('log');
+   const lg=document.getElementById('pg-log').textContent||'';
+   ok('Steps: the app says plainly that nothing is read automatically',
+     lg.indexOf('Nothing reads it automatically')>-1);
+   ok('Steps: every source offered is one a real person has on their phone',
+     STEP_SOURCES.length>=4&&STEP_SOURCES.indexOf('Counted it myself')>-1);
+   setSteps(String(wasN));if(was===undefined)delete todayRow().stepSrc;else todayRow().stepSrc=was;
+   DB.commit();go('today');
+  })();
+  /* STATS THAT ANSWER A MEMBER'S QUESTIONS */
+  go('stats');
+  (function(){
+   const txt=document.getElementById('stTiles').textContent||'';
+   ok('Stats: the compliance scores are gone',txt.indexOf('Full days')<0&&txt.indexOf('of 12 possible')<0);
+   ok('Stats: it answers am I changing, am I showing up',
+     txt.indexOf('Weight')>-1&&txt.indexOf('Showing up')>-1&&txt.indexOf('Sessions')>-1);
+   const mo=monthOfTraining();
+   ok('Stats: the four-week count never claims more sessions than days',
+     mo.done<=mo.days&&mo.planned<=mo.days&&mo.done>=0,mo.done+'/'+mo.planned+' of '+mo.days);
+   ok('Stats: a week average only counts days that were actually weighed',
+     (function(){const w=wkAvgWeight(ST_WEEK);
+      const ds=DB.get('days').filter(d=>mondayOf(d.date)===mondayOf(ST_WEEK)&&typeof d.weight==='number');
+      if(!ds.length)return w===null;
+      const avg=ds.reduce((a,d)=>a+d.weight,0)/ds.length;
+      return Math.abs(w-avg)<0.001;})());
+   const t=weightTrend();
+   ok('Stats: the trend only plots weeks with a real weigh-in',
+     t.every(x=>wkAvgWeight(x.w)!==null),t.length+' weeks');
+   ok('Stats: the trend draws a line and labels both ends with real numbers',
+     t.length<2||(document.querySelectorAll('#stTrend svg path').length===1
+      &&(document.getElementById('stTrend').textContent||'').indexOf('kg')>-1));
+   /* a flat line must never be dressed up as progress */
+   ok('Stats: direction is read from the numbers, not assumed',
+     t.length<2||(function(){const mv=t[t.length-1].v-t[0].v;const s=document.getElementById('stTrend').textContent;
+      return Math.abs(mv)<0.05?s.indexOf('level')>-1:(mv<0?s.indexOf('down')>-1:s.indexOf('up')>-1);})());
+  })();
+  go('today');
   /* THE PLAN IS FULLY EDITABLE */
   (function(){
    if(!PLAN_EDIT)togglePlanEdit();
