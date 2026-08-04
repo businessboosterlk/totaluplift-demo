@@ -239,6 +239,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .ex.done .ex-no{background:var(--green-soft);color:var(--green)}
 .ex-m{flex:1;min-width:0}
 .ex-n{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.pr.none{background:none;border:1px dashed var(--line);color:var(--faint);font-weight:700}
 .pr{font-size:9.5px;font-weight:800;letter-spacing:.5px;background:var(--brand-soft);color:var(--brand-txt);padding:2px 7px;border-radius:5px;white-space:nowrap}
 .ex-t{font-size:11.5px;color:var(--muted);margin-top:3px}
 .spark{width:56px;height:26px;flex-shrink:0;opacity:.9}
@@ -370,6 +371,11 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .gate .acts button{min-height:48px;border-radius:13px;font-size:14px;font-weight:750;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 .gate .acts button.pri{background:var(--accent-grad);color:var(--on-accent);border-color:transparent}
 .gate .keep{font-size:12px;color:var(--muted);line-height:1.65;max-width:360px;margin:20px auto 0;padding-top:16px;border-top:1px solid var(--line2)}
+
+.add-own{display:flex;gap:8px;margin-top:10px}
+.add-own input{flex:1;min-width:0;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--txt);font-family:inherit;font-size:13px;outline:none}
+.add-own input:focus{border-color:var(--brand)}
+.add-own button{min-height:44px;padding:0 18px;border-radius:10px;background:var(--accent-grad);color:var(--on-accent);border:none;font-weight:750;font-size:13px;flex-shrink:0}
 
 /* ── INSTALL + OFFLINE ────────────────────────────────────── */
 .install{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--brand);border-radius:var(--radius);padding:14px 16px;margin-top:14px}
@@ -995,6 +1001,7 @@ function paceInfo(){
 function prReach(){
  let best=null;
  DB.get('exercises').forEach(e=>{
+  if(!e.pr)return;                      /* no claimed best, nothing to be close to */
   const diff=Math.round((e.pr-e.kg)*10)/10;
   if(diff>0&&diff<=5&&(!best||diff<best.diff))best={n:e.n,diff:diff};
  });
@@ -1045,6 +1052,52 @@ function planAddEx(libIdx){
   hist:lib.hist||[lib.kg],sets:Array.from({length:lib.sets},()=>({kg:'',reps:'',done:false}))});
  DB.commit();rerender();
  toastUndo(I.check+' '+lib.n+' added',function(){ex.pop();DB.commit();rerender();});
+}
+/* renaming is allowed to RECONNECT an exercise to the library, never to fake it:
+   match a library name and you inherit its cue and its PR, type anything else and
+   you carry no PR until you lift one. */
+function planRename(ix,v){
+ const e=DB.get('exercises')[ix];if(!e)return;
+ const name=String(v||'').trim().slice(0,40);
+ if(!name){toast('An exercise needs a name');rerender();return;}
+ const before={n:e.n,g:e.g,pr:e.pr,cue:e.cue};
+ const lib=EX_LIB.find(l=>l.n.toLowerCase()===name.toLowerCase());
+ e.n=lib?lib.n:name;
+ if(lib){e.g=lib.g;e.pr=lib.pr;e.cue=lib.cue;}
+ else{delete e.pr;e.cue=e.cue||'Your own exercise. Log the sets and the app will track it like any other.';}
+ DB.commit();rerender();
+ toastUndo(I.check+' Renamed to '+e.n,function(){Object.assign(e,before);if(before.pr===undefined)delete e.pr;DB.commit();rerender();});
+}
+function planGroup(ix,v){
+ const e=DB.get('exercises')[ix];if(!e)return;
+ const was=e.g;e.g=String(v||'').trim().slice(0,20);
+ DB.commit();rerender();
+ toastUndo(I.check+' Muscle group updated',function(){e.g=was;DB.commit();rerender();});
+}
+function planRenameSession(v){
+ const name=String(v||'').trim().slice(0,40);
+ if(!name){toast('The session needs a name');rerender();return;}
+ const was=DB.get('sessionName');
+ DB._d.sessionName=name;DB.commit();rerender();
+ toastUndo(I.check+' Session renamed',function(){DB._d.sessionName=was;DB.commit();rerender();});
+}
+/* type any exercise. A gym has machines no library has heard of. */
+function planAddCustom(){
+ const inp=document.getElementById('plNewEx');if(!inp)return;
+ const name=String(inp.value||'').trim().slice(0,40);
+ if(!name){toast('Type a name first');inp.focus();return;}
+ const lib=EX_LIB.find(l=>l.n.toLowerCase()===name.toLowerCase());
+ const ex=DB.get('exercises');
+ const row=lib
+  ?{i:ex.length+1,n:lib.n,g:lib.g,reps:lib.reps,kg:lib.kg,pr:lib.pr,cue:lib.cue,
+    hist:lib.hist||[lib.kg],sets:Array.from({length:lib.sets},()=>({kg:'',reps:'',done:false}))}
+  :{i:ex.length+1,n:name,g:'',reps:'8-10',kg:20,hist:[],
+    cue:'Your own exercise. Log the sets and the app will track it like any other.',
+    sets:[{kg:'',reps:'',done:false},{kg:'',reps:'',done:false},{kg:'',reps:'',done:false}]};
+ ex.push(row);
+ inp.value='';
+ DB.commit();rerender();
+ toastUndo(I.check+' '+row.n+' added',function(){ex.pop();DB.commit();rerender();});
 }
 function planTarget(ix,f,v){
  const e=DB.get('exercises')[ix];if(!e)return;
@@ -1114,6 +1167,10 @@ function rerender(){
 function toast(msg,ms){const t=document.getElementById('toast');t.innerHTML=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),ms||2600);}
 function toastUndo(msg,fn){UNDO=fn;toast(msg+'<button class="un" onclick="runUndo()">Undo</button>',6000);}
 function runUndo(){if(UNDO){const f=UNDO;UNDO=null;f();}document.getElementById('toast').classList.remove('on');}
+/* anything a human types can contain a quote or a bracket, and it gets written
+   into an HTML attribute. Escape it or the first apostrophe breaks the screen. */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+ .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function mapSafe(arr,fn){
  let bad=0;
  const html=(arr||[]).map((x,i)=>{try{return fn(x,i);}catch(e){bad++;console.warn('row skipped',e&&e.message);return '';}}).join('');
@@ -1444,14 +1501,20 @@ function renderPlan(){
  document.getElementById('plEx').innerHTML=mapSafe(DB.get('exercises'),(e,ix)=>
   '<div class="ex'+(exDone(e)?' done':'')+'">'
   +'<div class="ex-h"><div class="ex-no">'+String(e.i).padStart(2,'0')+'</div>'
-  +'<div class="ex-m"><div class="ex-n">'+e.n+'<span class="pr">PR '+e.pr+' kg</span></div>'
-  +'<div class="ex-t">'+e.sets.length+' x '+e.reps+' · '+e.kg+' kg · '+e.g+'</div></div>'
+  +'<div class="ex-m"><div class="ex-n">'+e.n
+   /* a typed-in exercise has no personal best yet, and the app will not invent
+      one to fill the gap where a badge would look nice */
+   +(e.pr?'<span class="pr">PR '+e.pr+' kg</span>':'<span class="pr none">No PR yet</span>')+'</div>'
+  +'<div class="ex-t">'+e.sets.length+' x '+e.reps+' · '+e.kg+' kg'+(e.g?' · '+e.g:'')+'</div></div>'
   +sparkline(e.hist)+'</div>'
   +(e.prHit?'<div class="pr-hit">'+I.check+'New personal best: '+e.pr+' kg</div>':'')
  +(PLAN_EDIT?'<div class="ex-edit">'
    +'<div><label>Sets</label><input inputmode="numeric" value="'+e.sets.length+'" onchange="planTarget('+ix+',\'sets\',this.value)"></div>'
    +'<div><label>Reps</label><input value="'+e.reps+'" onchange="planTarget('+ix+',\'reps\',this.value)"></div>'
    +'<div><label>Target kg</label><input inputmode="decimal" value="'+e.kg+'" onchange="planTarget('+ix+',\'kg\',this.value)"></div></div>'
+   +'<div class="ex-edit" style="grid-template-columns:1.6fr 1fr">'
+   +'<div><label>Exercise</label><input style="text-align:left" value="'+esc(e.n)+'" maxlength="40" aria-label="Exercise name" onchange="planRename('+ix+',this.value)"></div>'
+   +'<div><label>Muscle</label><input style="text-align:left" value="'+esc(e.g||'')+'" maxlength="20" aria-label="Muscle group" onchange="planGroup('+ix+',this.value)"></div></div>'
    +'<div class="ex-tools">'
    +'<button onclick="planMoveEx('+ix+',-1)" aria-label="Move up">Up</button>'
    +'<button onclick="planMoveEx('+ix+',1)" aria-label="Move down">Down</button>'
@@ -1474,11 +1537,15 @@ function renderPlan(){
  const d=todayRow();
  if(PLAN_EDIT){
   document.getElementById('plFinish').innerHTML='<div class="card pad" style="margin-top:4px">'
+   +'<div class="ex-edit" style="grid-template-columns:1fr;margin-bottom:12px">'
+   +'<div><label>Session name</label><input style="text-align:left" value="'+esc(DB.get('sessionName'))+'" maxlength="40" aria-label="Session name" onchange="planRenameSession(this.value)"></div></div>'
    +'<div style="font-size:11.5px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-bottom:9px">Add an exercise</div>'
    +'<select style="width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--txt);font-family:inherit;font-size:13px" onchange="planAddEx(this.value);this.value=\'\'">'
    +'<option value="">Choose from the library...</option>'
    +EX_LIB.map((l,i)=>'<option value="'+i+'">'+l.n+' · '+l.g+'</option>').join('')+'</select>'
-   +'<div style="font-size:11.5px;color:var(--muted);margin-top:11px;line-height:1.6">Changes apply to today\'s session. Your trainer can see what you actually logged.</div></div>';
+   +'<div class="add-own"><input id="plNewEx" placeholder="or type your own, e.g. Hammer Strength Row" maxlength="40" aria-label="New exercise name" onkeydown="if(event.key===\'Enter\'){event.preventDefault();planAddCustom();}">'
+   +'<button onclick="planAddCustom()">Add</button></div>'
+   +'<div style="font-size:11.5px;color:var(--muted);margin-top:11px;line-height:1.6">Changes apply to today\'s session. Your trainer can see what you actually logged. An exercise you type in carries no personal best until you lift one.</div></div>';
   return;
  }
  document.getElementById('plFinish').innerHTML=d.session
@@ -2195,6 +2262,69 @@ async function runSelfTest(){
   ok('Edit: add a set, then undo',added&&DB.get('exercises')[0].sets.length===sets0);
   removeSet(0);const removed=DB.get('exercises')[0].sets.length===sets0-1;runUndo();
   ok('Edit: remove a set, then undo',removed&&DB.get('exercises')[0].sets.length===sets0);
+  /* THE PLAN IS FULLY EDITABLE */
+  (function(){
+   if(!PLAN_EDIT)togglePlanEdit();
+   go('plan');
+   const ex=DB.get('exercises');
+   /* rename */
+   const was=ex[0].n;
+   planRename(0,'Hammer Strength Row');
+   ok('Plan: an exercise can be renamed to anything',ex[0].n==='Hammer Strength Row');
+   ok('Plan: a typed-in exercise claims NO personal best',!ex[0].pr);
+   go('plan');
+   ok('Plan: and it says so on screen rather than showing a fake number',
+     (document.getElementById('plEx').textContent||'').indexOf('No PR yet')>-1);
+   planRename(0,EX_LIB[0].n.toLowerCase());
+   ok('Plan: renaming back to a library exercise restores its real PR and cue',
+     ex[0].n===EX_LIB[0].n&&ex[0].pr===EX_LIB[0].pr&&!!ex[0].cue);
+   planRename(0,'');
+   ok('Plan: an exercise cannot be left with no name',ex[0].n===EX_LIB[0].n);
+   planRename(0,was);
+   /* a quote in a name must not break the screen */
+   planRename(0,'Farmer\'s Walk');
+   go('plan');
+   ok('Plan: an apostrophe in a name does not break the screen',
+     (document.getElementById('plEx').textContent||'').indexOf("Farmer's Walk")>-1
+     &&document.querySelectorAll('#plEx .ex').length===ex.length);
+   planRename(0,was);
+   /* muscle group */
+   planGroup(0,'Posterior chain');
+   ok('Plan: the muscle group is editable too',ex[0].g==='Posterior chain');
+   runUndo();
+   ok('Plan: undo restores the muscle group',ex[0].g!=='Posterior chain');
+   /* session name */
+   const sw=DB.get('sessionName');
+   planRenameSession('Leg day with Kasun');
+   ok('Plan: the session itself can be renamed',DB.get('sessionName')==='Leg day with Kasun');
+   planRenameSession('');
+   ok('Plan: the session cannot be left nameless',DB.get('sessionName')==='Leg day with Kasun');
+   planRenameSession(sw);
+   /* add your own */
+   const n0=ex.length;
+   go('plan');
+   document.getElementById('plNewEx').value='Sled Push';
+   planAddCustom();
+   ok('Plan: an exercise can be added by typing it, not only from the library',
+     ex.length===n0+1&&ex[n0].n==='Sled Push');
+   ok('Plan: a typed-in addition starts with sets to log and no invented PR',
+     ex[n0].sets.length>0&&!ex[n0].pr);
+   runUndo();
+   ok('Plan: undo removes it again',ex.length===n0);
+   go('plan');
+   document.getElementById('plNewEx').value='   ';
+   planAddCustom();
+   ok('Plan: a blank name is refused',DB.get('exercises').length===n0);
+   /* typing a library name by hand should reuse the library entry, not duplicate it */
+   document.getElementById('plNewEx').value=EX_LIB[2].n.toUpperCase();
+   planAddCustom();
+   const added=DB.get('exercises')[n0];
+   ok('Plan: typing a library name by hand still gets its real PR and cue',
+     added.n===EX_LIB[2].n&&added.pr===EX_LIB[2].pr);
+   runUndo();
+   ok('Plan: the roster is back where it started',DB.get('exercises').length===n0);
+   if(PLAN_EDIT)togglePlanEdit();
+  })();
   /* F6 THE GATE LADDER, member side */
   (function(){
    ok('Harness: it forced the ladder open before testing anything else',!isGated());

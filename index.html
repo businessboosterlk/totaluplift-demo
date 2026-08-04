@@ -1218,6 +1218,10 @@ body.dark .stat-kpi .val{color:#fff}
       <select class="filter" style="width:100%;margin-top:10px" onchange="planPick(this.value);this.value=''">
         <option value="">Add an exercise...</option>
       </select>
+      <div style="display:flex;gap:8px;margin-top:9px">
+        <input class="filter" id="pl_own" style="flex:1" placeholder="or type your own, e.g. Sled Push" maxlength="40" aria-label="New exercise name">
+        <button class="btn-ghost" style="flex-shrink:0" onclick="planAddOwn()">Add</button>
+      </div>
     </div>
     <div class="modal-f"><button class="btn-ghost" onclick="closePlanModal()">Cancel</button><button class="btn-primary" onclick="sendPlan()">Send to their app</button></div>
   </div>
@@ -3149,12 +3153,15 @@ const GYM_EX=[
  {n:'Calf Raise',g:'Calves',sets:4,reps:'15-20',kg:60},
 ];
 let PL_ID=null,PL_EX=[];
+function escAttr(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+ .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function openPlanModal(id){
  const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
  PL_ID=id;PL_EX=[];
  document.getElementById('pmSessTitle').textContent='Set a session for '+c.name.split(' ')[0];
  document.getElementById('pl_name').value='';
  document.getElementById('pl_note').value='';
+ document.getElementById('pl_own').value='';
  const sel=document.querySelector('#planModal select');
  sel.innerHTML='<option value="">Add an exercise...</option>'+GYM_EX.map((x,i)=>'<option value="'+i+'">'+x.n+' · '+x.g+'</option>').join('');
  renderPlanList();
@@ -3168,6 +3175,23 @@ function planPick(i){
  PL_EX.push({n:x.n,sets:x.sets,reps:x.reps,kg:x.kg});
  renderPlanList();
 }
+/* a coach prescribes what is on their floor, not what is in our list */
+function planAddOwn(){
+ const inp=document.getElementById('pl_own');if(!inp)return;
+ const name=(inp.value||'').trim().slice(0,40);
+ if(!name){toast('Type an exercise name first');inp.focus();return;}
+ if(PL_EX.length>=8){toast('Eight exercises is plenty for one session');return;}
+ const lib=GYM_EX.find(x=>x.n.toLowerCase()===name.toLowerCase());
+ PL_EX.push(lib?{n:lib.n,sets:lib.sets,reps:lib.reps,kg:lib.kg}
+                :{n:name,sets:3,reps:'8-10',kg:20});
+ inp.value='';renderPlanList();
+}
+/* the trainer can rename a row after adding it, same as the member can */
+function planName(i,v){
+ const name=String(v||'').trim().slice(0,40);
+ if(!name){toast('An exercise needs a name');renderPlanList();return;}
+ PL_EX[i].n=name;renderPlanList();
+}
 function planDrop(i){PL_EX.splice(i,1);renderPlanList();}
 function planSet(i,f,v){
  if(f==='sets')PL_EX[i].sets=Math.max(1,Math.min(8,parseInt(v)||1));
@@ -3178,7 +3202,7 @@ function planSet(i,f,v){
 function renderPlanList(){
  document.getElementById('pl_list').innerHTML=PL_EX.length?PL_EX.map((x,i)=>
   '<div style="display:grid;grid-template-columns:1fr 58px 74px 74px 34px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line2)">'
-  +'<div style="font-size:13px;font-weight:600">'+x.n+'</div>'
+  +'<input class="filter" style="padding:8px" value="'+escAttr(x.n)+'" maxlength="40" aria-label="Exercise name" onchange="planName('+i+',this.value)">'
   +'<input class="filter" style="padding:8px" inputmode="numeric" value="'+x.sets+'" onchange="planSet('+i+',\'sets\',this.value)" aria-label="Sets">'
   +'<input class="filter" style="padding:8px" value="'+x.reps+'" onchange="planSet('+i+',\'reps\',this.value)" aria-label="Reps">'
   +'<input class="filter" style="padding:8px" inputmode="decimal" value="'+x.kg+'" onchange="planSet('+i+',\'kg\',this.value)" aria-label="Weight">'
@@ -4975,6 +4999,19 @@ async function runSelfTest(opts){
     ok('Set session: refuses a non-numeric weight',PL_EX[0].kg===62.5);
     planDrop(1);
     ok('Set session: an exercise can be removed',PL_EX.length===1);
+    /* the trainer is not limited to our library either */
+    document.getElementById('pl_own').value='Sled Push';
+    planAddOwn();
+    ok('Set session: a trainer can prescribe an exercise we have never heard of',
+      PL_EX.some(x=>x.n==='Sled Push'));
+    document.getElementById('pl_own').value='  ';
+    const beforeBlank=PL_EX.length;planAddOwn();
+    ok('Set session: a blank name is refused',PL_EX.length===beforeBlank);
+    planName(PL_EX.length-1,"Farmer's Walk");
+    ok('Set session: a row can be renamed, apostrophe and all',
+      PL_EX[PL_EX.length-1].n==="Farmer's Walk"
+      &&document.querySelectorAll('#pl_list input').length>0);
+    planDrop(PL_EX.length-1);
     planPick('4');
     document.getElementById('pl_name').value='Coach Push';
     sendPlan();
