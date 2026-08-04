@@ -340,6 +340,31 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .hk.pr{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 40%,transparent);color:var(--txt)}
 .hk.pace{background:var(--green-soft);border-color:color-mix(in srgb,var(--green) 34%,transparent);color:var(--txt)}
 
+/* ── THE GATE LADDER ──────────────────────────────────────── */
+.abar{display:flex;align-items:center;gap:11px;padding:12px 15px;border-radius:var(--radius);margin-bottom:14px;border:1px solid}
+.abar.amber{background:var(--amber-soft);border-color:color-mix(in srgb,var(--amber) 45%,transparent)}
+.abar.frozen{background:var(--blue-soft);border-color:color-mix(in srgb,var(--blue) 40%,transparent)}
+.abar.gated{background:var(--danger-soft);border-color:color-mix(in srgb,var(--danger) 45%,transparent)}
+.abar.gated .ic{color:var(--danger)}
+.abar .ic{width:18px;height:18px;flex-shrink:0}
+.abar.amber .ic{color:var(--amber)}
+.abar.frozen .ic{color:var(--blue)}
+.abar .t{font-size:13px;font-weight:750;line-height:1.45}
+.abar .s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+.gate{padding:30px 4px 20px;text-align:center}
+.gate .gic{width:64px;height:64px;border-radius:20px;background:var(--amber-soft);display:grid;place-items:center;margin:0 auto 20px}
+.gate .gic svg{width:30px;height:30px;color:var(--amber)}
+.gate h2{font-family:'Poppins',sans-serif;font-size:25px;font-weight:800;letter-spacing:-.5px;line-height:1.2}
+.gate .amt{font-family:'Poppins',sans-serif;font-size:38px;font-weight:800;color:var(--brand);margin:16px 0 6px;letter-spacing:-1px}
+.gate .sub{font-size:13.5px;color:var(--muted);line-height:1.65;max-width:330px;margin:0 auto}
+.gate .where{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin:22px auto 0;max-width:360px;text-align:left}
+.gate .where .l{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint);font-weight:700}
+.gate .where .v{font-size:14.5px;font-weight:700;margin-top:5px}
+.gate .acts{display:grid;gap:9px;max-width:360px;margin:18px auto 0}
+.gate .acts button{min-height:48px;border-radius:13px;font-size:14px;font-weight:750;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.gate .acts button.pri{background:var(--accent-grad);color:var(--on-accent);border-color:transparent}
+.gate .keep{font-size:12px;color:var(--muted);line-height:1.65;max-width:360px;margin:20px auto 0;padding-top:16px;border-top:1px solid var(--line2)}
+
 /* ── INSTALL + OFFLINE ────────────────────────────────────── */
 .install{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--brand);border-radius:var(--radius);padding:14px 16px;margin-top:14px}
 .install .ic{width:18px;height:18px;color:var(--brand);flex-shrink:0}
@@ -483,6 +508,7 @@ body.is-offline .topbar{top:30px}
 
   <!-- ══ TODAY ══ -->
   <div class="page on" id="pg-today">
+    <div id="tdAccess"></div>
     <div class="greet" id="tdGreet"></div>
     <div class="promise" id="tdPromise"></div>
     <div class="card pad td-score">
@@ -547,13 +573,14 @@ body.is-offline .topbar{top:30px}
     <div class="run-p" id="plProg"></div>
     <div id="plFromTrainer"></div>
     <div class="plan-bar"><h3 style="font-size:17px;font-weight:800">Exercises</h3><div class="sp"></div>
-      <button class="btn" style="width:auto;padding:11px 15px" id="plEditBtn" onclick="togglePlanEdit()"></button></div>
+      <button class="btn" style="width:auto;padding:11px 15px;min-height:44px" id="plEditBtn" onclick="togglePlanEdit()"></button></div>
     <div id="plEx"></div>
     <div id="plFinish"></div>
   </div>
 
   <!-- ══ MEMBERSHIP (the member's own money record) ══ -->
   <div class="page" id="pg-membership">
+    <div id="msAccess"></div>
     <div class="greet" id="msPlan"></div>
     <div class="promise" style="font-size:24px;margin-bottom:16px">Your membership</div>
     <div class="card pad" id="msStatus"></div>
@@ -817,19 +844,86 @@ function bridgeRead(){
  /* the plan travels the same channel and is scoped to today like everything else.
     It was missing from this return, so a sent session vanished silently. */
  const pl=(d.plan&&d.plan.date===today)?d.plan:null;
- return {checkins:ck,summary:sm,notes:nt,plan:pl};
+ const ac=(d.access&&d.access.date===today)?d.access:null;
+ return {checkins:ck,summary:sm,notes:nt,plan:pl,access:ac};
 }
 function bridgeWrite(patch){
  if(!bridgeOn())return false;
  try{
   const cur=bridgeRead();
-  const next={checkins:cur.checkins,summary:cur.summary,notes:cur.notes,plan:cur.plan};
+  const next={checkins:cur.checkins,summary:cur.summary,notes:cur.notes,plan:cur.plan,access:cur.access};
   Object.keys(patch||{}).forEach(k=>{next[k]=patch[k];});
   localStorage.setItem(BRIDGE_KEY,JSON.stringify(next));
   return true;
  }catch(e){return false;}
 }
 function bridgeClear(){try{localStorage.removeItem(BRIDGE_KEY);}catch(e){}}
+
+/* ════════════════════════════════════════════════════════════════════
+   F6 THE LADDER, member side. The gym owns the ledger, so the rung comes
+   over the bridge. With no bridge value we fall back to this app's own
+   membership record and never go past amber: locking someone out on a
+   guess is worse than letting them train for free.
+   ════════════════════════════════════════════════════════════════════ */
+const GATED_PAGES=['today','log','plan','stats'];   /* membership is NEVER in here */
+const GATE_IC='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+/* the gate screen replaces a page's markup, so the ORIGINAL markup has to come
+   back before that page's renderer runs again, or it writes into elements that
+   no longer exist and the page silently stays blank. */
+function restoreGated(pg){
+ const el=document.getElementById('pg-'+pg);
+ if(el&&el.dataset.gated){el.innerHTML=PRISTINE[pg]||el.innerHTML;delete el.dataset.gated;}
+}
+function myAccess(){
+ const a=bridgeRead().access;
+ if(a&&a.name===DB.get('member').name&&['open','amber','gated','frozen'].indexOf(a.level)>-1){
+  return {level:a.level,amount:+a.amount||0,why:a.why||'',from:'gym'};
+ }
+ const bal=msBalance();
+ if(bal<=0)return {level:'open',amount:0,why:'',from:'app'};
+ return {level:'amber',amount:bal,from:'app',
+  why:lkrM(bal)+' owing for '+MN_FULL[AS_OF.getMonth()]+'.'};
+}
+function accessBar(){
+ const a=myAccess();
+ if(a.level==='amber')return '<div class="abar amber">'+GATE_IC
+  +'<div><div class="t">'+lkrM(a.amount)+' to settle</div>'
+  +'<div class="s">'+(a.why||'')+' Pay at the desk and it clears straight away.</div></div></div>';
+ /* the money page must never contradict itself in silence: if the gym says
+    gated, say so HERE too, next to the record that disagrees */
+ if(a.level==='gated')return '<div class="abar gated">'+GATE_IC
+  +'<div><div class="t">Training is paused · '+lkrM(a.amount)+'</div>'
+  +'<div class="s">'+(a.why||'')+' If your record below already shows this paid, tap "I already paid this" and the desk gets your dates.</div></div></div>';
+ if(a.level==='frozen')return '<div class="abar frozen">'+GATE_IC
+  +'<div><div class="t">Your membership is on hold</div>'
+  +'<div class="s">'+(a.why||'Nothing to pay while you are on hold.')+' Every day on hold is added back to your paid time.</div></div></div>';
+ return '';
+}
+/* ONE screen, and the Membership tab stays reachable from it */
+function gateScreen(){
+ const a=myAccess(),g=CFG.gym;
+ return '<div class="gate"><div class="gic">'+GATE_IC+'</div>'
+  +'<h2>Training is paused</h2>'
+  +'<div class="amt">'+lkrM(a.amount)+'</div>'
+  +'<div class="sub">'+(a.why||'')+' Settle it and everything unlocks straight away. Your plan, your history and your numbers are all still here.</div>'
+  +'<div class="where"><div class="l">Where to pay</div><div class="v">'+g.name+' front desk</div>'
+  +'<div class="l" style="margin-top:13px">Or call</div><div class="v">'+g.phone+'</div></div>'
+  +'<div class="acts">'
+  +'<button class="pri" onclick="go(\'membership\')">See my payment record</button>'
+  +'<button onclick="saidIPaid()">I have already paid this</button>'
+  +'</div>'
+  +'<div class="keep">Nothing has been hidden from you. Every payment you have ever made, who took it and when, is on your Membership tab and always will be.</div></div>';
+}
+/* not a complaint, a fact: it sends the member's OWN record to the desk */
+function saidIPaid(){
+ const a=myAccess();
+ const last=msPayments()[0];
+ const ok2=bridgeWrite({notes:(bridgeRead().notes||[]).concat([{date:todayISO(),
+  from:DB.get('member').name,kind:'paid-claim',
+  text:'Says the '+lkrM(a.amount)+' is already paid. Their last recorded payment: '
+   +(last?lkrM(last.amount)+' on '+fmtD(last.date)+', taken by '+last.by:'none recorded')}])});
+ toast(ok2?'The desk has your record. No argument, just the dates.':'Could not reach the desk from this browser');
+}
 
 /* ════════════════════════════════════════════════════════════════════
    SECTION 5 - THE UPLIFT SCORE (deterministic, rules visible on tap)
@@ -992,11 +1086,22 @@ function go(pg){
  PAGE=pg;
  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pg));
  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===pg));
- healPage(pg);
+ healPage(pg);restoreGated(pg);
+ if(isGated()&&GATED_PAGES.indexOf(pg)>-1){
+  const gel=document.getElementById('pg-'+pg);
+  gel.innerHTML=gateScreen();gel.dataset.gated='1';
+  window.scrollTo(0,0);return;
+ }
  try{RENDERERS[pg]();}catch(e){boundary(pg,e);}
  window.scrollTo(0,0);
 }
-function rerender(){healPage(PAGE);try{RENDERERS[PAGE]();}catch(e){boundary(PAGE,e);}renderChrome();}
+function isGated(){return myAccess().level==='gated';}
+function rerender(){
+ if(isGated()&&GATED_PAGES.indexOf(PAGE)>-1){
+  healPage(PAGE);const g=document.getElementById('pg-'+PAGE);
+  g.innerHTML=gateScreen();g.dataset.gated='1';renderChrome();return;
+ }
+ healPage(PAGE);restoreGated(PAGE);try{RENDERERS[PAGE]();}catch(e){boundary(PAGE,e);}renderChrome();}
 function toast(msg,ms){const t=document.getElementById('toast');t.innerHTML=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),ms||2600);}
 function toastUndo(msg,fn){UNDO=fn;toast(msg+'<button class="un" onclick="runUndo()">Undo</button>',6000);}
 function runUndo(){if(UNDO){const f=UNDO;UNDO=null;f();}document.getElementById('toast').classList.remove('on');}
@@ -1059,6 +1164,11 @@ function todayHeadline(){
  if(!bits.length)bits.push('hold the streak');
  return bits.slice(0,2).join(' and ');
 }
+function renderAccessBars(){
+ ['tdAccess','msAccess'].forEach(function(id){
+  const el=document.getElementById(id);if(el)el.innerHTML=accessBar();
+ });
+}
 function renderToday(){
  const m=DB.get('member'),d=todayRow();
  document.getElementById('tdGreet').textContent=greetWord(AS_OF.getHours())+', '+m.first;
@@ -1109,7 +1219,7 @@ function renderToday(){
   +'<div style="min-width:0"><div class="l">Ask anytime</div><div class="n">'+m.trainer.split(' ')[0]+', your trainer</div><div class="m">Form, swaps, why you feel flat. A real answer from the person who wrote your plan.</div></div>'
   +'<div class="go">'+I.wa+'</div>';
  document.getElementById('tdHooks').innerHTML=hookChips();
- renderBuild();renderGrid();renderInstall();
+ renderBuild();renderGrid();renderInstall();renderAccessBars();
  /* build stamp: so a screenshot can always answer "which version is this" */
  let bs=document.getElementById('buildStamp');
  if(!bs){bs=document.createElement('div');bs.id='buildStamp';
@@ -1576,6 +1686,7 @@ function msBalance(){
  return Math.max(0,CFG.membership.fee-paid);
 }
 function renderMembership(){
+ renderAccessBars();
  const c=CFG.membership,left=msDaysLeft(),until=msPaidUntil(),bal=msBalance();
  document.getElementById('msPlan').textContent=c.plan+' plan · '+lkrM(c.fee)+' a '+c.cycle;
  const state=bal>0?(left>=0?'part':'due'):'ok';
@@ -1735,7 +1846,9 @@ async function runSelfTest(){
  const R=[];const ok=(n,p,d)=>R.push({name:n,pass:!!p,detail:String(d==null?'':d).slice(0,180)});
  const snap=JSON.stringify(DB._d),snapPage=PAGE,snapAngle=SHOT_ANGLE,snapCmp=COMPARE,snapWk=ST_WEEK,snapMode=ST_MODE;
  const bootLog=window.__ST_LOG.slice();
+ const snapBridge=(function(){try{return localStorage.getItem(BRIDGE_KEY);}catch(e){return null;}})();
  try{
+  bridgeWrite({access:null});go(snapPage);
   ok('Boot: globals present',typeof CFG==='object'&&!!DB._d&&typeof RENDERERS==='object');
   ok('Boot: zero console errors since load',bootLog.length===0,bootLog.length?bootLog[0].kind+': '+bootLog[0].msg:'');
   const src=Array.from(document.scripts).map(s=>s.textContent).join('\n');
@@ -1996,6 +2109,66 @@ async function runSelfTest(){
   ok('Edit: add a set, then undo',added&&DB.get('exercises')[0].sets.length===sets0);
   removeSet(0);const removed=DB.get('exercises')[0].sets.length===sets0-1;runUndo();
   ok('Edit: remove a set, then undo',removed&&DB.get('exercises')[0].sets.length===sets0);
+  /* F6 THE GATE LADDER, member side */
+  (function(){
+   ok('Harness: it forced the ladder open before testing anything else',!isGated());
+   const me=DB.get('member').name;
+   const set=function(lvl,amt){bridgeWrite({access:{date:todayISO(),name:me,level:lvl,amount:amt||0,why:'test'}});};
+   /* open */
+   set('open',0);go('today');
+   ok('Ladder: open access shows the normal day, no bar',
+     !isGated()&&document.getElementById('tdAccess').innerHTML===''&&document.getElementById('pg-today').innerHTML.indexOf('Training is paused')<0);
+   /* amber warns and locks nothing */
+   set('amber',4500);go('today');
+   ok('Ladder: amber warns and locks nothing',
+     !isGated()&&(document.getElementById('tdAccess').textContent||'').indexOf('4,500')>-1
+     &&document.getElementById('pg-today').innerHTML.indexOf('Training is paused')<0);
+   /* gated */
+   set('gated',4500);
+   let blocked=0;
+   GATED_PAGES.forEach(function(p){go(p);
+    if((document.getElementById('pg-'+p).innerHTML||'').indexOf('Training is paused')>-1)blocked++;});
+   ok('Ladder: gated stops every training surface',blocked===GATED_PAGES.length,blocked+'/'+GATED_PAGES.length);
+   go('membership');
+   const msHtml=document.getElementById('pg-membership').innerHTML||'';
+   /* assert on the DOM, never on a markup literal: a stray tag in a string
+      makes the gate's own tag-balance check fail on a perfectly balanced file */
+   ok('Ladder: THE MONEY PAGE IS NEVER GATED',
+     document.querySelectorAll('#pg-membership .gate').length===0&&msHtml.length>200);
+   ok('Ladder: the money page still names the gate, so the two records never silently disagree',
+     (document.getElementById('msAccess').textContent||'').indexOf('Training is paused')>-1
+     &&(document.getElementById('msAccess').textContent||'').indexOf('already paid')>-1);
+   ok('Ladder: their full payment history is still there while gated',
+     document.querySelectorAll('#msHistory .day-h').length===msPayments().length&&msPayments().length>0,
+     msPayments().length+' payments');
+   ok('Ladder: a gated member can still open a receipt',typeof receiptFor==='function');
+   ok('Ladder: the gate screen says the amount and where to pay',
+     (function(){go('today');const t=document.getElementById('pg-today').textContent||'';
+      return t.indexOf(lkrM(4500))>-1&&t.indexOf(CFG.gym.phone)>-1;})());
+   ok('Ladder: the gate offers a way to say I already paid',
+     (document.getElementById('pg-today').textContent||'').indexOf('already paid')>-1);
+   /* the claim travels as facts, not a complaint */
+   const n0=(bridgeRead().notes||[]).length;
+   saidIPaid();
+   const claim=(bridgeRead().notes||[]).slice(-1)[0];
+   ok('Ladder: saying I already paid sends their own record to the desk',
+     (bridgeRead().notes||[]).length===n0+1&&claim.kind==='paid-claim'&&claim.text.indexOf('last recorded payment')>-1);
+   /* frozen is calm, and not a lockout */
+   set('frozen',0);go('today');
+   ok('Ladder: frozen is a calm bar, not a lockout',
+     !isGated()&&(document.getElementById('tdAccess').textContent||'').indexOf('on hold')>-1);
+   /* the unlock */
+   set('open',0);rerender();
+   ok('Ladder: paying unlocks instantly, no refresh',
+     !isGated()&&document.getElementById('pg-today').innerHTML.indexOf('Training is paused')<0
+     &&document.getElementById('tdAccess').innerHTML==='');
+   /* a hostile bridge value must never gate anyone */
+   bridgeWrite({access:{date:todayISO(),name:me,level:'GATED',amount:'lots'}});
+   ok('Ladder: an unrecognised rung falls back, it never guesses a lockout',!isGated());
+   bridgeWrite({access:{date:todayISO(),name:'Someone Else',level:'gated',amount:9999}});
+   ok('Ladder: another person\'s rung is ignored',!isGated());
+   go('today');
+  })();
   /* INSTALL + OFFLINE */
   go('today');
   ok('Install: the prompt is absent until the browser offers one',
@@ -2040,6 +2213,7 @@ async function runSelfTest(){
  }catch(e){ok('HARNESS: completed without crashing',false,String(e&&e.message||e));}
  finally{
   DB._d=JSON.parse(snap);SHOT_ANGLE=snapAngle;COMPARE=snapCmp;ST_WEEK=snapWk;ST_MODE=snapMode;ST_OPEN=null;
+  try{snapBridge===null?localStorage.removeItem(BRIDGE_KEY):localStorage.setItem(BRIDGE_KEY,snapBridge);}catch(e){}
   restStop();closeSummary();closeGoal();   /* zero footprint: never leave a sheet or a timer running */
   renderChrome();go(snapPage);
   window.__ST_LOG.length=bootLog.length;
@@ -2098,6 +2272,12 @@ snapshotPages();
 renderChrome();
 go('today');
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();INSTALL_EVT=e;renderInstall();});
+/* THE UNLOCK. The desk takes the money in the other tab, the bridge changes,
+   this fires, and the member is training again without touching anything. */
+window.addEventListener('storage',function(e){
+ if(e&&e.key&&e.key!==BRIDGE_KEY)return;
+ try{rerender();}catch(err){}
+});
 window.addEventListener('online',function(){setOffline(false);});
 window.addEventListener('offline',function(){setOffline(true);});
 setOffline(navigator.onLine===false);

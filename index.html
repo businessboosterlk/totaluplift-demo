@@ -789,6 +789,23 @@ body.dark .stat-kpi .val{color:#fff}
 .pl-acts button{padding:6px 11px;font-size:11.5px;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);transition:.15s;display:inline-flex;align-items:center;gap:5px}
 .pl-acts button:hover{border-color:var(--brand);color:var(--brand)}
 .pl-acts button.wa{color:var(--green)}.pl-acts button.wa:hover{border-color:var(--green);background:var(--green-soft)}
+/* ── THE GATE LADDER ── */
+.acc{display:flex;align-items:flex-start;gap:11px;padding:13px 15px;border-radius:var(--radius);border:1px solid var(--line);background:var(--surface-2)}
+.acc.gated{background:var(--danger-soft);border-color:color-mix(in srgb,var(--danger) 40%,transparent)}
+.acc.amber{background:var(--amber-soft);border-color:color-mix(in srgb,var(--amber) 40%,transparent)}
+.acc.frozen{background:var(--blue-soft,var(--surface-2));border-color:color-mix(in srgb,var(--blue) 40%,transparent)}
+.acc .dotl{width:11px;height:11px;border-radius:50%;margin-top:4px;flex-shrink:0;background:var(--green)}
+.acc.amber .dotl{background:var(--amber)}
+.acc.gated .dotl{background:var(--danger)}
+.acc.frozen .dotl{background:var(--blue)}
+.acc .al{font-size:13.5px;font-weight:800}
+.acc .aw{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.55}
+.req{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--amber);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+.req .rn{font-size:14px;font-weight:800}
+.req .rw{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.5}
+.req .ra{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.req .ra button{padding:8px 13px;font-size:12.5px;font-weight:700;border-radius:9px;border:1px solid var(--line);background:var(--surface)}
+.req .ra button.yes{background:var(--danger);color:#fff;border-color:transparent}
 /* ── THE MORNING THREE ── */
 .m3{display:grid;gap:10px;margin-bottom:20px}
 .m3-row{display:flex;align-items:flex-start;gap:13px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:var(--radius);padding:15px 17px;box-shadow:var(--shadow-xs);transition:transform .12s var(--ease),box-shadow .15s;cursor:pointer;text-align:left;width:100%}
@@ -951,6 +968,7 @@ body.dark .stat-kpi .val{color:#fff}
       <div class="page active" id="page-dashboard">
         <div id="greet" style="margin-bottom:20px"></div>
         <div id="morningThree"></div>
+        <div id="accessAlerts"></div>
         <div class="hero-money" id="heroMoney"></div>
         <div class="kpis" id="dashKpis"></div>
         <div id="staffPanel"></div>
@@ -1175,6 +1193,18 @@ body.dark .stat-kpi .val{color:#fff}
   </div>
 </div>
 
+<div class="modal-ov" id="freezeModal">
+  <div class="modal" style="width:440px">
+    <div class="modal-h"><h3 id="fzTitle">Freeze</h3><button class="pn-close" onclick="closeFreezeModal()" style="position:static;width:30px;height:30px">&#10005;</button></div>
+    <div class="modal-b">
+      <div class="fld" id="f_fzto"><label for="fz_to">Frozen until</label><input id="fz_to" type="date"><div class="err">Pick a date between tomorrow and 60 days out. A freeze with no end is a cancellation nobody wrote down.</div></div>
+      <div class="fld"><label for="fz_reason">Reason (optional)</label><input id="fz_reason" placeholder="e.g. travelling, injury" maxlength="120"></div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:6px">Every frozen day is added back to their paid-until date. Time is given back, money is never refunded, and they are not chased while frozen.</div>
+    </div>
+    <div class="modal-f"><button class="btn-ghost" onclick="closeFreezeModal()">Cancel</button><button class="btn-primary" onclick="saveFreeze()">Freeze</button></div>
+  </div>
+</div>
+
 <div class="modal-ov" id="planModal">
   <div class="modal" style="width:560px">
     <div class="modal-h"><h3 id="pmSessTitle">Set their session</h3><button class="pn-close" onclick="closePlanModal()" style="position:static;width:30px;height:30px">&#10005;</button></div>
@@ -1337,10 +1367,17 @@ const CFG={
   risk:20,          // watch+1..risk = at risk; beyond = critical
   owingAbsent:10,   // owing AND absent this many days = critical regardless
  },
- gym:{branches:['Colombo 07'],commissionRate:0.2,joiningFee:5000},
+ gym:{linkedMember:'Ravindu Dissanayake',branches:['Colombo 07'],commissionRate:0.2,joiningFee:5000},
  /* SMART LAYER thresholds. Every rule below reads these, so an owner can retune
     the system's judgement without anyone touching code. */
  smart:{dueDay:5,noticeDays:7,graceDays:7,fadeDrop:0.5,longMember:6},
+ /* THE LADDER. graceDays above is the rung between amber and gated.
+    autoGate is OFF by default and that is deliberate. Switching it on gates
+    every member already past grace the moment it flips, which on a real book
+    is dozens of people at once and the fastest way to lose a gym. Off, the
+    system NAMES them and the owner decides. Same standing BB rule as every
+    other money action: flagged for approval, never auto-applied. */
+ access:{autoGate:false,maxFreezeDays:60,overrideDays:14},
  entity:{singular:'Enquiry',plural:'Enquiries'},
  contactWord:{singular:'Member',plural:'Members'},
  fieldLabels:{name:'Name',co:'Plan / detail',phone:'Phone',value:'Plan value',followUp:'Trial date',owner:'Trainer',stage:'Stage'},
@@ -1619,6 +1656,13 @@ function seedData(){
   {id:5,name:'Sachini Fernando', role:'staff',  pin:'5555',active:true,pos:'frontdesk'},
  ];
  const mn=MN_FULL[AS_OF.getMonth()];
+ /* pick the seeded access cases from REAL ledger state, never a magic index */
+ const owingIds=plans.filter(p=>p.status==='active').map(p=>p.id)
+  .filter(id=>{const pay=payments.filter(r=>r.planId===id&&r.month===ymNow());
+   const got=pay.reduce((s,r)=>s+r.amount,0);const pl=plans.find(x=>x.id===id);
+   return got<(pl.fee!=null?pl.fee:CFG.recurring.amount);});
+ const frozenM=owingIds.length>1?owingIds[1]:(customers[7]||customers[0]).id;
+ const gateReqM=owingIds.length?owingIds[0]:(customers[8]||customers[0]).id;
  const owe1=customers[6].name,owe2=customers[30].name,dark1=customers[63].name;
  return{
   meta:{today:todayISO(),seeded:CFG.app.version},
@@ -1629,6 +1673,13 @@ function seedData(){
   recurringPlans:plans,
   recurringPayments:payments,
   checkins:checkins,
+  /* ACCESS LOG: one row per decision, every row carries a name. Derived state
+     reads this and nothing else, so there is no second source of truth. */
+  accessLog:[
+   {id:1,m:frozenM,kind:'freeze',from:addDaysStr(todayISO(),-6),to:addDaysStr(todayISO(),18),
+    reason:'Travelling for work, back next month',by:1,at:addDaysStr(todayISO(),-6)},
+   {id:2,m:gateReqM,kind:'gate-request',reason:'Stopped answering, owes two weeks past grace',by:3,at:todayISO()},
+  ],
   tasks:[
    {id:1,t:'Call '+owe1.split(' ')[0]+' about the overdue '+CFG.recurring.label.toLowerCase(),who:5,due:todayISO(),d:false},
    {id:2,t:'Win back '+dark1+' (Member Pulse)',who:4,due:todayISO(),d:false},
@@ -2062,7 +2113,7 @@ function renderDashboard(){
    who has stopped showing up - answered in the first screenful ── */
 function renderDashCommand(){
  const ym=ymNow();
- const st=recStats(ym);
+ const st=recStats(ym);const ac=accessCounts();
  const members=activeMembers();
  const pd=pulseData(members);
  const risky=pd.filter(x=>x.band==='risk'||x.band==='critical');
@@ -2080,12 +2131,14 @@ function renderDashCommand(){
   +'<div class="hm-sub">'+pct+'% of '+lkr(st.expected)+' expected · '+lkr(st.outstanding)+' outstanding</div></div>'
   +'<div class="hm-cell"><div class="hm-label">Active '+CFG.contactWord.plural.toLowerCase()+'</div><div class="hm-val"><span data-to="'+members.length+'" data-fmt="int">'+members.length+'</span></div>'
   +'<div class="hm-sub">'+(st.owing.length+st.partial.length)+' still to collect · '+risky.length+' at risk</div></div>';
- renderMorningThree();
+ renderMorningThree();renderAccessAlerts();
  document.getElementById('dashKpis').innerHTML=
   kpiC('At-risk '+CFG.contactWord.plural.toLowerCase(),risky.length,risky.length?lkr(pulseRevenueAtRisk(pd))+'/month at risk':'nobody slipping',risky.length>0,I.pulse)
   +kpiC('Trial funnel value',lkr(funnelVal),funnel.length+' open '+CFG.entity.plural.toLowerCase(),false,I.trend)
   +kpiC('New joins in '+MN[AS_OF.getMonth()],joins,joins?'from the enquiry funnel':'none yet this month',false,I.users)
-  +kpiC('Check-ins today',todayCheckins().length,'logged at the front desk',false,I.enter);
+  +kpiC('Check-ins today',todayCheckins().length,'logged at the front desk',false,I.enter)
+  /* F7: a freeze the owner cannot see is a cancellation in slow motion */
+  +kpiC('Frozen and gated',ac.frozen+ac.gated,ac.frozen+' frozen · '+ac.gated+' gated · '+ac.pastGrace+' past grace',ac.gated>0||ac.pastGrace>0,I.pulse);
  const data=[];for(let i=5;i>=0;i--){const m=ymShift(ym,-i);
   const v=DB.get('recurringPayments').filter(r=>r.month===m).reduce((s,r)=>s+r.amount,0);
   data.push({label:MN[+m.split('-')[1]-1],v:v,hi:m===ym,top:kLabel(v)});}
@@ -2102,6 +2155,31 @@ function renderDashCommand(){
  renderStaffPanel();
 }
 /* ── MY-DAY VIEW (trainer): my clients, my at-risk, my renewals, my tasks ── */
+function renderAccessAlerts(){
+ const el=document.getElementById('accessAlerts');if(!el)return;
+ if(!isMaster()){el.innerHTML='';return;}
+ const reqs=(DB.get('accessLog')||[]).filter(r=>r.kind==='gate-request'&&!r.decidedAt);
+ const ac=accessCounts();
+ /* one line, not 47 cards. A list that long stops being read by Wednesday. */
+ const past=(!CFG.access.autoGate&&ac.pastGrace)?
+  '<div class="req" style="border-color:var(--line)"><span style="min-width:0;flex:1">'
+  +'<span class="rn">'+ac.pastGrace+' '+(ac.pastGrace===1?CFG.contactWord.singular.toLowerCase():CFG.contactWord.plural.toLowerCase())+' are past the grace window</span>'
+  +'<div class="rw">Their access is still open. Automatic gating is off, so nobody gets locked out without you saying so.</div>'
+  +'<div class="ra"><button onclick="go(\'recurring\')">See who</button>'
+  +'<button onclick="go(\'settings\')">Change the grace or turn gating on</button></div></span></div>':'';
+ if(!reqs.length&&!past){el.innerHTML='';return;}
+ el.innerHTML='<div class="sec-t" style="margin-bottom:10px">Waiting on you</div>'+past
+  +mapSafe(reqs,r=>{
+   const c=DB.get('customers').find(x=>x.id===r.m);if(!c)return '';
+   const s=accessState(r.m);
+   return '<div class="req"><span style="min-width:0;flex:1"><span class="rn">'+c.name+'</span>'
+    +'<div class="rw">'+staffById(r.by).name+' asked to gate access'+(r.reason?': '+r.reason:'')+'</div>'
+    +'<div class="rw">Right now: '+s.label+'. '+s.why+'</div>'
+    +'<div class="ra"><button class="yes" onclick="decideGate('+r.id+',true)">Approve</button>'
+    +'<button onclick="decideGate('+r.id+',false)">Decline</button>'
+    +'<button onclick="openCustomer('+r.m+')">Open record</button></div></span></div>';})
+  +'<div style="height:10px"></div>';
+}
 function renderMorningThree(){
  const el=document.getElementById('morningThree');if(!el)return;
  if(!isMaster()){el.innerHTML='';return;}
@@ -2442,6 +2520,20 @@ function sanitizePulse(merged){
  if(!(out.healthy<out.watch&&out.watch<out.risk)){out.healthy=d.healthy;out.watch=d.watch;out.risk=d.risk;}
  merged.pulse=out;
 }
+function sanitizeAccess(merged){
+ /* Same contract as the Pulse bands: the owner may tune every number here, and
+    no override can produce a NaN due day, a negative grace or an autoGate that
+    is the string "false". A broken ladder locks real people out of a gym. */
+ const ds=CFG_DEFAULTS.smart,da=CFG_DEFAULTS.access;
+ const os=isPlainObj(merged.smart)?merged.smart:{},oa=isPlainObj(merged.access)?merged.access:{};
+ const iv=(v,dv,lo,hi)=>{const n=Math.round(+v);return isFinite(n)?Math.min(hi,Math.max(lo,n)):dv;};
+ merged.smart={dueDay:iv(os.dueDay,ds.dueDay,1,28),noticeDays:iv(os.noticeDays,ds.noticeDays,1,60),
+  graceDays:iv(os.graceDays,ds.graceDays,0,60),longMember:iv(os.longMember,ds.longMember,1,120),
+  fadeDrop:(function(){const n=+os.fadeDrop;return isFinite(n)&&n>0&&n<1?n:ds.fadeDrop;})()};
+ merged.access={autoGate:oa.autoGate===true,
+  maxFreezeDays:iv(oa.maxFreezeDays,da.maxFreezeDays,1,365),
+  overrideDays:iv(oa.overrideDays,da.overrideDays,1,90)};
+}
 function applyConfig(){
  const merged=deepMerge(JSON.parse(JSON.stringify(CFG_DEFAULTS)),cfgOverrides());
  /* ── LOCKED: enforced on every apply, whatever the overrides claim ── */
@@ -2455,6 +2547,7 @@ function applyConfig(){
  sanitizeStages(merged);
  sanitizeAgents(merged);                                          // digital staff: set locked, fields clamped
  sanitizePulse(merged);                                           // pulse thresholds: clamped, ascending
+ sanitizeAccess(merged);                                          // ladder: clamped ints, autoGate a real boolean
  merged.gym=JSON.parse(JSON.stringify(CFG_DEFAULTS.gym));         // branches/commission: locked to the mold
  if(!Array.isArray(merged.cadence)||merged.cadence.length!==3)merged.cadence=CFG_DEFAULTS.cadence.slice();
  Object.keys(CFG).forEach(k=>delete CFG[k]);Object.assign(CFG,merged);
@@ -2620,7 +2713,10 @@ function stuNumbers(){
   +stuRow('Low-stock alert at','retail stock flags "running low" at or below this','<input type="number" id="stLow" min="0" value="'+CFG.inventory.lowThreshold+'" style="width:90px;flex:none">')
   +stuRow('Dead-stock window (days)','no sale for this long flags "consider a promo"','<input type="number" id="stDead" min="7" value="'+CFG.inventory.deadStockDays+'" style="width:90px;flex:none">')
   +stuRow('Pulse bands (days)','healthy up to · watch up to · at risk up to (beyond = critical)','<div style="display:flex;gap:8px;flex:1"><input type="number" id="stPh" min="1" value="'+CFG.pulse.healthy+'" style="width:70px;flex:none"><input type="number" id="stPw" min="2" value="'+CFG.pulse.watch+'" style="width:70px;flex:none"><input type="number" id="stPr" min="3" value="'+CFG.pulse.risk+'" style="width:70px;flex:none"></div>')
-  +stuRow('Owing + absent (days)','owing this month and away this long = critical','<input type="number" id="stPo" min="1" value="'+CFG.pulse.owingAbsent+'" style="width:90px;flex:none">'),
+  +stuRow('Owing + absent (days)','owing this month and away this long = critical','<input type="number" id="stPo" min="1" value="'+CFG.pulse.owingAbsent+'" style="width:90px;flex:none">')
+  +stuRow('Payment due day','the day of the month the '+CFG.recurring.label.toLowerCase()+' is due','<input type="number" id="stDue" min="1" max="28" value="'+CFG.smart.dueDay+'" style="width:90px;flex:none">')
+  +stuRow('Grace days after due','how long someone can be late before the system calls it past grace','<input type="number" id="stGrace" min="0" max="60" value="'+CFG.smart.graceDays+'" style="width:90px;flex:none">')
+  +stuRow('Gate access automatically','off means past-grace '+CFG.contactWord.plural.toLowerCase()+' are NAMED for you and nobody is locked out until you say so. Turning this on gates everyone already past grace the moment you save.','<button class="sw'+(CFG.access.autoGate?' on':'')+'" id="stAuto" role="switch" aria-checked="'+(!!CFG.access.autoGate)+'" aria-label="Gate access automatically" onclick="this.classList.toggle(\'on\');this.setAttribute(\'aria-checked\',this.classList.contains(\'on\'))"></button>'),
   '<button class="btn-primary" onclick="stuSaveNumbers()">Save numbers</button><span class="sp"></span><button class="stu-reset" onclick="stuReset([\'monthlyTarget\',\'cadence\',\'inventory\'],\'Numbers\')">Reset to default</button>');
 }
 function stuSaveNumbers(){
@@ -2633,7 +2729,19 @@ function stuSaveNumbers(){
  const ph=stuInt('stPh'),pw=stuInt('stPw'),pr=stuInt('stPr'),po=stuInt('stPo');
  if(!(ph>=1&&ph<pw&&pw<pr))return toast('Pulse bands must increase: e.g. 7, 13, 20');
  if(po<1)return toast('Owing + absent must be at least 1 day');
- stuSave('Numbers saved',function(c){c.monthlyTarget=target;c.cadence=cad;c.inventory=Object.assign(c.inventory||{},{lowThreshold:low,deadStockDays:dead});c.pulse={healthy:ph,watch:pw,risk:pr,owingAbsent:po};return null;});
+ const due=stuInt('stDue'),grace=stuInt('stGrace');
+ if(!(due>=1&&due<=28))return toast('The due day must be between 1 and 28');
+ if(!(grace>=0&&grace<=60))return toast('Grace days must be between 0 and 60');
+ const sw=document.getElementById('stAuto');
+ const auto=!!(sw&&sw.classList.contains('on'));
+ /* turning the switch on is a money decision on real people, so say the number */
+ if(auto&&!CFG.access.autoGate){
+  const n=accessCounts().pastGrace;
+  if(n&&!confirm('This will gate '+n+' '+(n===1?CFG.contactWord.singular.toLowerCase():CFG.contactWord.plural.toLowerCase())
+   +' straight away, because they are already past the grace window. Go ahead?'))return;
+ }
+ stuSave('Numbers saved',function(c){c.smart=Object.assign({},CFG.smart,{dueDay:due,graceDays:grace});
+  c.access=Object.assign({},CFG.access,{autoGate:auto});c.monthlyTarget=target;c.cadence=cad;c.inventory=Object.assign(c.inventory||{},{lowThreshold:low,deadStockDays:dead});c.pulse={healthy:ph,watch:pw,risk:pr,owingAbsent:po};return null;});
 }
 
 /* ── MESSAGES: WhatsApp templates in the client's voice ── */
@@ -2946,7 +3054,9 @@ function agentHealth(){
 /* cadence reads CFG live so the Studio's day edits drive real due dates */
 function cadDays(i){return (CFG.cadence&&CFG.cadence[i])||[30,60,90][i];}
 function cadLabel(i){return cadDays(i)+'-day '+['check-in','re-engage','offer'][i];}
-function addDaysStr(iso,n){const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function addDaysStr(iso,n){const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+n);
+ /* LOCAL parts, never toISOString: that is UTC and loses a day east of Greenwich */
+ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function custLTV(c){return (c.history||[]).reduce((s,h)=>s+h.value,0);}
 function custFirst(c){return c.history&&c.history.length?c.history.reduce((a,h)=>h.date<a?h.date:a,c.history[0].date):c.last;}
 function custNext(c){if(c.sent>=3)return null;return c.snooze||addDaysStr(custFirst(c),cadDays(c.sent));}
@@ -3177,10 +3287,136 @@ function openCustomer(id){
   +'<div class="pn-body">'
   +'<div class="sec"><div class="sec-t">Summary</div><div class="info-grid"><div class="info"><div class="il">Lifetime value</div><div class="iv" style="color:var(--green)">'+lkr(ltv)+'</div></div><div class="info"><div class="il">Orders</div><div class="iv">'+(c.history?c.history.length:0)+'</div></div><div class="info"><div class="il">First order</div><div class="iv">'+fmtDate(custFirst(c))+'</div></div><div class="info"><div class="il">Last contact</div><div class="iv">'+fmtDate(c.last)+'</div></div></div></div>'
   +'<div class="sec"><div class="sec-t">Purchase history</div><table class="tbl" style="font-size:12.5px"><thead><tr><th>Item</th><th>Date</th><th class="tnum">Value</th></tr></thead><tbody>'+(hist||'<tr><td colspan="3" style="color:var(--faint)">No purchases yet</td></tr>')+'</tbody></table></div>'
+  +accessSection(c)
   +'<div class="sec"><div class="sec-t">Re-engage cadence</div>'+steps+'</div>'
   +syncSection(c)
   +'</div>';
  document.getElementById('overlay').classList.add('open');panel.classList.add('open');
+}
+/* the ladder, shown wherever a person is shown. Trainers see the state and can
+   ASK; only an owner or manager can change it. */
+function accessSection(c){
+ if(!CFG.modules.recurring)return '';
+ const s=accessState(c.id),pend=pendingGateReq(c.id),master=isMaster();
+ let acts='';
+ if(master){
+  if(pend)acts+='<button class="pa" onclick="decideGate('+pend.id+',true)">Approve gate</button>'
+   +'<button class="pa" onclick="decideGate('+pend.id+',false)">Decline</button>';
+  else if(s.level==='gated')acts+='<button class="pa" onclick="liftGate('+c.id+')">Keep them training</button>';
+  else if(s.level==='amber')acts+='<button class="pa" onclick="requestGate('+c.id+')">Gate access</button>';
+  if(s.level==='frozen')acts+='<button class="pa" onclick="endFreeze('+c.id+')">End the freeze</button>';
+  else acts+='<button class="pa" onclick="openFreezeModal('+c.id+')">Freeze</button>';
+ }else if(!pend&&(s.level==='amber'||s.level==='gated')){
+  acts+='<button class="pa" onclick="requestGate('+c.id+')">Ask to gate access</button>';
+ }
+ const hist=accessRows(c.id).slice().sort((a,b)=>b.id-a.id).slice(0,4).map(r=>
+  '<div style="font-size:11.5px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--line2)">'
+  +accessKindLabel(r)+' · '+staffById(r.by).name+' · '+fmtDate(r.at)+(r.reason?'<br>'+r.reason:'')+'</div>').join('');
+ return '<div class="sec"><div class="sec-t">Access</div>'
+  +'<div class="acc '+(s.level==='open'?'':s.level)+'"><span class="dotl"></span>'
+  +'<span style="min-width:0"><span class="al">'+s.label+'</span><div class="aw">'+(s.why||'')+'</div></span></div>'
+  +(pend?'<div class="aw" style="margin-top:9px;color:var(--amber);font-weight:700">'
+    +staffById(pend.by).name+' asked to gate this member'+(pend.reason?': '+pend.reason:'')+'</div>':'')
+  +(acts?'<div class="pn-actions" style="padding:11px 0 0;border:none">'+acts+'</div>':'')
+  +(hist?'<div style="margin-top:10px">'+hist+'</div>':'')
+  +'<div style="font-size:11px;color:var(--faint);margin-top:9px;line-height:1.6">'
+  +'Their payment history stays visible to them at every rung. Access can be paused, the record never is.</div></div>';
+}
+function accessKindLabel(r){
+ return r.kind==='freeze'?('Frozen to '+fmtDate(r.to))
+  :r.kind==='gate-request'?(r.decidedAt?('Gate '+(r.approved?'approved':'declined')):'Gate requested')
+  :r.kind==='gate-approved'?'Access gated'
+  :r.kind==='override'?('Override to '+fmtDate(r.to))
+  :r.kind;
+}
+/* a trainer asks, an owner decides. One tap either way, both logged. */
+function requestGate(id,preset){
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ if(pendingGateReq(id)){toast('A request is already waiting on a decision');return;}
+ const reason=(preset!=null?preset:(prompt('Why should '+c.name.split(' ')[0]+' be gated?')||'')).trim();
+ if(!reason)return;
+ const row={id:DB.nextId('accessLog'),m:id,kind:'gate-request',reason:reason.slice(0,120),by:CURRENT.id,at:todayISO()};
+ DB.get('accessLog').push(row);
+ logFeed(CURRENT.id,'Gate requested',c.name+' · '+row.reason);DB.commit();
+ if(isMaster())decideGate(row.id,true);else{renderApp();openCustomer(id);
+  toastUndo(I.check+' Sent to the owner to approve',function(){
+   const a=DB.get('accessLog');a.splice(a.findIndex(x=>x.id===row.id),1);DB.commit();renderApp();});}
+}
+function decideGate(reqId,approve){
+ if(!isMaster()){toast('Only an owner or manager can decide this');return;}
+ const req=(DB.get('accessLog')||[]).find(r=>r.id===reqId);if(!req||req.decidedAt)return;
+ const c=DB.get('customers').find(x=>x.id===req.m);if(!c)return;
+ req.decidedAt=todayISO();req.decidedBy=CURRENT.id;req.approved=!!approve;
+ let added=null;
+ if(approve){
+  added={id:DB.nextId('accessLog'),m:req.m,kind:'gate-approved',reason:req.reason,by:CURRENT.id,at:todayISO()};
+  DB.get('accessLog').push(added);
+ }
+ logFeed(CURRENT.id,approve?'Access gated':'Gate declined',c.name);DB.commit();
+ renderApp();if(document.getElementById('panel').classList.contains('open'))openCustomer(req.m);
+ pushAccess(req.m);
+ toastUndo(I.check+' '+(approve?'Access gated for '+c.name.split(' ')[0]:'Declined'),function(){
+  delete req.decidedAt;delete req.decidedBy;delete req.approved;
+  if(added){const a=DB.get('accessLog');a.splice(a.findIndex(x=>x.id===added.id),1);}
+  DB.commit();renderApp();pushAccess(req.m);
+  if(document.getElementById('panel').classList.contains('open'))openCustomer(req.m);});
+}
+/* the override: an owner can always keep someone training, and it is logged */
+function liftGateTest(id){return liftGate(id,'Long member, agreed to pay Friday');}
+function liftGate(id,preset){
+ if(!isMaster()){toast('Only an owner or manager can lift a gate');return;}
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ const reason=(preset!=null?preset:(prompt('Why keep '+c.name.split(' ')[0]+' training?')||'')).trim();
+ if(!reason)return;
+ const g=manualGate(id);if(g)g.liftedAt=todayISO();
+ const row={id:DB.nextId('accessLog'),m:id,kind:'override',reason:reason.slice(0,120),by:CURRENT.id,
+  at:todayISO(),to:addDaysStr(todayISO(),CFG.access.overrideDays)};
+ DB.get('accessLog').push(row);
+ logFeed(CURRENT.id,'Access override',c.name+' · '+row.reason);DB.commit();
+ renderApp();openCustomer(id);pushAccess(id);
+ toastUndo(I.check+' '+c.name.split(' ')[0]+' keeps training to '+fmtDate(row.to),function(){
+  if(g)delete g.liftedAt;
+  const a=DB.get('accessLog');a.splice(a.findIndex(x=>x.id===row.id),1);
+  DB.commit();renderApp();pushAccess(id);openCustomer(id);});
+}
+let FZ_ID=null;
+function openFreezeModal(id){
+ if(!isMaster()){toast('Only an owner or manager can freeze a '+CFG.contactWord.singular.toLowerCase());return;}
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ FZ_ID=id;
+ document.getElementById('fzTitle').textContent='Freeze '+c.name;
+ document.getElementById('fz_to').value=addDaysStr(todayISO(),30);
+ document.getElementById('fz_reason').value='';
+ setInvalid('f_fzto',false);
+ document.getElementById('freezeModal').classList.add('open');
+}
+function closeFreezeModal(){document.getElementById('freezeModal').classList.remove('open');FZ_ID=null;}
+function saveFreeze(){
+ const id=FZ_ID,c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ const to=document.getElementById('fz_to').value;
+ const n=to?daysBetween(todayISO(),to):-1;
+ /* a freeze with no end date is a cancellation nobody wrote down */
+ if(!setInvalid('f_fzto',!(n>0&&n<=CFG.access.maxFreezeDays))){document.getElementById('fz_to').focus();return;}
+ const row={id:DB.nextId('accessLog'),m:id,kind:'freeze',from:todayISO(),to:to,
+  reason:(document.getElementById('fz_reason').value||'').trim().slice(0,120),by:CURRENT.id,at:todayISO()};
+ DB.get('accessLog').push(row);
+ logFeed(CURRENT.id,'Membership frozen',c.name+' to '+fmtDate(to));DB.commit();
+ closeFreezeModal();renderApp();openCustomer(id);pushAccess(id);
+ toastUndo(I.check+' '+c.name.split(' ')[0]+' frozen for '+n+' days, added back to their paid time',function(){
+  const a=DB.get('accessLog');a.splice(a.findIndex(x=>x.id===row.id),1);
+  DB.commit();renderApp();pushAccess(id);openCustomer(id);});
+}
+function endFreeze(id){
+ if(!isMaster()){toast('Only an owner or manager can end a freeze');return;}
+ const fz=activeFreeze(id);if(!fz)return;
+ /* yesterday, not today: "frozen until X" includes X, so ending it today with
+    to=today would leave the freeze still running for the rest of the day */
+ const was=fz.to;fz.to=addDaysStr(todayISO(),-1);
+ const c=DB.get('customers').find(x=>x.id===id);
+ logFeed(CURRENT.id,'Freeze ended',c.name);DB.commit();
+ renderApp();openCustomer(id);pushAccess(id);
+ toastUndo(I.check+' Freeze ended, they are training again',function(){
+  fz.to=was;DB.commit();renderApp();pushAccess(id);openCustomer(id);});
 }
 /* ── EDIT MEMBER: roster row + ledger plan move together, one undo restores both ── */
 let MM_EDIT=null;
@@ -3513,10 +3749,11 @@ const RECUR={ym:null,status:'all',cohort:'all',q:'',_last:0,_undo:null,
  setCohort(v){this.cohort=v;renderRecurring();},
  setQ(v){this.q=(v||'').trim().toLowerCase();renderRecurring(true);},
  filt(list){return list.filter(p=>(this.cohort==='all'||String(p.cohort)===this.cohort)&&(!this.q||p.name.toLowerCase().includes(this.q)));},
- mark(id){const p=DB.get('recurringPlans').find(x=>x.id===id);if(!p)return;const due=recFee(p)-recPaid(id,this.ym);if(due<=0)return;const ex=recRow(id,this.ym);
+ mark(id){const p=DB.get('recurringPlans').find(x=>x.id===id);if(!p)return;
+  /* pushed AFTER the row lands, at the bottom of this function */const due=recFee(p)-recPaid(id,this.ym);if(due<=0)return;const ex=recRow(id,this.ym);
   /* WHO marked it and WHEN: without this the member has no way to settle a dispute */
   const stamp={by:CURRENT.name,byId:CURRENT.id,at:feedStamp(),method:'Cash at the desk'};
-  if(ex){this._undo={id:ex.id,amt:ex.amount,st:ex.status,created:false,by:ex.by,at:ex.at,method:ex.method};ex.amount+=due;ex.status='paid';ex.paidAt=todayISO();Object.assign(ex,stamp);}else{const row=Object.assign({id:DB.nextId('recurringPayments'),planId:id,month:this.ym,amount:due,status:'paid',paidAt:todayISO()},stamp);DB.get('recurringPayments').push(row);this._undo={id:row.id,created:true};}logFeed(CURRENT.id,CFG.recurring.label+' collected',p.name+' · '+monthShort(this.ym));
+  if(ex){this._undo={id:ex.id,amt:ex.amount,st:ex.status,created:false,by:ex.by,at:ex.at,method:ex.method};ex.amount+=due;ex.status='paid';ex.paidAt=todayISO();Object.assign(ex,stamp);}else{const row=Object.assign({id:DB.nextId('recurringPayments'),planId:id,month:this.ym,amount:due,status:'paid',paidAt:todayISO()},stamp);DB.get('recurringPayments').push(row);this._undo={id:row.id,created:true};}logFeed(CURRENT.id,CFG.recurring.label+' collected',p.name+' · '+monthShort(this.ym));pushAccess(id);
   /* receipt rail: a landed payment is the Fee Clerk's OUTCOME - log the recovered value */
   if(CFG.agents&&CFG.agents.feeChaser.on&&this.ym===ymNow()){logAgent(CFG.agents.feeChaser.label,'Payment recovered',p.name+' · '+feeMonthKey(),due);this._undo.rcpt=DB.get('agent_actions')[0].id;}
   DB.commit();renderRecurring();renderBadges();toast(I.check+' '+p.name.split(' ')[0]+' paid · '+lkr(due)+'<button class="t-act" onclick="RECUR.undo()">Undo</button>',6000);},
@@ -3809,19 +4046,33 @@ function bridgeRead(){
  /* the plan travels the same channel and is scoped to today like everything else.
     It was missing from this return, so a sent session vanished silently. */
  const pl=(d.plan&&d.plan.date===today)?d.plan:null;
- return {checkins:ck,summary:sm,notes:nt,plan:pl};
+ const ac=(d.access&&d.access.date===today)?d.access:null;
+ return {checkins:ck,summary:sm,notes:nt,plan:pl,access:ac};
 }
 function bridgeWrite(patch){
  if(!bridgeOn())return false;
  try{
   const cur=bridgeRead();
-  const next={checkins:cur.checkins,summary:cur.summary,notes:cur.notes,plan:cur.plan};
+  const next={checkins:cur.checkins,summary:cur.summary,notes:cur.notes,plan:cur.plan,access:cur.access};
   Object.keys(patch||{}).forEach(k=>{next[k]=patch[k];});
   localStorage.setItem(BRIDGE_KEY,JSON.stringify(next));
   return true;
  }catch(e){return false;}
 }
 function bridgeClear(){try{localStorage.removeItem(BRIDGE_KEY);}catch(e){}}
+/* the member app reads the rung it is on from here. Only the linked demo member
+   has the app, so pushing anyone else would be theatre. */
+function linkedMemberId(){
+ const c=(DB.get('customers')||[]).find(x=>x.name===CFG.gym.linkedMember);
+ return c?c.id:null;
+}
+function pushAccess(id){
+ if(id!==linkedMemberId())return false;
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return false;
+ const s=accessState(id);
+ return bridgeWrite({access:{date:todayISO(),name:c.name,level:s.level,label:s.label,
+  amount:s.amount,why:s.why,by:CURRENT.name}});
+}
 
 /* ════════════════════════════════════════════════════════════════════
    SECTION 9G - GYM CORE (archetype 4): CHECK-INS + MEMBER PULSE
@@ -3916,6 +4167,80 @@ function trainerDay(){
  return inRows.concat(lateRows);
 }
 /* ════════════════════════════════════════════════════════════════════
+   F6 THE GATE LADDER + F7 FREEZE. One derived state, four rungs.
+   Nothing about access is stored as an opinion: accessState() reads the
+   ledger and the access log every time it is asked.
+   ════════════════════════════════════════════════════════════════════ */
+function accessRows(id){return (DB.get('accessLog')||[]).filter(r=>r.m===id);}
+function activeFreeze(id){
+ const t=todayISO();
+ return accessRows(id).filter(r=>r.kind==='freeze'&&r.from<=t&&r.to>=t)
+  .sort((a,b)=>b.to.localeCompare(a.to))[0]||null;
+}
+function activeOverride(id){
+ const t=todayISO();
+ return accessRows(id).filter(r=>r.kind==='override'&&r.to>=t)
+  .sort((a,b)=>b.to.localeCompare(a.to))[0]||null;
+}
+function pendingGateReq(id){
+ return accessRows(id).filter(r=>r.kind==='gate-request'&&!r.decidedAt)
+  .sort((a,b)=>b.id-a.id)[0]||null;
+}
+/* a manual gate stands until it is lifted or the money lands */
+function manualGate(id){
+ const g=accessRows(id).filter(r=>r.kind==='gate-approved'&&!r.liftedAt)
+  .sort((a,b)=>b.id-a.id)[0];
+ if(!g)return null;
+ return memberArrears(id)>0?g:null;   /* paying clears it, no apology lap */
+}
+/* F7: days frozen are days GIVEN BACK. Extend time, never refund money. */
+function frozenDays(id){
+ const t=todayISO();
+ return accessRows(id).filter(r=>r.kind==='freeze')
+  .reduce((s,r)=>s+Math.max(0,daysBetween(r.from,r.to<t?r.to:t)),0);
+}
+function effectivePaidUntil(id){
+ const u=memberPaidUntil(id);
+ if(!u)return null;
+ const fz=frozenDays(id);
+ return fz>0?addDaysStr(u,fz):u;
+}
+function accessState(id){
+ const c=(DB.get('customers')||[]).find(x=>x.id===id);
+ if(!c||c.status==='alumni')return {level:'open',why:'',amount:0,label:'Open'};
+ const fz=activeFreeze(id);
+ if(fz)return {level:'frozen',amount:0,label:'Frozen',ref:fz,
+  why:'Frozen to '+fmtDate(fz.to)+(fz.reason?' · '+fz.reason:'')
+   +'. '+frozenDays(id)+' day'+(frozenDays(id)===1?'':'s')+' added back so far.'};
+ const owed=memberArrears(id);
+ if(owed<=0)return {level:'open',amount:0,label:'Open',why:'Paid up.'};
+ const ov=activeOverride(id);
+ if(ov)return {level:'open',amount:owed,label:'Open (override)',ref:ov,
+  why:staffById(ov.by).name+' is keeping them training to '+fmtDate(ov.to)
+   +(ov.reason?' · '+ov.reason:'')};
+ const mg=manualGate(id);
+ if(mg)return {level:'gated',amount:owed,label:'Gated',ref:mg,
+  why:'Gated by '+staffById(mg.by).name+(mg.reason?' · '+mg.reason:'')};
+ const od=daysOverdue(id);
+ if(od>CFG.smart.graceDays){
+  if(CFG.access.autoGate)return {level:'gated',amount:owed,label:'Gated',pastGrace:true,
+   why:lkr(owed)+' overdue '+od+' days, past the '+CFG.smart.graceDays+' day grace.'};
+  /* past grace but nobody has decided. Named, not locked. */
+  return {level:'amber',amount:owed,label:'Past grace',pastGrace:true,
+   why:lkr(owed)+' overdue '+od+' days, '+(od-CFG.smart.graceDays)+' past the grace window. Access is still open until someone gates it.'};
+ }
+ return {level:'amber',amount:owed,label:'Amber',
+  why:lkr(owed)+' owing'+(od>0?', day '+od+' of '+CFG.smart.graceDays+' grace':', not yet past the due day')+'.'};
+}
+function accessCounts(){
+ let frozen=0,gated=0,amber=0,past=0;
+ activeMembers().forEach(c=>{const s=accessState(c.id);
+  if(s.level==='frozen')frozen++;else if(s.level==='gated')gated++;else if(s.level==='amber'){amber++;if(s.pastGrace)past++;}});
+ return {frozen:frozen,gated:gated,amber:amber,pastGrace:past,
+  requests:(DB.get('accessLog')||[]).filter(r=>r.kind==='gate-request'&&!r.decidedAt).length};
+}
+
+/* ════════════════════════════════════════════════════════════════════
    THE SMART RULE ENGINE (F1 + F8). Three rules, each scored so they can be
    ranked against each other, each carrying the sentence a human says.
    Derived entirely from the ledger, the check-in log and the join date.
@@ -3961,7 +4286,19 @@ function memberVerdict(id){
  const c=(DB.get('customers')||[]).find(x=>x.id===id);
  if(!c||c.status==='alumni')return {level:'green',score:0,headline:'',script:'',amount:0,kind:'none'};
  const first=c.name.split(' ')[0];
+ /* F7: a frozen member is NOT a debtor. Chasing someone who told you they are
+    away is how a freeze quietly becomes a cancellation. */
+ const fz=activeFreeze(id);
+ if(fz)return {level:'green',score:0,kind:'frozen',amount:0,
+  headline:'Frozen to '+fmtDate(fz.to),why:fz.reason||'',
+  script:'Frozen until '+fmtDate(fz.to)+'. Nothing to chase.'};
  const arr=memberArrears(id),od=daysOverdue(id);
+ const acc=accessState(id);
+ if(acc.level==='gated'){
+  return {level:'red',kind:'gated',amount:arr,score:arr*5,
+   headline:'Access gated · '+lkr(arr)+' to clear',why:acc.why,
+   script:'Hi '+first+', training is paused until the '+lkr(arr)+' is settled. Pay at the desk and I will unlock you right now.'};
+ }
  if(arr>0&&od>0){
   return {level:'red',kind:'arrears',amount:arr,score:arr*Math.min(4,Math.max(1,od/7)),
    headline:lkr(arr)+' overdue '+od+' day'+(od===1?'':'s'),
@@ -3974,7 +4311,7 @@ function memberVerdict(id){
    why:'Not yet overdue, due on the '+CFG.smart.dueDay+'th.',
    script:first+', your '+MN_FULL[AS_OF.getMonth()]+' '+CFG.recurring.label.toLowerCase()+' is '+lkr(arr)+'. Would you like to settle it now?'};
  }
- const until=memberPaidUntil(id);
+ const until=effectivePaidUntil(id);   /* frozen days count as paid time */
  if(until){
   const left=daysBetween(todayISO(),until);
   if(left>=0&&left<=CFG.smart.noticeDays){
@@ -4385,6 +4722,124 @@ async function runSelfTest(opts){
    ok('Pulse: revenue-at-risk reconciles to the band fees',rar2===manualRar&&rar2>=0,lkr(rar2));
    go('pulse');
    ok('Pulse: revenue-at-risk is shown on the board',rar2===0||(document.getElementById('pulseHint').innerHTML||'').indexOf('revenue')>-1);
+   /* F6 GATE LADDER + F7 FREEZE */
+   (function(){
+    signIn(owner);
+    /* this block approves gates and freezes people. Restore the log at the end
+       so every later check sees the same world it would on a fresh load. */
+    const accSnap=JSON.stringify(DB.get('accessLog'));
+    const all=activeMembers();
+    ok('Ladder: every member sits on exactly one rung',
+      all.every(c=>['open','amber','gated','frozen'].indexOf(accessState(c.id).level)>-1));
+    ok('Ladder: a paid-up member is never gated',
+      all.filter(c=>memberArrears(c.id)<=0&&!activeFreeze(c.id)).every(c=>accessState(c.id).level==='open'));
+    ok('Ladder: nobody inside the grace window is gated',
+      all.every(c=>{const s=accessState(c.id);
+       return s.level!=='gated'||manualGate(c.id)||daysOverdue(c.id)>CFG.smart.graceDays;}));
+    /* THE SWITCH. Off by default: past grace names people, it does not lock them. */
+    ok('Ladder: automatic gating ships OFF',CFG.access.autoGate===false);
+    const pastN=accessCounts().pastGrace;
+    ok('Ladder: past grace with the switch off leaves access open',
+      pastN>0&&all.filter(c=>accessState(c.id).pastGrace).every(c=>accessState(c.id).level==='amber'),
+      pastN+' past grace');
+    CFG.access.autoGate=true;
+    ok('Ladder: turning the switch on gates exactly those past grace',
+      accessCounts().gated>=pastN&&all.filter(c=>accessState(c.id).pastGrace).every(c=>accessState(c.id).level==='gated'));
+    CFG.access.autoGate=false;
+    ok('Ladder: turning it back off releases them again',accessCounts().gated<pastN);
+    /* a hostile config may tune the ladder, never break it */
+    (function(){
+     const before=JSON.stringify(cfgOverrides());
+     const c=cfgOverrides();
+     c.smart={dueDay:'banana',graceDays:-9,noticeDays:9e9,fadeDrop:5};
+     c.access={autoGate:'false',maxFreezeDays:-1,overrideDays:'x'};
+     applyConfig();
+     ok('Ladder: a hostile config cannot break the due day or the grace',
+       CFG.smart.dueDay>=1&&CFG.smart.dueDay<=28&&CFG.smart.graceDays>=0&&CFG.smart.graceDays<=60,
+       'due '+CFG.smart.dueDay+' grace '+CFG.smart.graceDays);
+     ok('Ladder: the string "false" does not switch auto-gating on',CFG.access.autoGate===false);
+     ok('Ladder: freeze and override caps stay sane',CFG.access.maxFreezeDays>=1&&CFG.access.overrideDays>=1);
+     ok('Ladder: every member still sits on a real rung',
+       activeMembers().every(x=>['open','amber','gated','frozen'].indexOf(accessState(x.id).level)>-1));
+     DB._d.config=JSON.parse(before);applyConfig();
+    })();
+    ok('Ladder: every rung explains itself',all.every(c=>{const s=accessState(c.id);
+      return s.level==='open'||(typeof s.why==='string'&&s.why.length>5);}));
+    /* F7 freeze */
+    const fzM=all.find(c=>activeFreeze(c.id));
+    ok('Freeze: the seeded freeze is live and readable',!!fzM,fzM?fzM.name:'none');
+    if(fzM){
+     ok('Freeze: a frozen member is never chased',memberVerdict(fzM.id).score===0&&memberVerdict(fzM.id).kind==='frozen');
+     const plain=memberPaidUntil(fzM.id),eff=effectivePaidUntil(fzM.id);
+     ok('Freeze: frozen days extend paid-until, they do not refund money',
+       !plain||(eff>plain&&daysBetween(plain,eff)===frozenDays(fzM.id)),
+       plain+' to '+eff+' (+'+frozenDays(fzM.id)+' frozen)');
+     /* the date helper this rests on, checked directly. It used to lose a day. */
+     ok('Freeze: adding days to a date never loses one to the timezone',
+       addDaysStr('2026-07-31',1)==='2026-08-01'&&addDaysStr('2026-01-01',-1)==='2025-12-31'
+       &&addDaysStr('2026-02-28',1)==='2026-03-01',
+       addDaysStr('2026-07-31',1)+' / '+addDaysStr('2026-01-01',-1));
+     endFreeze(fzM.id);
+     ok('Freeze: ending it puts them back on the ladder',accessState(fzM.id).level!=='frozen');
+     runUndo();
+     ok('Freeze: undo restores the freeze',accessState(fzM.id).level==='frozen');
+    }
+    /* a freeze must have an end date */
+    const anyM=all[0];
+    openFreezeModal(anyM.id);
+    document.getElementById('fz_to').value='';saveFreeze();
+    ok('Freeze: refuses an open-ended freeze',document.getElementById('freezeModal').classList.contains('open'));
+    document.getElementById('fz_to').value=addDaysStr(todayISO(),9999);saveFreeze();
+    ok('Freeze: refuses a freeze past the cap',document.getElementById('freezeModal').classList.contains('open'));
+    closeFreezeModal();
+    /* F6 roles: a trainer asks, an owner decides */
+    const req0=(DB.get('accessLog')||[]).filter(r=>r.kind==='gate-request'&&!r.decidedAt);
+    ok('Gate: the seeded request is waiting on a decision',req0.length>0,req0.length+' pending');
+    go('dashboard');
+    ok('Gate: the owner dashboard surfaces what is waiting on them',
+      (document.getElementById('accessAlerts').textContent||'').indexOf('Waiting on you')>-1);
+    if(req0.length){
+     const rq=req0[0],mid=rq.m;
+     const tr4=DB.get('staff').find(s=>s.pos==='trainer');
+     if(tr4){signIn(tr4);decideGate(rq.id,true);
+      ok('Gate: a trainer cannot approve a gate',!rq.decidedAt);
+      signIn(owner);}
+     decideGate(rq.id,true);
+     ok('Gate: an owner can approve, and the member is gated',rq.decidedAt&&accessState(mid).level==='gated');
+     ok('Gate: the decision carries a name',rq.decidedBy===owner.id);
+     /* the desk must lead with it */
+     ok('Gate: the desk verdict leads with the gate',memberVerdict(mid).kind==='gated');
+     /* money clears it with no apology lap */
+     const ymk=RECUR.ym;RECUR.ym=ymNow();RECUR.mark(mid);
+     ok('Gate: paying unlocks instantly, no second approval',accessState(mid).level==='open');
+     RECUR.undo();RECUR.ym=ymk;
+     ok('Gate: undoing the payment puts the gate back',accessState(mid).level==='gated');
+     /* the override */
+     liftGateTest(mid);
+     ok('Gate: an owner override reopens access and is logged',
+       accessState(mid).level==='open'&&accessRows(mid).some(r=>r.kind==='override'&&r.by===owner.id));
+     runUndo();
+     ok('Gate: undoing the override restores the gate',accessState(mid).level==='gated');
+     /* the trail: nothing here happened anonymously */
+     ok('Gate: every access row carries who did it and when',
+       accessRows(mid).every(r=>!!r.by&&!!r.at&&!!staffById(r.by).name));
+    }
+    /* a trainer can ask without being able to decide */
+    const tr5=DB.get('staff').find(s=>s.pos==='trainer');
+    const amberM=all.find(c=>accessState(c.id).level==='amber'&&!pendingGateReq(c.id));
+    if(tr5&&amberM){
+     signIn(tr5);
+     requestGate(amberM.id,'Missed three sessions and stopped replying');
+     const mine=pendingGateReq(amberM.id);
+     ok('Gate: a trainer can raise a request with a reason',!!mine&&mine.by===tr5.id);
+     ok('Gate: their request does not gate anyone on its own',accessState(amberM.id).level==='amber');
+     signIn(owner);
+    }
+    const arr=DB.get('accessLog');arr.length=0;JSON.parse(accSnap).forEach(r=>arr.push(r));DB.commit();
+    ok('Ladder: the harness left the access log exactly as it found it',
+      JSON.stringify(DB.get('accessLog'))===accSnap);
+    signIn(owner);closePanel();
+   })();
    /* F1 + F8: THE SMART RULE ENGINE */
    (function(){
     signIn(owner);
