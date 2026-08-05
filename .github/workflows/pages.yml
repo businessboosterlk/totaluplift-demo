@@ -1,12 +1,13 @@
-# Publishes this folder to GitHub Pages on every push to main.
+# Publishes the site to GitHub Pages on every push to main.
 #
-# Why this exists: pushes stopped publishing after 4 Aug 01:06 UTC while every
-# commit landed on the remote correctly. The usual cause is the Pages source
-# being set to "GitHub Actions" with no workflow present, in which case nothing
-# ever builds. This is that workflow.
+# Why this exists: the built-in "pages build and deployment" job last ran on
+# 4 Aug 01:06 UTC and never triggered again, which is the signature of the Pages
+# source having been switched to "GitHub Actions". With that setting and no
+# workflow in the repo, nothing ever builds and every push lands silently.
 #
-# If the source is set to "Deploy from a branch" instead, this run fails loudly
-# with "Pages site not configured for Actions", which is itself the answer.
+# The first version of this file used `path: .`, which hands the entire
+# repository to the artifact step including .git. Publish the site, not the
+# repository: everything is staged into _site first.
 name: Deploy to GitHub Pages
 on:
   push:
@@ -27,9 +28,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Stage the site, not the repository
+        run: |
+          mkdir -p _site
+          rsync -a --exclude '.git' --exclude '.github' --exclude '_site' ./ _site/
+          ls -la _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
