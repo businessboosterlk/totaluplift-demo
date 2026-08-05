@@ -32,6 +32,11 @@
 /* the phone tells us how much room its status bar needs. Read it once, here,
    and everything that has to clear the notch uses var(--sat). Overridable, so
    the harness can pretend to be a Dynamic Island and prove the layout holds. */
+/* THE SPACING SCALE. Twenty ad-hoc values became seven. Reach for these; if a
+   layout needs something between two steps, the layout is wrong, not the scale. */
+--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;--s6:24px;--s7:32px;
+/* RADII by what a thing IS, not where it sits */
+--r-ctl:10px;--r-card:16px;--r-hero:24px;--r-pill:99px;
 --sat:env(safe-area-inset-top,0px);
 --sab:env(safe-area-inset-bottom,0px);
 /* ── BRAND (swap these per client) ───────────────────────── */
@@ -76,18 +81,18 @@ input,textarea{font-family:inherit;color:var(--txt)}
 /* edge to edge and behind everything: the page is responsible for this strip */
 .statusfill{position:fixed;top:0;left:0;right:0;height:var(--sat);background:var(--bg);z-index:25;pointer-events:none}
 .topbar{display:flex;align-items:center;gap:12px;padding:calc(16px + var(--sat)) 0 14px;position:sticky;top:0;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:20}
-.tb-badge{width:38px;height:38px;border-radius:11px;background:var(--accent-grad);color:var(--on-accent);display:grid;place-items:center;font-family:'Poppins';font-weight:800;font-size:15px;flex-shrink:0;box-shadow:0 4px 14px var(--brand-glow)}
+.tb-badge{width:38px;height:38px;border-radius:10px;background:var(--accent-grad);color:var(--on-accent);display:grid;place-items:center;font-family:'Poppins';font-weight:800;font-size:15px;flex-shrink:0;box-shadow:0 4px 14px var(--brand-glow)}
 .tb-prog .l{font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:var(--faint);font-weight:700}
 .tb-prog .d{font-size:14px;font-weight:700;margin-top:2px}
 .tb-sp{flex:1}
-.tb-btn{width:38px;height:38px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);position:relative}
+.tb-btn{width:38px;height:38px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);position:relative}
 .tb-btn:hover{color:var(--txt);border-color:var(--faint)}
 .tb-btn .dot{position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--brand)}
 .tb-av{width:38px;height:38px;border-radius:50%;background:var(--surface-3);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:13px}
 .page{display:none;animation:up .3s var(--ease)}
 .page.on{display:block}
 @keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.sec-h{display:flex;align-items:baseline;gap:10px;margin:22px 0 12px}
+.sec-h{display:flex;align-items:baseline;gap:8px;margin:22px 0 12px}
 .sec-h h3{font-size:17px;font-weight:800}
 .sec-h .hint{font-size:11.5px;color:var(--faint);margin-left:auto;white-space:nowrap}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
@@ -99,68 +104,70 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .promise b{color:var(--brand-txt)}
 
 /* ── UPLIFT SCORE ─────────────────────────────────────────── */
-.score-wrap{display:flex;gap:18px;align-items:center}
+.score-wrap{display:flex;gap:16px;align-items:center}
 .ring{position:relative;width:112px;height:112px;flex-shrink:0}
 .ring .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .ring .v{font-family:'Poppins';font-size:31px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .ring .l{font-size:10.5px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-top:4px}
-.bars{flex:1;min-width:0;display:flex;flex-direction:column;gap:11px}
-.bar .t{display:flex;align-items:baseline;justify-content:space-between;font-size:11.5px;margin-bottom:5px}
+.bars{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+.bar .t{display:flex;align-items:baseline;justify-content:space-between;font-size:11.5px;margin-bottom:4px}
 .bar .t b{font-size:12.5px;font-variant-numeric:tabular-nums}
 .bar .t span{color:var(--muted)}
 .bar .tr{height:7px;border-radius:99px;background:var(--surface-3);overflow:hidden}
 .bar .fi{height:100%;border-radius:99px;transition:width .7s var(--ease)}
-.why{margin-top:14px;padding-top:13px;border-top:1px solid var(--line2);font-size:11.5px;color:var(--muted);line-height:1.6}
+.why{margin-top:12px;padding-top:13px;border-top:1px solid var(--line2);font-size:11.5px;color:var(--muted);line-height:1.6}
 .why b{color:var(--txt)}
-.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
 .st{background:var(--surface-2);border-radius:var(--r-md);padding:11px 12px}
 .st .v{font-family:'Poppins';font-size:18px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-.st .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-top:5px}
+.st .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-top:4px}
 .st .v.good{color:var(--green)}
 
 /* ── TODAY SESSION ────────────────────────────────────────── */
-.sess{position:relative;background:var(--accent-grad);border-radius:var(--radius);padding:18px 20px;color:var(--on-accent);box-shadow:0 10px 30px var(--brand-glow);display:flex;align-items:center;gap:14px;overflow:hidden;width:100%;text-align:left;margin-top:16px}
+/* THE HERO: taller, rounder, and the only large accent surface on the screen.
+   Everything else on Today is a card; this is a destination. */
+.sess{position:relative;background:var(--accent-grad);border-radius:var(--r-hero);padding:24px 20px;color:var(--on-accent);box-shadow:0 12px 34px var(--brand-glow);display:flex;align-items:center;gap:16px;overflow:hidden;width:100%;text-align:left;margin-top:20px;min-height:112px}
 .sess::before{content:'';position:absolute;inset:0;background:radial-gradient(420px 180px at 88% -40%,rgba(255,255,255,.22),transparent 62%);pointer-events:none}
 .sess .l{font-size:11px;letter-spacing:.2px;opacity:.85;font-weight:700}
-.sess .n{font-family:'Poppins';font-size:21px;font-weight:800;line-height:1.1;margin-top:4px}
-.sess .m{font-size:12px;opacity:.85;margin-top:5px}
-.sess .go{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;flex-shrink:0;margin-left:auto;backdrop-filter:blur(6px)}
+.sess .n{font-family:'Poppins';font-size:26px;font-weight:800;line-height:1.08;letter-spacing:-.6px;margin-top:4px}
+.sess .m{font-size:12px;opacity:.85;margin-top:4px}
+.sess .go{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;flex-shrink:0;margin-left:auto;backdrop-filter:blur(6px)}
 .sess.done{background:var(--surface);border:1px solid var(--green);box-shadow:none;color:var(--txt)}
 .sess.done .go{background:var(--green-soft);color:var(--green)}
 
 /* ── LIVE TILES ───────────────────────────────────────────── */
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:13px}
-.tile .h{display:flex;align-items:center;justify-content:space-between;color:var(--faint);margin-bottom:9px}
+.tile .h{display:flex;align-items:center;justify-content:space-between;color:var(--faint);margin-bottom:8px}
 .tile .h .ic{width:15px;height:15px}
 .tile .v{font-family:'Poppins';font-size:19px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .tile .u{font-size:11px;color:var(--muted);font-weight:600}
-.tile .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-top:5px}
-.tile .dl{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:5px}
+.tile .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-top:4px}
+.tile .dl{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:10px}
 .tile .dl.dn{background:var(--green-soft);color:var(--green)}
 .tile .dl.up{background:var(--amber-soft);color:var(--amber)}
 
 /* ── ASK YOUR TRAINER (the deterministic replacement for an AI coach) ── */
-.ask{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;margin-top:14px;transition:border-color .15s,transform .12s var(--ease)}
+.ask{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;margin-top:12px;transition:border-color .15s,transform .12s var(--ease)}
 .ask:hover{border-color:var(--brand-txt)}
 .ask:active{transform:scale(.985)}
-.ask .av{width:42px;height:42px;border-radius:12px;background:var(--surface-3);display:grid;place-items:center;font-weight:700;font-size:14px;flex-shrink:0;border:1px solid var(--line)}
+.ask .av{width:42px;height:42px;border-radius:10px;background:var(--surface-3);display:grid;place-items:center;font-weight:700;font-size:14px;flex-shrink:0;border:1px solid var(--line)}
 .ask .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700}
 .ask .n{font-size:15px;font-weight:700;margin-top:3px}
 .ask .m{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
 .ask .go{margin-left:auto;color:var(--green);flex-shrink:0}
 
 /* ── THE BUILD (progress photos: SILHOUETTES in demo, never a real person) ── */
-.build-top{display:flex;gap:14px}
+.build-top{display:flex;gap:12px}
 .shot{position:relative;width:118px;flex-shrink:0;aspect-ratio:3/4;border-radius:var(--r-md);overflow:hidden;background:var(--surface-3);border:1px solid var(--line)}
 .shot svg{width:100%;height:100%;display:block}
-.shot .tag{position:absolute;bottom:7px;left:7px;font-size:11px;font-weight:700;letter-spacing:.2px;background:rgba(11,17,23,.82);padding:3px 8px;border-radius:6px}
-.shot .cmp{position:absolute;top:7px;right:7px;font-size:11px;font-weight:700;background:var(--brand-dark,#B82A10);color:#fff;padding:3px 8px;border-radius:6px}
+.shot .tag{position:absolute;bottom:7px;left:7px;font-size:11px;font-weight:700;letter-spacing:.2px;background:rgba(11,17,23,.82);padding:3px 8px;border-radius:10px}
+.shot .cmp{position:absolute;top:7px;right:7px;font-size:11px;font-weight:700;background:var(--brand-dark,#B82A10);color:#fff;padding:3px 8px;border-radius:10px}
 .build-r{flex:1;min-width:0}
 .build-r .d{font-family:'Poppins';font-size:20px;font-weight:800;line-height:1.15}
 .build-r .d span{color:var(--brand-txt)}
-.build-r .s{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5}
-.deltas{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.build-r .s{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+.deltas{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .dl2{background:var(--surface-2);border-radius:var(--r-sm);padding:9px 11px}
 .dl2 .l{font-size:10.5px;letter-spacing:.2px;color:var(--faint);font-weight:700}
 .dl2 .v{font-family:'Poppins';font-size:15px;font-weight:800;margin-top:3px;color:var(--green);font-variant-numeric:tabular-nums}
@@ -169,20 +176,20 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .angle.on{border-color:var(--brand-txt);box-shadow:0 0 0 1px var(--brand)}
 .angle svg{width:100%;height:100%;display:block}
 .angle .tag{position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:10px;font-weight:700;letter-spacing:.2px;color:var(--txt);text-shadow:0 1px 3px #000}
-.privacy{font-size:10.5px;color:var(--faint);margin-top:10px;line-height:1.6;display:flex;gap:7px;align-items:flex-start}
+.privacy{font-size:10.5px;color:var(--faint);margin-top:8px;line-height:1.6;display:flex;gap:8px;align-items:flex-start}
 .privacy .ic{width:13px;height:13px;margin-top:1px;color:var(--muted)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;padding:12px 16px;border-radius:var(--r-md);background:var(--surface-2);border:1px solid var(--line);color:var(--txt);transition:border-color .15s,transform .12s var(--ease);width:100%}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;padding:12px 16px;min-height:44px;border-radius:var(--r-md);background:var(--surface-2);border:1px solid var(--line);color:var(--txt);transition:border-color .15s,transform .12s var(--ease);width:100%}
 .btn:hover{border-color:var(--faint)}
 .btn:active{transform:scale(.98)}
 .btn.primary{background:var(--accent-grad);border-color:transparent;color:var(--on-accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 10px var(--brand-glow)}
 .btn.primary:hover{filter:brightness(1.06)}
-.row2{display:flex;gap:9px;margin-top:12px}
+.row2{display:flex;gap:8px;margin-top:12px}
 .row2 .btn{width:auto;flex:1}
 /* phase timeline */
 .phases{margin-top:16px}
-.ph-tr{height:5px;border-radius:99px;background:var(--surface-3);overflow:hidden;margin-bottom:10px}
+.ph-tr{height:5px;border-radius:99px;background:var(--surface-3);overflow:hidden;margin-bottom:8px}
 .ph-fi{height:100%;border-radius:99px;background:var(--accent-grad)}
-.ph-l{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ph-l{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .ph{text-align:center}
 .ph .n{font-size:11px;font-weight:800;color:var(--txt)}
 .ph .d{font-size:10.5px;color:var(--faint);margin-top:3px}
@@ -196,36 +203,36 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .gd.rest{background:var(--surface-3);opacity:.55}
 .gd.miss{background:var(--danger);opacity:.75}
 .gd.today{background:transparent;box-shadow:inset 0 0 0 2px var(--brand)}
-.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:10.5px;color:var(--muted)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:10.5px;color:var(--muted)}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 
 /* ── LOG TAB ──────────────────────────────────────────────── */
-.log-hero{display:flex;align-items:center;gap:15px}
+.log-hero{display:flex;align-items:center;gap:16px}
 .log-hero .ring{width:74px;height:74px}
 .log-hero .ring .v{font-size:20px}
 .log-hero .t{font-size:16px;font-weight:800;font-family:'Poppins'}
 .log-hero .s{font-size:12px;color:var(--muted);margin-top:3px}
-.meal{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+.meal{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}
 .meal .h{display:flex;align-items:center;gap:12px}
 .meal .ic-b{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex-shrink:0;background:var(--surface-3);color:var(--muted)}
 .meal .n{font-size:14.5px;font-weight:700}
 .meal .s{font-size:11.5px;color:var(--faint);margin-top:1px}
 .meal .tick{margin-left:auto;width:44px;height:44px;border-radius:50%;background:var(--surface-3);border:1px solid var(--line);display:grid;place-items:center;color:transparent;flex-shrink:0;transition:.15s}
 .meal.done .tick{background:var(--green);border-color:var(--green);color:#fff}
-.meal input{width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line2);border-radius:var(--r-sm);padding:11px 12px;font-size:13px;margin-top:11px;outline:none;transition:border-color .15s}
+.meal input{width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line2);border-radius:var(--r-sm);padding:11px 12px;font-size:13px;margin-top:12px;outline:none;transition:border-color .15s}
 .meal input:focus{border-color:var(--brand-txt)}
 .meal.done input{color:var(--muted)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .numf{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
 .numf .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;display:flex;align-items:center;justify-content:space-between}
 .numf input{width:100%;min-height:44px;background:transparent;border:none;font-family:'Poppins';font-size:23px;font-weight:800;padding:7px 0 0;outline:none;font-variant-numeric:tabular-nums}
 .numf .u{font-size:11px;color:var(--muted);font-weight:600}
-.water{display:flex;gap:7px;margin-top:12px}
-.wg{flex:1;min-height:44px;aspect-ratio:1/1.7;border-radius:7px;background:var(--surface-3);border:1px solid var(--line);padding:0}
+.water{display:flex;gap:8px;margin-top:12px}
+.wg{flex:1;min-height:44px;aspect-ratio:1/1.7;border-radius:10px;background:var(--surface-3);border:1px solid var(--line);padding:0}
 .wg.on{background:var(--brand);border-color:var(--brand-txt)}
 
 /* ── PLAN TAB (the runner) ────────────────────────────────── */
-.week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding-bottom:4px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding-bottom:4px}
 .week::-webkit-scrollbar{display:none}
 .wd{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:10px 2px;text-align:center}
 .wd .dow{font-size:10.5px;letter-spacing:.2px;color:var(--faint);font-weight:700}
@@ -239,61 +246,61 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .run-h .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700}
 .run-h .n{font-family:'Poppins';font-size:22px;font-weight:800;margin-top:4px}
 .run-h .m{font-size:12px;color:var(--muted);margin-top:4px}
-.run-tr{height:6px;border-radius:99px;background:var(--surface-3);overflow:hidden;margin-top:13px}
+.run-tr{height:6px;border-radius:99px;background:var(--surface-3);overflow:hidden;margin-top:12px}
 .run-fi{height:100%;border-radius:99px;background:var(--accent-grad);transition:width .5s var(--ease)}
-.run-p{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:7px;font-variant-numeric:tabular-nums}
-.ex{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:11px;overflow:hidden}
+.run-p{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:8px;font-variant-numeric:tabular-nums}
+.ex{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
 .ex.done{border-color:var(--green)}
-.ex-h{display:flex;align-items:flex-start;gap:11px;padding:14px 16px}
-.ex-no{width:30px;height:30px;border-radius:9px;background:var(--surface-3);display:grid;place-items:center;font-size:11.5px;font-weight:800;color:var(--muted);flex-shrink:0;font-variant-numeric:tabular-nums}
+.ex-h{display:flex;align-items:flex-start;gap:12px;padding:14px 16px}
+.ex-no{width:30px;height:30px;border-radius:10px;background:var(--surface-3);display:grid;place-items:center;font-size:11.5px;font-weight:800;color:var(--muted);flex-shrink:0;font-variant-numeric:tabular-nums}
 .ex.done .ex-no{background:var(--green-soft);color:var(--green)}
 .ex-m{flex:1;min-width:0}
-.ex-n{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ex-n{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .pr.none{background:none;border:1px dashed var(--line);color:var(--faint);font-weight:700}
-.pr{font-size:9.5px;font-weight:800;letter-spacing:.5px;background:var(--brand-soft);color:var(--brand-txt);padding:2px 7px;border-radius:5px;white-space:nowrap}
+.pr{font-size:9.5px;font-weight:800;letter-spacing:.5px;background:var(--brand-soft);color:var(--brand-txt);padding:2px 7px;border-radius:10px;white-space:nowrap}
 .ex-t{font-size:11.5px;color:var(--muted);margin-top:3px}
 .spark{width:56px;height:26px;flex-shrink:0;opacity:.9}
 .cue{margin:0 16px 12px;background:var(--surface-2);border-left:2px solid var(--brand);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:9px 12px;font-size:11.5px;color:var(--muted);font-style:italic;line-height:1.5}
 .sets{padding:0 16px 14px}
-.set{display:grid;grid-template-columns:46px 1fr 14px 1fr 44px;gap:8px;align-items:center;margin-bottom:9px}
+.set{display:grid;grid-template-columns:46px 1fr 14px 1fr 44px;gap:8px;align-items:center;margin-bottom:8px}
 .set .sl{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700}
 .set .x{text-align:center;color:var(--faint);font-size:11px}
 .set input{width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line2);border-radius:10px;padding:11px 8px;font-size:14px;text-align:center;outline:none;font-variant-numeric:tabular-nums;transition:border-color .15s}
 .set input:focus{border-color:var(--brand-txt)}
-.set .tick{width:44px;height:44px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:transparent;transition:.15s;padding:0}
+.set .tick{width:44px;height:44px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:transparent;transition:.15s;padding:0}
 .set.done .tick{background:var(--green);border-color:var(--green);color:#fff}
 .set.done input{border-color:var(--green-soft);color:var(--muted)}
 
 /* ── STATS TAB ────────────────────────────────────────────── */
 .wknav{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:5px}
-.wknav button{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;color:var(--muted)}
+.wknav button{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;color:var(--muted)}
 .wknav button:hover:not([disabled]){background:var(--surface-2);color:var(--txt)}
 .wknav button[disabled]{opacity:.3;cursor:default}
 .wknav .lb{flex:1;text-align:center;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
-.seg{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:4px;margin-top:14px}
-.seg button{flex:1;padding:10px;min-height:44px;border-radius:9px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.seg{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:4px;margin-top:12px}
+.seg button{flex:1;padding:10px;min-height:44px;border-radius:10px;font-size:12.5px;font-weight:700;color:var(--muted)}
 .seg button.on{background:var(--accent-grad);color:var(--on-accent)}
-.day{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:9px;overflow:hidden}
-.day-h{display:flex;align-items:center;gap:11px;padding:13px 15px;width:100%;text-align:left}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:8px;overflow:hidden}
+.day-h{display:flex;align-items:center;gap:12px;padding:13px 15px;width:100%;text-align:left}
 .day-h .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .day-h .n{font-size:13.5px;font-weight:700}
 .day-h .s{font-size:11px;color:var(--muted);margin-top:2px}
-.day-h .tg{margin-left:auto;font-size:11px;font-weight:800;letter-spacing:.2px;background:var(--surface-3);color:var(--muted);padding:3px 8px;border-radius:5px;white-space:nowrap}
+.day-h .tg{margin-left:auto;font-size:11px;font-weight:800;letter-spacing:.2px;background:var(--surface-3);color:var(--muted);padding:3px 8px;border-radius:10px;white-space:nowrap}
 .day-b{padding:0 15px 14px;border-top:1px solid var(--line2)}
-.day-b .ml{margin-top:11px}
+.day-b .ml{margin-top:12px}
 .day-b .ml .l{font-size:10.5px;letter-spacing:.2px;color:var(--faint);font-weight:700}
 .day-b .ml .v{font-size:12.5px;margin-top:3px;line-height:1.5}
 
 /* ── BOTTOM NAV ───────────────────────────────────────────── */
 .nav{position:fixed;bottom:0;left:0;right:0;background:color-mix(in srgb,var(--ink-deep) 94%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line);display:flex;z-index:30;padding-bottom:var(--sab)}
-.nav button{flex:1;padding:11px 4px 13px;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--faint);font-size:10px;font-weight:700;letter-spacing:.4px}
+.nav button{flex:1;padding:11px 4px 13px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--faint);font-size:10px;font-weight:700;letter-spacing:.4px}
 .nav button .ic{width:21px;height:21px}
 .nav button.on{color:var(--brand-txt)}
 /* ── TOAST ────────────────────────────────────────────────── */
-.toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(14px);background:color-mix(in srgb,#0A1016 94%,transparent);backdrop-filter:blur(10px);border:1px solid var(--line);color:var(--txt);padding:12px 18px;border-radius:var(--r-md);font-size:12.5px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.5);z-index:60;opacity:0;pointer-events:none;transition:.24s var(--ease);display:flex;align-items:center;gap:9px;max-width:92vw}
+.toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(14px);background:color-mix(in srgb,#0A1016 94%,transparent);backdrop-filter:blur(10px);border:1px solid var(--line);color:var(--txt);padding:12px 18px;border-radius:var(--r-md);font-size:12.5px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.5);z-index:60;opacity:0;pointer-events:none;transition:.24s var(--ease);display:flex;align-items:center;gap:8px;max-width:92vw}
 .toast.on{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
 .toast .ic{color:var(--green)}
-.toast .un{background:var(--surface-3);border-radius:8px;padding:5px 11px;font-weight:800;font-size:12px;white-space:nowrap}
+.toast .un{background:var(--surface-3);border-radius:10px;padding:5px 11px;font-weight:800;font-size:12px;white-space:nowrap}
 .empty{text-align:center;padding:30px 16px;color:var(--faint);font-size:12.5px}
 .empty .t{font-size:13.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
 /* ── MOTION: arrival, ring draw, count-up. All reduced-motion safe. ── */
@@ -316,7 +323,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .restbar{position:fixed;left:0;right:0;bottom:calc(86px + var(--sab));z-index:40;display:none;justify-content:center;padding:0 14px;pointer-events:none}
 .restbar.on{display:flex}
 @media(min-width:960px){.restbar{bottom:22px;left:86px}}
-.rest-in{pointer-events:auto;display:flex;align-items:center;gap:14px;background:color-mix(in srgb,var(--ink-deep) 96%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:var(--radius);padding:11px 15px;box-shadow:0 14px 40px rgba(0,0,0,.55);max-width:520px;width:100%}
+.rest-in{pointer-events:auto;display:flex;align-items:center;gap:12px;background:color-mix(in srgb,var(--ink-deep) 96%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:var(--radius);padding:11px 15px;box-shadow:0 14px 40px rgba(0,0,0,.55);max-width:520px;width:100%}
 .rest-ring{position:relative;width:44px;height:44px;flex-shrink:0}
 .rest-ring .t{position:absolute;inset:0;display:grid;place-items:center;font-family:'Poppins',sans-serif;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
 .rest-x{flex:1;min-width:0}
@@ -327,7 +334,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .rest-b.go{background:var(--accent-grad);border-color:transparent;color:var(--on-accent)}
 
 /* ── PLATE CALCULATOR ── */
-.plates{grid-column:1 / -1;display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:-2px 0 8px 46px;font-size:10.5px;color:var(--faint)}
+.plates{grid-column:1 / -1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-2px 0 8px 46px;font-size:10.5px;color:var(--faint)}
 .plate{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:20px;padding:0 6px;border-radius:4px;background:var(--surface-3);border:1px solid var(--line);font-weight:800;font-size:10px;color:var(--txt);font-variant-numeric:tabular-nums}
 .plate.b{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 45%,transparent);color:var(--brand-txt)}
 
@@ -337,15 +344,15 @@ input,textarea{font-family:inherit;color:var(--txt)}
 
 /* ── SESSION SUMMARY SHEET ── */
 .sum-big{font-family:'Poppins',sans-serif;font-size:38px;font-weight:800;line-height:1;letter-spacing:-1px;font-variant-numeric:tabular-nums}
-.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
 .sum-c{background:var(--surface-2);border-radius:var(--r-md);padding:13px 14px}
 .sum-c .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700}
-.sum-c .v{font-family:'Poppins',sans-serif;font-size:19px;font-weight:800;margin-top:5px;font-variant-numeric:tabular-nums}
+.sum-c .v{font-family:'Poppins',sans-serif;font-size:19px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
 .sum-c .v.up{color:var(--green)}
 .sum-pr{background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 40%,transparent);border-radius:var(--r-md);padding:11px 13px;font-size:12.5px;font-weight:700;color:var(--brand-txt);margin-bottom:12px}
 
 /* ── 90-DAY GRID: months, so it reads as a calendar ── */
-.g-months{display:flex;gap:4px;margin-bottom:6px;font-size:10.5px;letter-spacing:.2px;color:var(--faint);font-weight:700}
+.g-months{display:flex;gap:4px;margin-bottom:8px;font-size:10.5px;letter-spacing:.2px;color:var(--faint);font-weight:700}
 .g-months span{flex:1;min-width:0}
 .gd.today{animation:pulseToday 2.4s ease-in-out infinite}
 @keyframes pulseToday{0%,100%{box-shadow:inset 0 0 0 2px var(--brand)}50%{box-shadow:inset 0 0 0 2px var(--brand),0 0 9px var(--brand-glow)}}
@@ -358,16 +365,26 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .hk.pace{background:var(--green-soft);border-color:color-mix(in srgb,var(--green) 34%,transparent);color:var(--txt)}
 
 .src{margin-top:12px;padding-top:12px;border-top:1px solid var(--line2)}
-.src label{display:block;font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-bottom:7px}
+.src label{display:block;font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-bottom:8px}
 .src select{width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--txt);font-family:inherit;font-size:13px}
-.src .note{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:9px}
-.prov{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.5}
+.src .note{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:8px}
+.prov{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5}
 .prov.unset{color:var(--amber)}
+
+/* ONE LINE where two history panels used to be. History belongs where you go to
+   review, not where you go to act. */
+.lookback{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+ background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);
+ padding:16px;margin-top:16px;min-height:64px;color:var(--txt);transition:border-color .15s}
+.lookback:hover{border-color:var(--brand)}
+.lookback .lt{font-size:14px;font-weight:750}
+.lookback .ls{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
+.lookback .lg{margin-left:auto;color:var(--faint);flex-shrink:0}
 
 /* ── THE SPLASH ───────────────────────────────────────────── */
 /* it exists because a launched PWA otherwise shows a blank white screen */
 /* small, permanent, and never in the way: every figure below it is seeded */
-.demotag{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;
+.demotag{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-weight:700;
  letter-spacing:.2px;color:var(--faint);border:1px solid var(--line);border-radius:99px;
  padding:4px 10px;margin-bottom:12px}
 .demotag .d{width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0}
@@ -379,7 +396,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .sp-logo{font-family:'Poppins',sans-serif;font-size:27px;font-weight:800;letter-spacing:-.7px}
 .sp-logo span{color:var(--brand-txt)}
 .sp-line{font-family:'Poppins',sans-serif;font-size:19px;font-weight:700;line-height:1.42;
- letter-spacing:-.3px;margin-top:22px;color:var(--txt)}
+ letter-spacing:-.3px;margin-top:20px;color:var(--txt)}
 .sp-foot{position:absolute;bottom:calc(30px + var(--sab));font-size:11.5px;color:var(--faint)}
 @media (prefers-reduced-motion: no-preference){
  .sp-logo{animation:spUp .5s var(--ease) both}
@@ -388,7 +405,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 @keyframes spUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* ── THE GATE LADDER ──────────────────────────────────────── */
-.abar{display:flex;align-items:center;gap:11px;padding:12px 15px;border-radius:var(--radius);margin-bottom:14px;border:1px solid}
+.abar{display:flex;align-items:center;gap:12px;padding:12px 15px;border-radius:var(--radius);margin-bottom:12px;border:1px solid}
 .abar.amber{background:var(--amber-soft);border-color:color-mix(in srgb,var(--amber) 45%,transparent)}
 .abar.frozen{background:var(--blue-soft);border-color:color-mix(in srgb,var(--blue) 40%,transparent)}
 .abar.gated{background:var(--danger-soft);border-color:color-mix(in srgb,var(--danger) 45%,transparent)}
@@ -399,20 +416,20 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .abar .t{font-size:13px;font-weight:750;line-height:1.45}
 .abar .s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
 .gate{padding:30px 4px 20px;text-align:center}
-.gate .gic{width:64px;height:64px;border-radius:20px;background:var(--amber-soft);display:grid;place-items:center;margin:0 auto 20px}
+.gate .gic{width:64px;height:64px;border-radius:16px;background:var(--amber-soft);display:grid;place-items:center;margin:0 auto 20px}
 .gate .gic svg{width:30px;height:30px;color:var(--amber)}
 .gate h2{font-family:'Poppins',sans-serif;font-size:25px;font-weight:800;letter-spacing:-.5px;line-height:1.2}
 .gate .amt{font-family:'Poppins',sans-serif;font-size:38px;font-weight:800;color:var(--brand-txt);margin:16px 0 6px;letter-spacing:-1px}
 .gate .sub{font-size:13.5px;color:var(--muted);line-height:1.65;max-width:330px;margin:0 auto}
 .gate .where{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin:22px auto 0;max-width:360px;text-align:left}
 .gate .where .l{font-size:11.5px;letter-spacing:.2px;color:var(--faint);font-weight:700}
-.gate .where .v{font-size:14.5px;font-weight:700;margin-top:5px}
-.gate .acts{display:grid;gap:9px;max-width:360px;margin:18px auto 0}
-.gate .acts button{min-height:48px;border-radius:13px;font-size:14px;font-weight:750;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.gate .where .v{font-size:14.5px;font-weight:700;margin-top:4px}
+.gate .acts{display:grid;gap:8px;max-width:360px;margin:18px auto 0}
+.gate .acts button{min-height:48px;border-radius:16px;font-size:14px;font-weight:750;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 .gate .acts button.pri{background:var(--accent-grad);color:var(--on-accent);border-color:transparent}
 .gate .keep{font-size:12px;color:var(--muted);line-height:1.65;max-width:360px;margin:20px auto 0;padding-top:16px;border-top:1px solid var(--line2)}
 
-.add-own{display:flex;gap:8px;margin-top:10px}
+.add-own{display:flex;gap:8px;margin-top:8px}
 .add-own input{flex:1;min-width:0;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--txt);font-family:inherit;font-size:13px;outline:none}
 .add-own input:focus{border-color:var(--brand)}
 .add-own button{min-height:44px;padding:0 18px;border-radius:10px;background:var(--accent-grad);color:var(--on-accent);border:none;font-weight:750;font-size:13px;flex-shrink:0}
@@ -424,13 +441,13 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .fs .fhead>div{flex:1;min-width:0}
 .fs .ft{font-size:15px;font-weight:800;letter-spacing:-.2px}
 .fs .fs2{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.55}
-.fs ol{margin:13px 0 0;padding:0;list-style:none;display:grid;gap:9px}
-.fs li{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600}
-.fs li .n{width:22px;height:22px;border-radius:7px;background:var(--brand-soft);color:var(--brand-txt);display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0}
+.fs ol{margin:13px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.fs li{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600}
+.fs li .n{width:22px;height:22px;border-radius:10px;background:var(--brand-soft);color:var(--brand-txt);display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0}
 .fs li svg{width:17px;height:17px;color:var(--brand-txt);flex-shrink:0}
-.fs .x{width:44px;height:44px;margin:-10px -10px 0 0;border-radius:11px;display:grid;place-items:center;color:var(--faint);background:none;border:none;font-size:16px;flex-shrink:0}
-.fs .fbtn{width:100%;min-height:46px;margin-top:13px;border-radius:12px;background:var(--accent-grad);color:var(--on-accent);border:none;font-weight:750;font-size:14px}
-.install{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--brand);border-radius:var(--radius);padding:14px 16px;margin-top:14px}
+.fs .x{width:44px;height:44px;margin:-10px -10px 0 0;border-radius:10px;display:grid;place-items:center;color:var(--faint);background:none;border:none;font-size:16px;flex-shrink:0}
+.fs .fbtn{width:100%;min-height:46px;margin-top:12px;border-radius:10px;background:var(--accent-grad);color:var(--on-accent);border:none;font-weight:750;font-size:14px}
+.install{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--brand);border-radius:var(--radius);padding:14px 16px;margin-top:12px}
 .install .ic{width:18px;height:18px;color:var(--brand-txt);flex-shrink:0}
 .install .t{font-size:13.5px;font-weight:700}
 .install .s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
@@ -440,21 +457,21 @@ input,textarea{font-family:inherit;color:var(--txt)}
 body.is-offline .topbar{top:30px}
 
 /* ── PLAN EDITING ─────────────────────────────────────────── */
-.plan-bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:14px 0 4px}
+.plan-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
 .plan-bar .sp{flex:1}
 .ex-edit{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 16px 14px}
-.ex-edit label{display:block;font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-bottom:5px}
+.ex-edit label{display:block;font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-bottom:4px}
 .ex-edit input{width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px 10px;font-size:14px;color:var(--txt);text-align:center;outline:none;font-variant-numeric:tabular-nums}
 .ex-edit input:focus{border-color:var(--brand-txt)}
-.ex-tools{display:flex;gap:7px;padding:0 16px 14px}
-.ex-tools button{min-height:44px;min-width:44px;flex:1;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.ex-tools{display:flex;gap:8px;padding:0 16px 14px}
+.ex-tools button{min-height:44px;min-width:44px;flex:1;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .ex-tools button:hover{border-color:var(--brand-txt);color:var(--brand-txt)}
 .ex-tools button.rm:hover{border-color:var(--danger);color:var(--danger)}
-.from-trainer{display:flex;align-items:center;gap:9px;background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 42%,transparent);border-radius:var(--r-md);padding:11px 14px;margin-top:12px;font-size:12.5px;font-weight:600}
+.from-trainer{display:flex;align-items:center;gap:8px;background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 42%,transparent);border-radius:var(--r-md);padding:11px 14px;margin-top:12px;font-size:12.5px;font-weight:600}
 .from-trainer .ic{width:15px;height:15px;color:var(--brand-txt);flex-shrink:0}
 
 /* ── EDIT AFFORDANCES ─────────────────────────────────────── */
-.edit-b{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:5px;transition:.15s}
+.edit-b{background:none;border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:5px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px;transition:.15s}
 .edit-b:hover{border-color:var(--brand-txt);color:var(--brand-txt)}
 .edit-b .ic{width:12px;height:12px}
 .st{position:relative}
@@ -465,28 +482,28 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
 .sheet-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:80;display:none;align-items:flex-end;justify-content:center}
 .sheet-ov.on{display:flex}
 @media(min-width:720px){.sheet-ov.on{align-items:center}}
-.sheet{background:var(--surface);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:520px;padding:20px 18px calc(22px + var(--sab));animation:up .24s var(--ease)}
-@media(min-width:720px){.sheet{border-radius:20px}}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:16px 20px 0 0;width:100%;max-width:520px;padding:20px 18px calc(22px + var(--sab));animation:up .24s var(--ease)}
+@media(min-width:720px){.sheet{border-radius:16px}}
 .sheet h3{font-size:17px;font-weight:800;margin-bottom:4px}
 .sheet .sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5}
-.sheet .fld{margin-bottom:13px}
-.sheet label{display:block;font-size:11.5px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-bottom:6px}
-.sheet input,.sheet select{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:14px;color:var(--txt);outline:none;font-family:inherit}
+.sheet .fld{margin-bottom:12px}
+.sheet label{display:block;font-size:11.5px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-bottom:8px}
+.sheet input,.sheet select{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;color:var(--txt);outline:none;font-family:inherit}
 .sheet input:focus,.sheet select:focus{border-color:var(--brand-txt)}
-.sheet .err{color:var(--danger);font-size:11.5px;font-weight:600;min-height:16px;margin-top:5px}
-.sheet .acts{display:flex;gap:9px;margin-top:6px}
+.sheet .err{color:var(--danger);font-size:11.5px;font-weight:600;min-height:16px;margin-top:4px}
+.sheet .acts{display:flex;gap:8px;margin-top:8px}
 .sheet .acts .btn{flex:1}
 .ex-swap{margin:0 16px 12px;display:flex;align-items:center;gap:8px}
 .ex-swap select{flex:1;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px 10px;font-size:12.5px;color:var(--muted);outline:none;font-family:inherit}
 .ex-swap select:focus{border-color:var(--brand-txt)}
-.set-edit{display:flex;gap:7px;margin-top:9px}
+.set-edit{display:flex;gap:8px;margin-top:8px}
 .set-edit button{flex:1;min-height:44px;padding:11px 8px;font-size:12px;font-weight:700;border-radius:10px;border:1px dashed var(--line);background:none;color:var(--muted)}
 .set-edit button:hover{border-color:var(--brand-txt);color:var(--brand-txt);border-style:solid}
 
 /* ── NEXT-UP HOOK CHIPS ───────────────────────────────────── */
-.hooks{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.hooks{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .hooks:empty{display:none}
-.hk{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:7px 13px;color:var(--muted);line-height:1.35}
+.hk{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:600;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:7px 13px;color:var(--muted);line-height:1.35}
 .hk b{color:var(--txt);font-variant-numeric:tabular-nums}
 .hk .ic{width:13px;height:13px;color:var(--brand-txt)}
 .hk.best .ic{color:var(--amber)}
@@ -498,20 +515,25 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
  .app{max-width:1440px;padding:0 32px}
  .nav{left:0;right:auto;top:0;bottom:0;width:86px;flex-direction:column;justify-content:center;gap:4px;border-top:none;border-right:1px solid var(--line);padding-bottom:0}
  .nav button{flex:0 0 auto;padding:15px 4px}
- .topbar{padding:22px 0 18px}
- #pg-today.on{display:grid;grid-template-columns:1.04fr 1fr;column-gap:22px;align-items:start;
-  grid-template-areas:"g g" "p p" "score sess" "score tiles" "score ask" "shb shg" "build grid"}
+ /* var(--sat) MUST be carried in every breakpoint that sets this padding.
+    Losing it here is the same defect that already cost a rebuild at 390px. */
+ .topbar{padding:calc(22px + var(--sat)) 0 18px}
+ #pg-today.on{display:grid;grid-template-columns:1.04fr 1fr;column-gap:20px;align-items:start;
+  /* the hero spans both columns on desktop too: it is the point of the screen */
+  grid-template-areas:"g g" "p p" "sess sess" "score tiles" "score ask" "score look"}
  #pg-today>.greet{grid-area:g}
  #pg-today>.promise{grid-area:p;max-width:80%}
  .td-score{grid-area:score}
  #tdSess{grid-area:sess;margin-top:0}
+ #tdLookback{grid-area:look}
  #tdTiles{grid-area:tiles}
  #tdAsk{grid-area:ask}
+ /* these live on Stats now, and place themselves there */
  .sh-build{grid-area:shb}
  .td-build{grid-area:build}
- .sh-grid{grid-area:shg;margin-top:22px}
+ .sh-grid{grid-area:shg;margin-top:20px}
  .td-grid{grid-area:grid}
- #pg-log.on{display:grid;grid-template-columns:1.04fr 1fr;column-gap:22px;align-items:start;
+ #pg-log.on{display:grid;grid-template-columns:1.04fr 1fr;column-gap:20px;align-items:start;
   grid-template-areas:"g g" "p p" "hero hero" "shm shb2" "meals body" "meals shw" "meals water"}
  #pg-log>.greet{grid-area:g}
  #pg-log>.promise{grid-area:p}
@@ -535,10 +557,10 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
    stack full of dead gaps because the tall build card stretched its rows. */
 @media(min-width:1500px){
  .app{max-width:1560px;padding:0 40px}
- #pg-today.on{column-gap:26px}
- #pg-log.on{column-gap:26px}
+ #pg-today.on{column-gap:24px}
+ #pg-log.on{column-gap:24px}
  #plEx{grid-template-columns:repeat(3,1fr)}
- #stBody{max-width:none;columns:2;column-gap:18px}
+ #stBody{max-width:none;columns:2;column-gap:16px}
  #stBody .day{break-inside:avoid;display:inline-block;width:100%}
  .promise{font-size:27px;max-width:74%}
  .shot{width:170px}
@@ -546,18 +568,18 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
 
 /* ── SELF-TEST REPORT ─────────────────────────────────────── */
 .st-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
-.st-p{background:var(--surface);border:1px solid var(--line);border-radius:18px;width:560px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
-.st-hd{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.st-p{background:var(--surface);border:1px solid var(--line);border-radius:16px;width:560px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.st-hd{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .st-b{font-family:'Poppins';font-size:14px;font-weight:800;padding:5px 13px;border-radius:99px}
 .st-b.p{background:var(--green-soft);color:var(--green)}
 .st-b.f{background:var(--danger-soft);color:var(--danger)}
 .st-bd{overflow-y:auto;padding:6px 20px 14px}
-.st-r{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:12px}
+.st-r{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:12px}
 .st-r:last-child{border:none}
 .st-r .n{font-weight:650}
 .st-r .d{color:var(--faint);font-size:11px;margin-top:2px;word-break:break-word}
 .st-r.f .n{color:var(--danger)}
-.st-ft{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:9px;justify-content:flex-end}
+.st-ft{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
 @media(min-width:560px){.tiles,.stat3{gap:12px}}
 </style>
 </head>
@@ -580,6 +602,10 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
     <div id="tdAccess"></div>
     <div class="greet" id="tdGreet"></div>
     <div class="promise" id="tdPromise"></div>
+    <!-- THE HERO. The one thing a member came here to do, first and largest. -->
+    <button class="sess" id="tdSess" onclick="go('plan')"></button>
+    <div class="tiles" id="tdTiles"></div>
+    <!-- the score is a REPORT, not an action, so it sits behind the hero -->
     <div class="card pad td-score">
       <div class="score-wrap">
         <div class="ring" id="tdRing"></div>
@@ -590,34 +616,9 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
       <div class="stat3" id="tdStats"></div>
       <div class="hooks" id="tdHooks"></div>
     </div>
-    <button class="sess" id="tdSess" onclick="go('plan')"></button>
-    <div class="tiles" id="tdTiles"></div>
     <button class="ask" id="tdAsk" onclick="askTrainer()"></button>
+    <button class="lookback" id="tdLookback" onclick="go('stats')"></button>
 
-    <div class="sec-h sh-build"><h3>The build</h3><span class="hint" id="bdHint"></span></div>
-    <div class="card pad td-build">
-      <div class="build-top">
-        <div class="shot" id="bdShot"></div>
-        <div class="build-r">
-          <div class="d" id="bdDay"></div>
-          <div class="s">Tap an angle to switch. Compare puts day one beside today.</div>
-          <div class="deltas" id="bdDeltas"></div>
-        </div>
-      </div>
-      <div class="angles" id="bdAngles"></div>
-      <div class="row2">
-        <button class="btn primary" onclick="toggleCompare()" id="bdCmpBtn"></button>
-        <button class="btn" onclick="addShot()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New</button>
-      </div>
-      <div class="privacy"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span id="bdPriv"></span></div>
-      <div class="phases" id="bdPhases"></div>
-    </div>
-
-    <div class="sec-h sh-grid"><h3 id="gridTitle"></h3><span class="hint" id="gridHint"></span></div>
-    <div class="card pad td-grid">
-      <div class="grid90" id="grid90"></div>
-      <div class="legend" id="gridLegend"></div>
-    </div>
   </div>
 
   <!-- ══ LOG ══ -->
@@ -664,7 +665,33 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
     <div class="tiles" id="stTiles" style="grid-template-columns:1fr 1fr"></div>
     <div id="stTrend"></div>
     <div class="seg"><button id="stSegD" class="on" onclick="stMode('day')">By day</button><button id="stSegM" onclick="stMode('month')">By month</button></div>
-    <div id="stBody" style="margin-top:14px"></div>
+    <div id="stBody" style="margin-top:12px"></div>
+    <!-- MOVED FROM TODAY: history belongs where you come to look back -->
+    <div class="sec-h sh-build"><h3>The build</h3><span class="hint" id="bdHint"></span></div>
+    <div class="card pad td-build">
+      <div class="build-top">
+        <div class="shot" id="bdShot"></div>
+        <div class="build-r">
+          <div class="d" id="bdDay"></div>
+          <div class="s">Tap an angle to switch. Compare puts day one beside today.</div>
+          <div class="deltas" id="bdDeltas"></div>
+        </div>
+      </div>
+      <div class="angles" id="bdAngles"></div>
+      <div class="row2">
+        <button class="btn primary" onclick="toggleCompare()" id="bdCmpBtn"></button>
+        <button class="btn" onclick="addShot()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New</button>
+      </div>
+      <div class="privacy"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span id="bdPriv"></span></div>
+      <div class="phases" id="bdPhases"></div>
+    </div>
+
+    <div class="sec-h sh-grid"><h3 id="gridTitle"></h3><span class="hint" id="gridHint"></span></div>
+    <div class="card pad td-grid">
+      <div class="grid90" id="grid90"></div>
+      <div class="legend" id="gridLegend"></div>
+    </div>
+
   </div>
 </div>
 
@@ -993,7 +1020,7 @@ function gateScreen(){
   +'<div class="amt">'+lkrM(a.amount)+'</div>'
   +'<div class="sub">'+(a.why||'')+' Settle it and everything unlocks straight away. Your plan, your history and your numbers are all still here.</div>'
   +'<div class="where"><div class="l">Where to pay</div><div class="v">'+g.name+' front desk</div>'
-  +'<div class="l" style="margin-top:13px">Or call</div><div class="v">'+g.phone+'</div></div>'
+  +'<div class="l" style="margin-top:12px">Or call</div><div class="v">'+g.phone+'</div></div>'
   +'<div class="acts">'
   +'<button class="pri" onclick="go(\'membership\')">See my payment record</button>'
   +'<button onclick="saidIPaid()">I have already paid this</button>'
@@ -1212,7 +1239,7 @@ function boundary(pg,e){
  console.warn('render '+pg,e);
  const el=document.getElementById('pg-'+pg);if(!el)return;
  el.dataset.err='1';
- el.innerHTML='<div class="card pad" style="margin-top:20px"><div class="empty"><div class="t">This screen hit a problem</div>Your data is safe and the rest of the app keeps working.<div style="margin-top:14px"><button class="btn" onclick="go(\''+pg+'\')">Try again</button></div></div></div>';
+ el.innerHTML='<div class="card pad" style="margin-top:20px"><div class="empty"><div class="t">This screen hit a problem</div>Your data is safe and the rest of the app keeps working.<div style="margin-top:12px"><button class="btn" onclick="go(\''+pg+'\')">Try again</button></div></div></div>';
 }
 function go(pg){
  if(!RENDERERS[pg])pg='today';
@@ -1315,9 +1342,21 @@ function renderDemoTag(){
  el.style.display='';
  el.innerHTML='<span class="d"></span>'+s;
 }
+/* what the member is giving up on Today, said in one line so they can find it */
+function renderLookback(){
+ const el=document.getElementById('tdLookback');if(!el)return;
+ const m=DB.get('member');
+ const shots=(DB.get('shots')||[]).length;
+ el.innerHTML='<span style="min-width:0;flex:1">'
+  +'<span class="lt">Your progress so far</span>'
+  +'<div class="ls">'+m.day+' days in'+(shots?', '+shots+' progress photos':'')
+  +', and the whole 90 day grid. All in Stats.</div></span>'
+  +'<span class="lg">'+I.arrow+'</span>';
+}
 function renderProvenance(){
  renderDemoTag();
  renderInstall();
+ renderLookback();
  const el=document.getElementById('tdProv');if(!el)return;
  const d=todayRow();
  if(!d.steps){el.innerHTML='';return;}
@@ -1371,10 +1410,10 @@ function renderToday(){
  const oldNote=document.getElementById('tdNote');if(oldNote)oldNote.remove();
  if(tn){
   const n=document.createElement('div');n.id='tdNote';n.className='card pad';
-  n.style.cssText='margin-top:14px;border-color:var(--brand-txt)';
+  n.style.cssText='margin-top:12px;border-color:var(--brand-txt)';
   n.innerHTML='<div style="font-size:11px;letter-spacing:.2px;color:var(--brand-txt);font-weight:700">Note from '+tn.from.split(' ')[0]+'</div>'
-   +'<div style="font-size:14px;margin-top:6px;line-height:1.5">'+String(tn.text).replace(/</g,'&lt;')+'</div>'
-   +'<div style="font-size:11px;color:var(--faint);margin-top:6px">'+tn.at+'</div>';
+   +'<div style="font-size:14px;margin-top:8px;line-height:1.5">'+String(tn.text).replace(/</g,'&lt;')+'</div>'
+   +'<div style="font-size:11px;color:var(--faint);margin-top:8px">'+tn.at+'</div>';
   askEl.parentNode.insertBefore(n,askEl);
  }
  /* ask your trainer: a HUMAN, not a bot */
@@ -1383,7 +1422,7 @@ function renderToday(){
   +'<div style="min-width:0"><div class="l">Ask anytime</div><div class="n">'+m.trainer.split(' ')[0]+', your trainer</div><div class="m">Form, swaps, why you feel flat. A real answer from the person who wrote your plan.</div></div>'
   +'<div class="go">'+I.wa+'</div>';
  document.getElementById('tdHooks').innerHTML=hookChips();
- renderBuild();renderGrid();renderAccessBars();renderProvenance();
+ renderAccessBars();renderProvenance();
  /* build stamp: so a screenshot can always answer "which version is this" */
  let bs=document.getElementById('buildStamp');
  if(!bs){bs=document.createElement('div');bs.id='buildStamp';
@@ -1658,17 +1697,17 @@ function renderPlan(){
   document.getElementById('plFinish').innerHTML='<div class="card pad" style="margin-top:4px">'
    +'<div class="ex-edit" style="grid-template-columns:1fr;margin-bottom:12px">'
    +'<div><label>Session name</label><input style="text-align:left" value="'+esc(DB.get('sessionName'))+'" maxlength="40" aria-label="Session name" onchange="planRenameSession(this.value)"></div></div>'
-   +'<div style="font-size:11.5px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-bottom:9px">Add an exercise</div>'
+   +'<div style="font-size:11.5px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-bottom:8px">Add an exercise</div>'
    +'<select style="width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--txt);font-family:inherit;font-size:13px" onchange="planAddEx(this.value);this.value=\'\'">'
    +'<option value="">Choose from the library...</option>'
    +EX_LIB.map((l,i)=>'<option value="'+i+'">'+l.n+' · '+l.g+'</option>').join('')+'</select>'
    +'<div class="add-own"><input id="plNewEx" placeholder="or type your own, e.g. Hammer Strength Row" maxlength="40" aria-label="New exercise name" onkeydown="if(event.key===\'Enter\'){event.preventDefault();planAddCustom();}">'
    +'<button onclick="planAddCustom()">Add</button></div>'
-   +'<div style="font-size:11.5px;color:var(--muted);margin-top:11px;line-height:1.6">Changes apply to today\'s session. Your trainer can see what you actually logged. An exercise you type in carries no personal best until you lift one.</div></div>';
+   +'<div style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.6">Changes apply to today\'s session. Your trainer can see what you actually logged. An exercise you type in carries no personal best until you lift one.</div></div>';
   return;
  }
  document.getElementById('plFinish').innerHTML=d.session
-  ? '<div class="card pad" style="border-color:var(--green);text-align:center"><div style="color:var(--green);font-weight:800;font-size:14px">'+I.check+' Session logged</div><div style="font-size:12px;color:var(--muted);margin-top:6px">Your trainer can see it, and your check-in is recorded at the gym.</div><div class="row2" style="margin-top:12px"><button class="btn primary" onclick="shareSession()">'+I.wa+'Share it</button><button class="btn" onclick="unfinishSession()">Undo session</button></div></div>'
+  ? '<div class="card pad" style="border-color:var(--green);text-align:center"><div style="color:var(--green);font-weight:800;font-size:14px">'+I.check+' Session logged</div><div style="font-size:12px;color:var(--muted);margin-top:8px">Your trainer can see it, and your check-in is recorded at the gym.</div><div class="row2" style="margin-top:12px"><button class="btn primary" onclick="shareSession()">'+I.wa+'Share it</button><button class="btn" onclick="unfinishSession()">Undo session</button></div></div>'
   : '<button class="btn primary" style="padding:15px" onclick="finishSession()">'+I.check+'Finish session ('+dn+' of '+tot+' sets)</button>';
 }
 /* same-muscle alternatives, from the library the plan is built from */
@@ -1894,9 +1933,9 @@ function renderMembership(){
    +'<div class="mid"><div class="v" style="font-size:24px">'+(left>0?left:0)+'</div><div class="l">'+(Math.abs(left)===1?'day':'days')+'</div></div></div>'
   +'<div style="flex:1;min-width:150px"><div style="font-size:11.5px;letter-spacing:.2px;color:var(--faint);font-weight:700">Paid until</div>'
   +'<div style="font-family:\'Poppins\',sans-serif;font-size:21px;font-weight:800;margin-top:4px">'+(until?fmtD(until):'No payment yet')+'</div>'
-  +'<div style="font-size:12px;color:'+col+';font-weight:600;margin-top:5px">'
+  +'<div style="font-size:12px;color:'+col+';font-weight:600;margin-top:4px">'
    +(state==='ok'?'Paid up. Nothing owing.':(state==='part'?'Part paid this month. '+lkrM(bal)+' still owing.':lkrM(bal)+' owing for '+MN_FULL[AS_OF.getMonth()]))+'</div></div></div>'
-  +'<div class="why" style="margin-top:14px">Your '+c.cycle+'ly '+c.plan.toLowerCase()+' fee is <b>'+lkrM(c.fee)+'</b>, due around the '+c.dueDay+'th. '
+  +'<div class="why" style="margin-top:12px">Your '+c.cycle+'ly '+c.plan.toLowerCase()+' fee is <b>'+lkrM(c.fee)+'</b>, due around the '+c.dueDay+'th. '
   +'Every payment below was recorded at the desk by a named person, with the time. Tap any one for a receipt you can keep or send.</div>';
  document.getElementById('msDispute').innerHTML=
   '<div class="av">'+I.wa+'</div>'
@@ -1927,11 +1966,11 @@ function receiptFor(month){
  w.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
  +'<title>Receipt '+month+'</title><style>*{margin:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}'
  +'body{background:#eee;color:#1a1a1a;padding:18px}.p{max-width:520px;margin:0 auto;background:#fff;padding:26px}'
- +'.h{display:flex;justify-content:space-between;border-bottom:3px solid '+brand+';padding-bottom:14px;margin-bottom:18px}'
+ +'.h{display:flex;justify-content:space-between;border-bottom:3px solid '+brand+';padding-bottom:14px;margin-bottom:16px}'
  +'.co{font-size:19px;font-weight:800}.t{font-size:22px;font-weight:800;letter-spacing:1px}'
  +'table{width:100%;border-collapse:collapse;margin:12px 0}td{padding:9px 0;border-bottom:1px solid #e6e6e6;font-size:13px}'
- +'td.r{text-align:right;font-weight:700}.tot{background:'+brand+';color:#fff;padding:12px 14px;display:flex;justify-content:space-between;font-weight:800;margin-top:10px}'
- +'.f{margin-top:18px;font-size:11px;color:#666;line-height:1.6}button{position:fixed;top:14px;right:14px;background:'+brand+';color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:700}'
+ +'td.r{text-align:right;font-weight:700}.tot{background:'+brand+';color:#fff;padding:12px 14px;display:flex;justify-content:space-between;font-weight:800;margin-top:8px}'
+ +'.f{margin-top:16px;font-size:11px;color:#666;line-height:1.6}button{position:fixed;top:14px;right:14px;background:'+brand+';color:#fff;border:none;padding:10px 16px;border-radius:10px;font-weight:700}'
  +'@media print{button{display:none}body{background:#fff;padding:0}}</style></head><body>'
  +'<button onclick="window.print()">Print or save as PDF</button><div class="p">'
  +'<div class="h"><div><div class="co">'+CFG.gym.name+'</div><div style="font-size:11px;color:#666;margin-top:4px">'+CFG.gym.phone+'</div></div><div class="t">RECEIPT</div></div>'
@@ -1976,6 +2015,8 @@ function stShift(n){
 function stMode(m){ST_MODE=m;ST_OPEN=null;renderStats();}
 function stToggle(date){ST_OPEN=ST_OPEN===date?null:date;renderStats();}
 function renderStats(){
+ /* these moved here from Today, so they render here now */
+ renderBuild();renderGrid();
  const ws=stWeeks();if(!ST_WEEK)ST_WEEK=ws[ws.length-1];
  const i=ws.indexOf(ST_WEEK);
  document.getElementById('stPrev').disabled=i<=0;
@@ -2060,8 +2101,8 @@ function renderTrend(){
  const move=Math.round((last-first)*10)/10;
  const goingRight=DB.get('member').goalWeight<DB.get('member').startWeight;
  const good=(move<0)===goingRight&&move!==0;
- el.innerHTML='<div class="card pad" style="margin-top:14px">'
-  +'<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+ el.innerHTML='<div class="card pad" style="margin-top:12px">'
+  +'<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap">'
   +'<div style="font-size:15px;font-weight:800">Where you are heading</div>'
   +'<div style="font-size:12.5px;color:'+(good?'var(--green)':'var(--muted)')+';font-weight:700">'
   +(move===0?'level':(move<0?'down ':'up ')+Math.abs(move).toFixed(1)+' kg')+' over '+t.length+' weeks</div></div>'
@@ -2125,8 +2166,8 @@ async function runSelfTest(){
   ok('Body: to-go never goes negative',weightToGo()>=0);
   ok('Body: days left never negative',daysLeft()>=0);
   ok('Streak: matches consecutive logged days',streakDays()>=0&&streakDays()<=DB.get('days').length);
-  /* grid */
-  go('today');
+  /* grid and build: these live on Stats now */
+  go('stats');
   ok('Grid: one cell per programme day',document.querySelectorAll('#grid90 .gd').length===CFG.programme.days,String(document.querySelectorAll('#grid90 .gd').length));
   ok('Grid: exactly one cell marked today',document.querySelectorAll('#grid90 .gd.today').length===1);
   /* build / photos */
@@ -2198,9 +2239,20 @@ async function runSelfTest(){
    ok('Hooks: share builds a wa.me text with the member\'s real day',u.indexOf('https://wa.me/?text=')===0&&decodeURIComponent(u).indexOf('Day '+DB.get('member').day)>-1,u.slice(0,50));})();
   /* iPhone-class defects: reserve for the nav, and thumb-sized controls */
   (function(){
-   const navH=document.querySelector('.nav').getBoundingClientRect().height;
-   const pad=parseFloat(getComputedStyle(document.body).paddingBottom)||0;
-   ok('Layout: the page reserves at least the nav height, so nothing hides behind it',pad>=navH,'pad '+Math.round(pad)+' vs nav '+Math.round(navH));
+   /* the nav is a bottom bar on a phone and a LEFT SIDEBAR at desktop, so the
+      reservation to check is a different edge on each. Comparing bottom padding
+      to an 860px-tall sidebar is nonsense, and it hid real failures behind it. */
+   const navR=document.querySelector('.nav').getBoundingClientRect();
+   const wide=innerWidth>=960;
+   if(wide){
+    const padL=parseFloat(getComputedStyle(document.body).paddingLeft)||0;
+    ok('Layout: the page reserves the sidebar width, so nothing hides behind it',
+      padL>=navR.width,'padLeft '+Math.round(padL)+' vs sidebar '+Math.round(navR.width));
+   }else{
+    const pad=parseFloat(getComputedStyle(document.body).paddingBottom)||0;
+    ok('Layout: the page reserves at least the nav height, so nothing hides behind it',
+      pad>=navR.height,'pad '+Math.round(pad)+' vs nav '+Math.round(navR.height));
+   }
    const c=document.querySelector('#tdRing svg circle'),svg=document.querySelector('#tdRing svg');
    if(c&&svg){const outer=(+svg.getAttribute('width'))/2+(+c.getAttribute('r'))+(+c.getAttribute('stroke-width'))/2;
     ok('Ring: the stroke stays inside its own viewBox',outer<=+svg.getAttribute('width'),'outer '+outer+' of '+svg.getAttribute('width'));}
@@ -2436,6 +2488,79 @@ async function runSelfTest(){
   ok('Edit: add a set, then undo',added&&DB.get('exercises')[0].sets.length===sets0);
   removeSet(0);const removed=DB.get('exercises')[0].sets.length===sets0-1;runUndo();
   ok('Edit: remove a set, then undo',removed&&DB.get('exercises')[0].sets.length===sets0);
+  /* TODAY HAS ONE HERO, AND THE HISTORY HAS MOVED */
+  (function(){
+   go('today');
+   const page=document.getElementById('pg-today');
+   const sess=document.getElementById('tdSess');
+   const score=document.querySelector('#pg-today .td-score');
+   ok('Today: the session is the first thing after the greeting',
+     sess.getBoundingClientRect().top<score.getBoundingClientRect().top);
+   /* the hero has to actually BE the biggest accent surface, not just first */
+   const accents=Array.from(page.querySelectorAll('*')).filter(el=>{
+    const bg=getComputedStyle(el).backgroundImage+getComputedStyle(el).backgroundColor;
+    return bg.indexOf('239, 58, 27')>-1||bg.indexOf('accent-grad')>-1;});
+   const sr=sess.getBoundingClientRect();
+   ok('Today: nothing outranks the hero in size',
+     accents.every(el=>{const r=el.getBoundingClientRect();
+      return el===sess||sess.contains(el)||r.width*r.height<=sr.width*sr.height;}));
+   ok('Today: the hero is a real target, not a strip',sr.height>=100,Math.round(sr.height)+'px tall');
+   /* the history left, and left a way back */
+   ok('Today: the progress photos are no longer on Today',!page.querySelector('.td-build'));
+   ok('Today: the 90 day grid is no longer on Today',!page.querySelector('.td-grid'));
+   const lb=document.getElementById('tdLookback');
+   ok('Today: one line says where the history went',
+     !!lb&&(lb.textContent||'').indexOf('Stats')>-1,lb?lb.textContent.slice(0,60):'missing');
+   /* and it is all still there, working, one tab over */
+   go('stats');
+   const st=document.getElementById('pg-stats');
+   ok('Stats: the progress photos arrived intact',!!st.querySelector('.td-build')
+     &&(document.getElementById('bdShot').innerHTML||'').length>10);
+   ok('Stats: the 90 day grid arrived intact',!!st.querySelector('.td-grid')
+     &&document.querySelectorAll('#grid90 > *').length>30,
+     document.querySelectorAll('#grid90 > *').length+' cells');
+   ok('Stats: switching an angle still works where it now lives',
+     (function(){const was=SHOT_ANGLE;setAngle(SHOT_ANGLE==='front'?'side':'front');
+      const ok2=SHOT_ANGLE!==was;setAngle(was);return ok2;})());
+   /* the whole point: Today got shorter */
+   go('today');
+   ok('Today: it is materially shorter than the 1,986px it was',
+     page.scrollHeight<1400,page.scrollHeight+'px');
+   /* A NAMED GRID IS A CONTRACT WITH THE DOM. Moving a block between pages once
+      left four areas pointing at nothing and collapsed the desktop layout. */
+   (function(){
+    const orphans=[];
+    document.querySelectorAll('style').forEach(st=>{
+     (st.textContent.match(/grid-template-areas:[^}]+/g)||[]).forEach(decl=>{
+      const owner=decl.indexOf('pg-')>-1?decl:null;
+      const names=new Set((decl.match(/"[^"]+"/g)||[]).join(' ').replace(/"/g,'').split(/\s+/).filter(Boolean));
+      names.forEach(n=>{
+       if(n==='.')return;
+       if(!new RegExp('grid-area:'+n+'[;}\s]').test(st.textContent))orphans.push(n);});});});
+    ok('Layout: every named grid area has an element that claims it',
+      orphans.length===0,orphans.join(', '));
+   })();
+   /* A RENDERER MUST ONLY TOUCH ITS OWN PAGE. renderToday wrote into elements
+      that had moved to Stats, which held until the gate ladder wiped the Stats
+      markup and the boundary then blanked Today. */
+   (function(){
+    const broke=[];
+    ['today','log','plan','membership','stats'].forEach(pg=>{
+     /* wipe every OTHER page, then render this one. It must not care. */
+     const saved={};
+     ['today','log','plan','membership','stats'].forEach(o=>{
+      if(o===pg)return;const el=document.getElementById('pg-'+o);
+      saved[o]=el.innerHTML;el.innerHTML='';});
+     try{go(pg);
+      if((document.getElementById('pg-'+pg).innerHTML||'').indexOf('hit a problem')>-1)broke.push(pg);
+     }catch(e){broke.push(pg+':'+e.message);}
+     Object.keys(saved).forEach(o=>{document.getElementById('pg-'+o).innerHTML=saved[o];});
+    });
+    ok('Layout: every screen renders without reaching into another screen',
+      broke.length===0,broke.join(', '));
+    go('today');
+   })();
+  })();
   /* THE DEMO IS LABELLED, AND THE STAMP CANNOT GO STALE */
   (function(){
    go('today');
@@ -2447,9 +2572,16 @@ async function runSelfTest(){
    const tag=document.getElementById('demoTag');
    ok('Demo: the app says it is a demo, above the numbers',
      !!tag&&(tag.textContent||'').indexOf('Demo data')>-1,tag?tag.textContent:'missing');
-   ok('Demo: the label sits above the first figure on the screen',
-     !!tag&&tag.getBoundingClientRect().top
-       <=document.querySelector('.td-score').getBoundingClientRect().top);
+   /* at desktop a named-area grid deliberately re-places everything, so
+      "above" is a mobile claim and has to say so */
+   if(innerWidth<960){
+    ok('Demo: the label sits above the first figure on the screen',
+      !!tag&&tag.getBoundingClientRect().top
+        <=document.querySelector('.td-score').getBoundingClientRect().top);
+   }else{
+    ok('Demo: the label is present on the wide layout too',
+      !!tag&&tag.getBoundingClientRect().height>0);
+   }
    /* a live cast must lose the label rather than lie about being a demo */
    const was=CFG.demo.asOf;CFG.demo.asOf='';renderDemoTag();
    ok('Demo: a live build shows no demo label at all',
@@ -2514,6 +2646,17 @@ async function runSelfTest(){
    ok('Safe area: a phone with no notch gains no empty strip',
      Math.abs(flat.height-base.height)<1&&document.querySelector('.statusfill').getBoundingClientRect().height===0);
    root.style.removeProperty('--sat');
+   /* THE BREAKPOINT TRAP, caught twice now. Any rule that sets padding on the
+      topbar in ANY media query must carry var(--sat) or the inset dies exactly
+      where the notch is. */
+   (function(){
+    const bad=[];
+    document.querySelectorAll('style').forEach(st=>{
+     (st.textContent.match(/\.topbar\{[^}]*padding:[^;}]*/g)||[]).forEach(decl=>{
+      if(decl.indexOf('--sat')<0)bad.push(decl.slice(0,60));});});
+    ok('Safe area: every topbar padding rule carries the inset, in every breakpoint',
+      bad.length===0,bad.join(' | '));
+   })();
    ok('Safe area: the real inset is read from the device, never guessed from the model',
      getComputedStyle(root).getPropertyValue('--sat').indexOf('env(')>-1
      ||/^[\d.]+px$/.test(getComputedStyle(root).getPropertyValue('--sat').trim()));
@@ -2524,8 +2667,13 @@ async function runSelfTest(){
    go('today');
    const card=document.getElementById('installCard');
    const shown=(card.innerHTML||'').length>0;
-   ok('Fullscreen: the how-to sits at the top of Today, not buried',
-     !shown||card.getBoundingClientRect().top<document.getElementById('tdGreet').getBoundingClientRect().top);
+   if(innerWidth<960){
+    ok('Fullscreen: the how-to sits at the top of Today, not buried',
+      !shown||card.getBoundingClientRect().top<document.getElementById('tdGreet').getBoundingClientRect().top);
+   }else{
+    ok('Fullscreen: the how-to is still reachable on the wide layout',
+      !shown||card.getBoundingClientRect().height>0);
+   }
    if(shown){
     const t=card.textContent||'';
     ok('Fullscreen: it says what the member gets, in their words',t.indexOf('fullscreen')>-1||t.indexOf('like an app')>-1);
