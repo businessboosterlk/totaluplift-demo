@@ -361,6 +361,24 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .prov{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.5}
 .prov.unset{color:var(--amber)}
 
+/* ── THE SPLASH ───────────────────────────────────────────── */
+/* it exists because a launched PWA otherwise shows a blank white screen */
+.splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;
+ flex-direction:column;align-items:center;justify-content:center;padding:32px 26px;
+ text-align:center;transition:opacity .32s var(--ease)}
+.splash.gone{opacity:0;pointer-events:none}
+.sp-in{max-width:340px}
+.sp-logo{font-family:'Poppins',sans-serif;font-size:27px;font-weight:800;letter-spacing:-.7px}
+.sp-logo span{color:var(--brand-txt)}
+.sp-line{font-family:'Poppins',sans-serif;font-size:19px;font-weight:700;line-height:1.42;
+ letter-spacing:-.3px;margin-top:22px;color:var(--txt)}
+.sp-foot{position:absolute;bottom:calc(30px + var(--sab));font-size:11.5px;color:var(--faint)}
+@media (prefers-reduced-motion: no-preference){
+ .sp-logo{animation:spUp .5s var(--ease) both}
+ .sp-line{animation:spUp .5s var(--ease) .1s both}
+}
+@keyframes spUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
 /* ── THE GATE LADDER ──────────────────────────────────────── */
 .abar{display:flex;align-items:center;gap:11px;padding:12px 15px;border-radius:var(--radius);margin-bottom:14px;border:1px solid}
 .abar.amber{background:var(--amber-soft);border-color:color-mix(in srgb,var(--amber) 45%,transparent)}
@@ -649,6 +667,13 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
   <button data-pg="stats" onclick="go('stats')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Stats</button>
 </nav>
 
+<div class="splash" id="splash" role="status" aria-live="polite" onclick="hideSplash()">
+  <div class="sp-in">
+    <div class="sp-logo">Total <span>Uplift</span></div>
+    <div class="sp-line" id="spLine"></div>
+  </div>
+  <div class="sp-foot" id="spFoot"></div>
+</div>
 <div class="statusfill" aria-hidden="true"></div>
 <div class="offline" id="offlineBar">No signal. You can still log everything, it syncs when you are back.</div>
 <div class="restbar" id="restBar"><div class="rest-in">
@@ -2383,6 +2408,33 @@ async function runSelfTest(){
   ok('Edit: add a set, then undo',added&&DB.get('exercises')[0].sets.length===sets0);
   removeSet(0);const removed=DB.get('exercises')[0].sets.length===sets0-1;runUndo();
   ok('Edit: remove a set, then undo',removed&&DB.get('exercises')[0].sets.length===sets0);
+  /* THE SPLASH: it replaces a blank launch, it does not become one */
+  (function(){
+   const line=splashLine();
+   ok('Splash: it says something, and it is one of ours',
+     !!line&&SPLASH_LINES.indexOf(line)>-1);
+   ok('Splash: the same day gives the same line, because nothing here is random',
+     splashLine()===line&&splashLine()===line);
+   ok('Splash: every line is about showing up, and none promises a result',
+     SPLASH_LINES.every(l=>l.length>18&&l.length<80
+       &&!/guarantee|lose \d|burn|shred|ripped|kg in|fat/i.test(l)));
+   /* it must be possible to be rid of it, and it must not linger */
+   const el=document.getElementById('splash');
+   if(el){
+    hideSplash();
+    ok('Splash: touching it dismisses it',el.classList.contains('gone'));
+   }else{
+    ok('Splash: it removes itself once the app is up',true,'already gone');
+   }
+   ok('Splash: it is not in the way of anything once dismissed',
+     (function(){const s=document.getElementById('splash');
+      if(!s)return true;const r=s.getBoundingClientRect();
+      return s.classList.contains('gone')&&getComputedStyle(s).pointerEvents==='none';})());
+   /* and the app underneath is fully usable */
+   go('today');
+   ok('Splash: the app behind it rendered normally',
+     (document.getElementById('pg-today').innerHTML||'').length>400);
+  })();
   /* THE STATUS BAR STRIP. env() cannot be faked, so --sat exists to be faked. */
   (function(){
    const root=document.documentElement;
@@ -2689,6 +2741,45 @@ function stReport(R,failed){
 
 /* ── INSTALL PROMPT: only shown when the browser says it is installable,
    and never on a device that already has it ── */
+/* ── THE SPLASH ───────────────────────────────────────────── */
+/* About showing up, not about being lean. A member on day 34 who is 2.9kg from
+   a goal does not need shouting at, they need the reason they started said back
+   to them. Nothing here promises a result or names a body. */
+const SPLASH_LINES=[
+ 'The session you almost skipped is the one that counts.',
+ 'Nobody regrets the workout they turned up for.',
+ 'Small, boring, repeated. That is the whole secret.',
+ 'You do not have to be fresh. You have to be here.',
+ 'Today is one more day of not going backwards.',
+ 'The work is quiet. The results are loud.',
+ 'Progress is just attendance with a longer memory.'
+];
+/* deterministic by date: no randomness anywhere in this app, and two members
+   opening it on the same morning see the same line */
+function splashLine(){
+ const p=todayISO().split('-');
+ const n=(+p[0]*372)+(+p[1]*31)+(+p[2]);
+ return SPLASH_LINES[n%SPLASH_LINES.length];
+}
+let SPLASH_T=null;
+function hideSplash(){
+ const el=document.getElementById('splash');if(!el||el.classList.contains('gone'))return;
+ clearTimeout(SPLASH_T);
+ el.classList.add('gone');
+ setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},400);
+}
+function showSplash(){
+ const el=document.getElementById('splash');if(!el)return;
+ /* only on a cold start. Moving between tabs must never show this. */
+ document.getElementById('spLine').textContent=splashLine();
+ const m=DB.get('member');
+ document.getElementById('spFoot').textContent=m&&m.day
+  ? 'Day '+m.day+' of '+CFG.programme.days : CFG.gym.name;
+ /* time-boxed: gone when ready or after 900ms, whichever comes first. It never
+    stands between a member and the app. */
+ SPLASH_T=setTimeout(hideSplash,900);
+}
+
 let INSTALL_EVT=null;
 /* the iOS share glyph, drawn, because "tap the share button" means nothing until
    you can see which button it is */
@@ -2762,6 +2853,7 @@ if('serviceWorker' in navigator&&location.protocol==='https:'){
   navigator.serviceWorker.register('sw.js').catch(function(){});
  });
 }
+showSplash();
 if(location.search.indexOf('selftest')>-1)setTimeout(()=>runSelfTest(),160);
 </script>
 </body>
