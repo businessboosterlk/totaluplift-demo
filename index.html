@@ -798,6 +798,21 @@ body.dark .stat-kpi .val{color:#fff}
 .pl-acts button{padding:6px 11px;font-size:11.5px;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);transition:.15s;display:inline-flex;align-items:center;gap:5px}
 .pl-acts button:hover{border-color:var(--brand);color:var(--brand)}
 .pl-acts button.wa{color:var(--green)}.pl-acts button.wa:hover{border-color:var(--green);background:var(--green-soft)}
+/* ── THE OUTCOME SPINE ── */
+.iv-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line2)}
+.iv-dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;background:var(--line)}
+.iv-dot.good{background:var(--green)}
+.iv-dot.cold{background:var(--faint)}
+.iv-dot.open{background:var(--amber)}
+.iv-k{font-size:12.5px;font-weight:700}
+.iv-m{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+.iv-ask{background:var(--amber-soft);border:1px solid color-mix(in srgb,var(--amber) 40%,transparent);border-radius:var(--radius);padding:13px 15px;margin-bottom:12px}
+.iv-q{font-size:13.5px;font-weight:800}
+.iv-s{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.iv-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.iv-btns button{padding:8px 12px;font-size:12px;font-weight:700;border-radius:9px;border:1px solid var(--line);background:var(--surface);min-height:38px}
+.iv-btns button:hover{border-color:var(--brand);color:var(--brand-txt,var(--brand))}
+.iv-n{font-size:11px;color:var(--faint);margin-top:9px;line-height:1.55}
 /* ── THE GATE LADDER ── */
 .acc{display:flex;align-items:flex-start;gap:11px;padding:13px 15px;border-radius:var(--radius);border:1px solid var(--line);background:var(--surface-2)}
 .acc.gated{background:var(--danger-soft);border-color:color-mix(in srgb,var(--danger) 40%,transparent)}
@@ -828,6 +843,7 @@ body.dark .stat-kpi .val{color:#fff}
 .m3-main{flex:1;min-width:0;display:block}
 .m3-nm{display:block;font-size:15px;font-weight:800;letter-spacing:-.2px}
 .m3-why{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.5}
+.m3-prev{font-size:11.5px;color:var(--faint);margin-top:5px;padding-left:9px;border-left:2px solid var(--line)}
 .m3-say{font-size:12.5px;margin-top:9px;padding:9px 12px;background:var(--surface-2);border-radius:var(--r-sm);border-left:2px solid var(--brand);font-style:italic;color:var(--ink)}
 .m3-act{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
 .m3-act button{padding:8px 12px;font-size:12px;font-weight:700;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:inline-flex;align-items:center;gap:6px}
@@ -978,6 +994,7 @@ body.dark .stat-kpi .val{color:#fff}
         <div id="greet" style="margin-bottom:20px"></div>
         <div id="morningThree"></div>
         <div id="accessAlerts"></div>
+        <div id="didItWork"></div>
         <div class="hero-money" id="heroMoney"></div>
         <div class="kpis" id="dashKpis"></div>
         <div id="staffPanel"></div>
@@ -1456,24 +1473,24 @@ const I={
  phone:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
  doc:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
  cal:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
- clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
- money:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
- users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>',
- trend:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
- flame:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
- inbox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+ clock:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+ money:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+ users:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>',
+ trend:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+ flame:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+ inbox:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
  x:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
- sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/></svg>',
- moon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>',
- wa:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.38a9.9 9.9 0 0 0 4.74 1.2c5.46 0 9.9-4.43 9.9-9.9 0-5.45-4.44-9.9-9.9-9.9zm5.8 14.02c-.24.68-1.4 1.3-1.94 1.34-.5.05-1.13.24-3.7-.78-3.12-1.23-5.1-4.4-5.26-4.6-.15-.2-1.25-1.66-1.25-3.17 0-1.5.79-2.24 1.07-2.55.28-.3.6-.38.8-.38.2 0 .4 0 .58.01.19.01.44-.07.68.53.24.6.83 2.08.9 2.23.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.32.39-.45.52-.15.15-.3.31-.13.6.17.3.76 1.25 1.63 2.02 1.12 1 2.07 1.31 2.37 1.46.3.15.47.13.64-.08.17-.2.74-.86.94-1.16.2-.3.4-.25.67-.15.27.1 1.7.8 2 .95.29.15.48.22.55.34.07.12.07.7-.17 1.38z"/></svg>',
- rev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
- star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></svg>',
+ sun:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/></svg>',
+ moon:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>',
+ wa:'<svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.38a9.9 9.9 0 0 0 4.74 1.2c5.46 0 9.9-4.43 9.9-9.9 0-5.45-4.44-9.9-9.9-9.9zm5.8 14.02c-.24.68-1.4 1.3-1.94 1.34-.5.05-1.13.24-3.7-.78-3.12-1.23-5.1-4.4-5.26-4.6-.15-.2-1.25-1.66-1.25-3.17 0-1.5.79-2.24 1.07-2.55.28-.3.6-.38.8-.38.2 0 .4 0 .58.01.19.01.44-.07.68.53.24.6.83 2.08.9 2.23.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.32.39-.45.52-.15.15-.3.31-.13.6.17.3.76 1.25 1.63 2.02 1.12 1 2.07 1.31 2.37 1.46.3.15.47.13.64-.08.17-.2.74-.86.94-1.16.2-.3.4-.25.67-.15.27.1 1.7.8 2 .95.29.15.48.22.55.34.07.12.07.7-.17 1.38z"/></svg>',
+ rev:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
+ star:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></svg>',
  mail:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
- box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
- warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
- imgph:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
- pulse:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
- enter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>',
+ box:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+ warn:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+ imgph:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
+ pulse:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+ enter:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>',
 };
 
 /* ════════════════════════════════════════════════════════════════════
@@ -1695,6 +1712,9 @@ function seedData(){
    {id:2,m:gateReqM,kind:'gate-request',reason:'Stopped answering, owes two weeks past grace',by:3,at:todayISO()},
   ],
   nudges:[],
+  /* THE OUTCOME SPINE. One row per contact, and a row is not finished until
+     something happened. See Section 9H. */
+  interventions:[],
   tasks:[
    {id:1,t:'Call '+owe1.split(' ')[0]+' about the overdue '+CFG.recurring.label.toLowerCase(),who:5,due:todayISO(),d:false},
    {id:2,t:'Win back '+dark1+' (Member Pulse)',who:4,due:todayISO(),d:false},
@@ -2119,7 +2139,11 @@ function renderApp(){
 }
 
 /* ── Dashboard ── */
+const OWNER_ONLY_BLOCKS=['morningThree','accessAlerts','didItWork','staffPanel'];
 function renderDashboard(){
+ /* clear FIRST, every time. Whatever renders next puts back only what this
+    person is allowed to see. */
+ OWNER_ONLY_BLOCKS.forEach(function(id){const el=document.getElementById(id);if(el)el.innerHTML='';});
  if(CURRENT.role==='staff'&&CURRENT.pos==='trainer')return renderDashTrainer();
  if(CURRENT.role==='staff'&&CURRENT.pos==='frontdesk')return renderDashFrontdesk();
  renderDashCommand();
@@ -2146,7 +2170,7 @@ function renderDashCommand(){
   +'<div class="hm-sub">'+pct+'% of '+lkr(st.expected)+' expected · '+lkr(st.outstanding)+' outstanding</div></div>'
   +'<div class="hm-cell"><div class="hm-label">Active '+CFG.contactWord.plural.toLowerCase()+'</div><div class="hm-val"><span data-to="'+members.length+'" data-fmt="int">'+members.length+'</span></div>'
   +'<div class="hm-sub">'+(st.owing.length+st.partial.length)+' still to collect · '+risky.length+' at risk</div></div>';
- renderMorningThree();renderAccessAlerts();
+ renderMorningThree();renderAccessAlerts();renderDidItWork();
  document.getElementById('dashKpis').innerHTML=
   kpiC('At-risk '+CFG.contactWord.plural.toLowerCase(),risky.length,risky.length?lkr(pulseRevenueAtRisk(pd))+'/month at risk':'nobody slipping',risky.length>0,I.pulse)
   +kpiC('Trial funnel value',lkr(funnelVal),funnel.length+' open '+CFG.entity.plural.toLowerCase(),false,I.trend)
@@ -2170,6 +2194,27 @@ function renderDashCommand(){
  renderStaffPanel();
 }
 /* ── MY-DAY VIEW (trainer): my clients, my at-risk, my renewals, my tasks ── */
+/* the only honest scoreboard for a system that tells people who to call */
+function renderDidItWork(){
+ const el=document.getElementById('didItWork');if(!el)return;
+ if(!isMaster()){el.innerHTML='';return;}
+ const s=ivStats(addDaysStr(todayISO(),-30));
+ if(!s.sent){el.innerHTML='';return;}
+ el.innerHTML='<div class="card" style="margin-bottom:20px"><div class="card-h">'
+  +'<h3>Did it work</h3><span class="hint">last 30 days</span></div>'
+  +'<div class="card-b" style="padding:16px 20px 18px">'
+  +'<div class="kpis" style="margin:0">'
+  +kpiC('Reached out',s.sent,s.open?s.open+' still waiting on an answer':'all answered',false,I.phone)
+  +kpiC('It worked',s.worked,s.rate+'% of everyone contacted',s.worked>0,I.check)
+  +kpiC('Money recovered',lkr(s.recovered),s.paid+' paid after a chase',s.recovered>0,I.trend)
+  +kpiC('Came back in',s.returned,s.renewed?s.renewed+' also renewed':'walked back through the door',false,I.enter)
+  +'</div>'
+  +'<div style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.65">'
+  +'Recovered means money that was owed, chased, and then actually collected at the desk. '
+  +'Not what was at risk, and not what might have been saved. '
+  +(s.falseAlarm?s.falseAlarm+' were marked as not a problem, which is worth knowing too.':'')
+  +'</div></div></div>';
+}
 function renderAccessAlerts(){
  const el=document.getElementById('accessAlerts');if(!el)return;
  if(!isMaster()){el.innerHTML='';return;}
@@ -2214,6 +2259,7 @@ function renderMorningThree(){
     +'<span class="m3-n">'+(i+1)+'</span>'
     +'<span class="m3-main"><span class="m3-nm">'+x.c.name+'</span>'
     +'<div class="m3-why">'+v.headline+(v.why?' · '+v.why:'')+'</div>'
+    +(function(){const l=ivLastLine(x.c.id);return l?'<div class="m3-prev">'+l+'</div>':'';})()
     +'<div class="m3-say">"'+v.script+'"</div>'
     +'<div class="m3-act">'
     +(ph?'<button class="wa" onclick="event.stopPropagation();smartWA('+x.c.id+')">'+WA_IC+'Send it</button>':'')
@@ -2228,7 +2274,10 @@ function smartWA(id){
  const ph=(c.phone||'').replace(/\D/g,'').replace(/^0/,'94');
  if(!ph){toast('No number saved');return;}
  window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(v.script),'_blank');
- logFeed(CURRENT.id,'Message sent',c.name+' · '+v.kind);DB.commit();
+ const row=logIntervention(id,v.kind==='fading'?'comeback':(v.kind==='expiring'?'renewal':'chase'),'whatsapp',v.script);
+ logFeed(CURRENT.id,'Message sent',c.name+' · '+v.kind);DB.commit();renderApp();
+ if(row)toastUndo(I.check+' Sent to '+c.name.split(' ')[0]+'. Tell me what happens.',function(){
+  const a=DB.get('interventions');a.splice(a.findIndex(x=>x.id===row.id),1);DB.commit();renderApp();});
 }
 function smartTask(id){
  const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
@@ -3323,11 +3372,32 @@ function openCustomer(id){
   +'<div class="pn-body">'
   +'<div class="sec"><div class="sec-t">Summary</div><div class="info-grid"><div class="info"><div class="il">Lifetime value</div><div class="iv" style="color:var(--green)">'+lkr(ltv)+'</div></div><div class="info"><div class="il">Orders</div><div class="iv">'+(c.history?c.history.length:0)+'</div></div><div class="info"><div class="il">First order</div><div class="iv">'+fmtDate(custFirst(c))+'</div></div><div class="info"><div class="il">Last contact</div><div class="iv">'+fmtDate(c.last)+'</div></div></div></div>'
   +'<div class="sec"><div class="sec-t">Purchase history</div><table class="tbl" style="font-size:12.5px"><thead><tr><th>Item</th><th>Date</th><th class="tnum">Value</th></tr></thead><tbody>'+(hist||'<tr><td colspan="3" style="color:var(--faint)">No purchases yet</td></tr>')+'</tbody></table></div>'
+  +outcomeSection(c)
   +accessSection(c)
   +'<div class="sec"><div class="sec-t">Re-engage cadence</div>'+steps+'</div>'
   +syncSection(c)
   +'</div>';
  document.getElementById('overlay').classList.add('open');panel.classList.add('open');
+}
+/* WHAT HAPPENED. An open row is a question the owner has not answered yet. */
+function outcomeSection(c){
+ const rows=(DB.get('interventions')||[]).filter(r=>r.m===c.id).sort((a,b)=>b.id-a.id);
+ if(!rows.length)return '';
+ const open=rows.filter(r=>!r.outcome);
+ const hist=mapSafe(rows.slice(0,5),r=>{
+  const k=(IV_KINDS[r.kind]||{}).label||r.kind;
+  const who=r.by?staffById(r.by).name.split(' ')[0]:'the system';
+  const lbl=r.outcome?((IV_OUTCOMES.find(o=>o[0]===r.outcome)||[])[1]||r.outcome):'waiting';
+  return '<div class="iv-row"><span class="iv-dot'+(r.outcome?(IV_GOOD.indexOf(r.outcome)>-1?' good':' cold'):' open')+'"></span>'
+   +'<span style="min-width:0;flex:1"><span class="iv-k">'+k+'</span>'
+   +'<div class="iv-m">'+fmtDate(r.at)+' · '+who+' · '+lbl
+   +(r.value?' '+lkr(r.value):'')+(r.auto?' (recorded by the system)':'')+'</div></span></div>';});
+ return '<div class="sec"><div class="sec-t">What we did, and what happened</div>'
+  +(open.length?'<div class="iv-ask"><div class="iv-q">'+(open.length===1?'One contact is still open':open.length+' contacts are still open')+'</div>'
+   +'<div class="iv-s">'+(IV_KINDS[open[0].kind]||{}).why+', '+daysBetween(open[0].at,todayISO())+' days ago. What happened?</div>'
+   +'<div class="iv-btns">'+IV_OUTCOMES.map(o=>'<button onclick="setOutcome('+open[0].id+',\''+o[0]+'\')">'+o[1]+'</button>').join('')+'</div>'
+   +'<div class="iv-n">Paying and walking back in record themselves. These are the ones only you can see.</div></div>':'')
+  +hist+'</div>';
 }
 /* the ladder, shown wherever a person is shown. Trainers see the state and can
    ASK; only an owner or manager can change it. */
@@ -3790,6 +3860,8 @@ const RECUR={ym:null,status:'all',cohort:'all',q:'',_last:0,_undo:null,
   /* WHO marked it and WHEN: without this the member has no way to settle a dispute */
   const stamp={by:CURRENT.name,byId:CURRENT.id,at:feedStamp(),method:'Cash at the desk'};
   if(ex){this._undo={id:ex.id,amt:ex.amount,st:ex.status,created:false,by:ex.by,at:ex.at,method:ex.method};ex.amount+=due;ex.status='paid';ex.paidAt=todayISO();Object.assign(ex,stamp);}else{const row=Object.assign({id:DB.nextId('recurringPayments'),planId:id,month:this.ym,amount:due,status:'paid',paidAt:todayISO()},stamp);DB.get('recurringPayments').push(row);this._undo={id:row.id,created:true};}logFeed(CURRENT.id,CFG.recurring.label+' collected',p.name+' · '+monthShort(this.ym));pushAccess(id);
+  /* the chase closes itself, with the real amount, because this IS the outcome */
+  ivSettle(id,'paid',due);
   /* receipt rail: a landed payment is the Fee Clerk's OUTCOME - log the recovered value */
   if(CFG.agents&&CFG.agents.feeChaser.on&&this.ym===ymNow()){logAgent(CFG.agents.feeChaser.label,'Payment recovered',p.name+' · '+feeMonthKey(),due);this._undo.rcpt=DB.get('agent_actions')[0].id;}
   DB.commit();renderRecurring();renderBadges();toast(I.check+' '+p.name.split(' ')[0]+' paid · '+lkr(due)+'<button class="t-act" onclick="RECUR.undo()">Undo</button>',6000);},
@@ -4378,6 +4450,92 @@ function morningThree(){
   .slice(0,3);
 }
 /* ════════════════════════════════════════════════════════════════════
+   SECTION 9H - THE OUTCOME SPINE
+   A message sent is not a result. Every contact opens a row here and the
+   row stays open until the money lands, the member walks in, or a human
+   says what happened. Revenue recovered means money that was owed, chased,
+   and then actually collected. Nothing else counts.
+   ════════════════════════════════════════════════════════════════════ */
+const IV_KINDS={
+ chase:{label:'Money chase',closes:'paid',why:'they owed money'},
+ comeback:{label:'Come back',closes:'returned',why:'they had stopped coming in'},
+ nudge:{label:'Coach nudge',closes:'returned',why:'their trainer nudged them'},
+ renewal:{label:'Renewal',closes:'renewed',why:'their membership was ending'},
+ gate:{label:'Access gated',closes:'paid',why:'their access was paused'}
+};
+/* what a human can record. The system never guesses a reply. */
+const IV_OUTCOMES=[
+ ['replied','Replied'],['returned','Came back in'],['paid','Paid'],
+ ['renewed','Renewed'],['no-answer','No answer'],['declined','Said no'],
+ ['false-alarm','Was not a problem']
+];
+const IV_GOOD=['replied','returned','paid','renewed'];
+
+function ivOpen(id,kind){
+ return (DB.get('interventions')||[]).filter(r=>r.m===id&&!r.outcome
+  &&(!kind||r.kind===kind)).sort((a,b)=>b.id-a.id)[0]||null;
+}
+function ivLast(id){
+ return (DB.get('interventions')||[]).filter(r=>r.m===id).sort((a,b)=>b.id-a.id)[0]||null;
+}
+/* one line an owner can read: what we did last, and what came of it */
+function ivLastLine(id){
+ const r=ivLast(id);if(!r)return '';
+ const who=staffById(r.by).name.split(' ')[0];
+ const days=daysBetween(r.at,todayISO());
+ const when=days===0?'today':(days===1?'yesterday':days+' days ago');
+ const k=(IV_KINDS[r.kind]||{}).label||r.kind;
+ if(!r.outcome)return k+' by '+who+' '+when+', no reply yet';
+ const lbl=(IV_OUTCOMES.find(o=>o[0]===r.outcome)||[])[1]||r.outcome;
+ return k+' by '+who+' '+when+' · '+lbl+(r.value?' '+lkr(r.value):'');
+}
+function logIntervention(id,kind,channel,script){
+ const c=(DB.get('customers')||[]).find(x=>x.id===id);if(!c)return null;
+ const row={id:DB.nextId('interventions'),m:id,kind:kind,channel:channel||'whatsapp',
+  by:CURRENT.id,at:todayISO(),script:(script||'').slice(0,240),
+  outcome:null,outcomeAt:null,outcomeBy:null,value:0};
+ DB.get('interventions').push(row);
+ return row;
+}
+/* a human records what the system cannot see */
+function setOutcome(rowId,outcome,value){
+ const r=(DB.get('interventions')||[]).find(x=>x.id===rowId);if(!r)return;
+ const was={outcome:r.outcome,outcomeAt:r.outcomeAt,outcomeBy:r.outcomeBy,value:r.value,auto:r.auto};
+ r.outcome=outcome;r.outcomeAt=todayISO();r.outcomeBy=CURRENT.id;
+ r.value=+value||0;delete r.auto;
+ const c=DB.get('customers').find(x=>x.id===r.m);
+ logFeed(CURRENT.id,'Outcome recorded',(c?c.name:'')+' · '+outcome);DB.commit();
+ renderApp();if(document.getElementById('panel').classList.contains('open'))openCustomer(r.m);
+ toastUndo(I.check+' Recorded',function(){Object.assign(r,was);if(was.auto===undefined)delete r.auto;
+  DB.commit();renderApp();if(document.getElementById('panel').classList.contains('open'))openCustomer(r.m);});
+}
+/* THE PART THAT MATTERS: the system closes its own rows when the real thing
+   happens, because an outcome nobody types is a number nobody believes. */
+function ivSettle(id,event,value){
+ const kinds=event==='paid'?['chase','gate','renewal']:['comeback','nudge','chase'];
+ let closed=0;
+ (DB.get('interventions')||[]).filter(r=>r.m===id&&!r.outcome&&kinds.indexOf(r.kind)>-1)
+  .forEach(r=>{r.outcome=event;r.outcomeAt=todayISO();r.outcomeBy=null;
+   r.auto=true;r.value=event==='paid'?(+value||0):0;closed++;});
+ return closed;
+}
+function ivStats(fromISO){
+ const rows=(DB.get('interventions')||[]).filter(r=>!fromISO||r.at>=fromISO);
+ const done=rows.filter(r=>r.outcome);
+ const good=done.filter(r=>IV_GOOD.indexOf(r.outcome)>-1);
+ return {sent:rows.length,open:rows.length-done.length,answered:done.length,
+  worked:good.length,
+  paid:done.filter(r=>r.outcome==='paid').length,
+  returned:done.filter(r=>r.outcome==='returned').length,
+  renewed:done.filter(r=>r.outcome==='renewed').length,
+  declined:done.filter(r=>r.outcome==='declined'||r.outcome==='no-answer').length,
+  falseAlarm:done.filter(r=>r.outcome==='false-alarm').length,
+  /* recovered = owed, chased, and then actually banked. Never a projection. */
+  recovered:done.filter(r=>r.outcome==='paid').reduce((s,r)=>s+(+r.value||0),0),
+  rate:rows.length?Math.round(good.length/rows.length*100):0};
+}
+
+/* ════════════════════════════════════════════════════════════════════
    THE NUDGE. Only offered when the data already justifies it, so it stays
    worth reading. One per member per day: a nudge you can send ten times is
    spam with a friendly icon on it.
@@ -4428,6 +4586,7 @@ function sendNudge(id,key){
  const pick=opts.find(o=>o.k===key)||opts[0];
  if(!pick){toast('Nothing worth nudging about today');return;}
  const note={to:c.name,from:CURRENT.name,text:pick.text,date:todayISO(),at:nowTime(),kind:'nudge'};
+ const iv=logIntervention(id,'nudge','app',pick.text);
  const before=(bridgeRead().notes||[]).slice();
  const ok2=bridgeWrite({notes:before.concat([note])});
  if(!ok2){toast('Sending a nudge needs the demo bridge, which this browser has blocked');return;}
@@ -4438,6 +4597,7 @@ function sendNudge(id,key){
  toastUndo(I.check+' Sent to '+c.name.split(' ')[0],function(){
   bridgeWrite({notes:before});
   const a=DB.get('nudges');a.splice(a.findIndex(x=>x.id===row.id),1);
+  if(iv){const b=DB.get('interventions');b.splice(b.findIndex(x=>x.id===iv.id),1);}
   DB.commit();renderApp();
   if(document.getElementById('panel').classList.contains('open'))openCustomer(id);});
 }
@@ -4492,6 +4652,7 @@ function ckTime(){let h=AS_OF.getHours();const m=('0'+AS_OF.getMinutes()).slice(
 let CK_LAST=null;
 function checkIn(id){
  const c=DB.get('customers').find(x=>x.id===id);if(!c||c.status==='alumni')return;
+ ivSettle(id,'returned');            /* they walked in. That is the outcome. */
  CK_LAST={id:id,v:memberVerdict(id)};   /* the verdict is taken BEFORE the check-in changes anything */
  const row={id:DB.nextId('checkins'),m:id,date:todayISO(),t:ckTime()};
  DB.get('checkins').unshift(row);
@@ -4652,7 +4813,10 @@ function pulseWA(id,days){
  if(!ph){toast('No number saved');return;}
  const msg=CFG.agents.comebackCoach.tone.replace('{name}',c.name.split(' ')[0]).replace('{days}',days);
  window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg),'_blank');
- logFeed(CURRENT.id,'Re-engage message',c.name);DB.commit();
+ const row=logIntervention(id,'comeback','whatsapp',msg);
+ logFeed(CURRENT.id,'Re-engage message',c.name);DB.commit();renderApp();
+ if(row)toastUndo(I.check+' Sent to '+c.name.split(' ')[0]+'. Tell me what happens.',function(){
+  const a=DB.get('interventions');a.splice(a.findIndex(x=>x.id===row.id),1);DB.commit();renderApp();});
 }
 function pulseTask(id){
  const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
@@ -4858,6 +5022,104 @@ async function runSelfTest(opts){
     ok('Safe area: a phone with no notch gains no empty strip',
       Math.abs(document.querySelector('.topbar').getBoundingClientRect().height-base)<1);
     root.style.removeProperty('--sat');
+   })();
+   /* NO ICON MAY BECOME A POSTER.
+      An SVG with a viewBox and no width/height/class inherits its container, so
+      a 15px icon can render at 304px in a plain div. Charts, rings and
+      sparklines are allowed to be large; anything from the icon set is not. */
+   (function(){
+    signIn(owner);
+    const defs=Object.keys(I).length;
+    ok('Icons: every icon in the set carries a size class',
+      Object.keys(I).every(k=>String(I[k]).indexOf('class=')>-1),
+      Object.keys(I).filter(k=>String(I[k]).indexOf('class=')<0).join(', ')+' of '+defs);
+    const huge=[];
+    ['dashboard','pulse','customers','recurring','checkin','records','reports','tasks','team','settings']
+     .forEach(pg=>{go(pg);
+      document.querySelectorAll('#page-'+pg+' svg.ic').forEach(s=>{
+       const r=s.getBoundingClientRect();
+       if(r.width>40||r.height>40)huge.push(pg+':'+Math.round(r.width)+'x'+Math.round(r.height));});});
+    ok('Icons: no icon renders larger than an icon on any page',
+      huge.length===0,huge.slice(0,4).join(', '));
+    go('dashboard');
+   })();
+   /* THE OUTCOME SPINE */
+   (function(){
+    signIn(owner);
+    const snap=JSON.stringify(DB.get('interventions'));
+    const arr=DB.get('interventions');arr.length=0;
+    const owed=activeMembers().find(c=>memberArrears(c.id)>0);
+    ok('Outcome: nothing is claimed before anything has been done',ivStats().sent===0&&ivStats().recovered===0);
+    if(owed){
+     /* a contact opens a row and the row starts UNANSWERED */
+     const r=logIntervention(owed.id,'chase','whatsapp','test message');
+     ok('Outcome: a contact opens a row with no result yet',!!r&&r.outcome===null&&ivStats().open===1);
+     ok('Outcome: a sent message counts as sent, never as a win',ivStats().worked===0&&ivStats().rate===0);
+     ok('Outcome: the row carries who, why, when and what was said',
+       r.by===owner.id&&r.at===todayISO()&&r.kind==='chase'&&r.script.length>0);
+     /* THE MONEY CLOSES IT, with the real figure */
+     const due=memberArrears(owed.id);
+     const ymk=RECUR.ym;RECUR.ym=ymNow();RECUR.mark(owed.id);
+     ok('Outcome: paying closes the chase by itself',ivOpen(owed.id,'chase')===null);
+     ok('Outcome: recovered is the amount that actually landed, not an estimate',
+       ivStats().recovered===due,ivStats().recovered+' vs '+due);
+     ok('Outcome: the system says it recorded that itself',
+       (DB.get('interventions')[0]||{}).auto===true);
+     RECUR.undo();RECUR.ym=ymk;
+    }
+    /* a check-in closes a comeback */
+    const away=activeMembers().find(c=>{const p=pulseData([c])[0];return p&&p.days>7&&p.days!==999;});
+    if(away){
+     arr.length=0;
+     logIntervention(away.id,'comeback','whatsapp','come back');
+     const before=todayCheckins().length;
+     checkIn(away.id);
+     ok('Outcome: walking back in closes the come-back by itself',
+       ivOpen(away.id,'comeback')===null&&ivStats().returned===1);
+     ok('Outcome: coming back is never counted as money',ivStats().recovered===0);
+     runUndo();
+    }
+    /* what only a human can say */
+    arr.length=0;
+    const any=activeMembers()[0];
+    const h=logIntervention(any.id,'chase','whatsapp','x');
+    setOutcome(h.id,'no-answer');
+    ok('Outcome: a human can record what the system cannot see',
+      ivStats().answered===1&&ivStats().worked===0&&ivStats().declined===1);
+    ok('Outcome: no answer is not silently counted as a win',ivStats().rate===0);
+    runUndo();
+    ok('Outcome: undo reopens the row',ivOpen(any.id,'chase')!==null);
+    /* the owner board */
+    setOutcome(h.id,'replied');
+    go('dashboard');
+    const board=document.getElementById('didItWork').textContent||'';
+    ok('Outcome: the dashboard reports results, not messages sent',
+      board.indexOf('Did it work')>-1&&board.indexOf('Money recovered')>-1);
+    ok('Outcome: it says plainly what recovered means',
+      board.indexOf('actually collected')>-1);
+    /* and the Morning Three remembers */
+    ok('Outcome: the last action and its result read as one line',
+      ivLastLine(any.id).indexOf('Replied')>-1,ivLastLine(any.id));
+    const tr7=DB.get('staff').find(s=>s.pos==='trainer');
+    if(tr7){signIn(tr7);go('dashboard');
+     ok('Outcome: the money board is the owner\'s, not a trainer\'s',
+       (document.getElementById('didItWork').innerHTML||'')==='');
+     /* the whole class of leak, not just this one block */
+     ok('Roles: no owner-only block survives a switch to another role',
+       OWNER_ONLY_BLOCKS.every(function(id){const el=document.getElementById(id);
+        return !el||(el.innerHTML||'')==='';}),
+       OWNER_ONLY_BLOCKS.filter(function(id){const el=document.getElementById(id);
+        return el&&(el.innerHTML||'')!=='';}).join(','));
+     const fd7=DB.get('staff').find(s=>s.pos==='frontdesk');
+     if(fd7){signIn(fd7);go('dashboard');
+      ok('Roles: the front desk sees none of them either',
+        OWNER_ONLY_BLOCKS.every(function(id){const el=document.getElementById(id);
+         return !el||(el.innerHTML||'')==='';}));}
+     signIn(owner);}
+    arr.length=0;JSON.parse(snap).forEach(r=>arr.push(r));DB.commit();
+    ok('Outcome: the harness left the ledger as it found it',
+      JSON.stringify(DB.get('interventions'))===snap);
+    closePanel();
    })();
    /* THE TRAINER NUDGE */
    (function(){
