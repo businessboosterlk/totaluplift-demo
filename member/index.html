@@ -129,14 +129,30 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .st .v.good{color:var(--green)}
 
 /* ── TODAY SESSION ────────────────────────────────────────── */
-/* THE HERO: taller, rounder, and the only large accent surface on the screen.
-   Everything else on Today is a card; this is a destination. */
-.sess{position:relative;background:var(--accent-grad);border-radius:var(--r-hero);padding:24px 20px;color:var(--on-accent);box-shadow:0 12px 34px var(--brand-glow);display:flex;align-items:center;gap:16px;overflow:hidden;width:100%;text-align:left;margin-top:20px;min-height:112px}
+/* THE HERO. A dark card, not a lime panel. Spending the whole accent budget on
+   a background leaves the ACTION nothing to stand out with, so lime is rationed
+   here to exactly two things: the button and the progress rail. */
+.sess{position:relative;background:var(--surface-2);border:1px solid var(--line);
+ border-radius:var(--r-hero);padding:22px 20px 20px;color:var(--txt);
+ display:block;overflow:hidden;width:100%;text-align:left;margin-top:20px;
+ transition:border-color .18s var(--ease)}
+.sess:hover{border-color:color-mix(in srgb,var(--brand) 45%,transparent)}
+/* a thin lime edge at the top: enough to say "this one", not enough to shout */
+.sess::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;
+ background:var(--brand);opacity:.9}
+.sess .go{width:100%;min-height:52px;margin-top:18px;border-radius:14px;
+ background:var(--brand);color:var(--on-accent);display:flex;align-items:center;
+ justify-content:center;gap:10px;font-size:15px;font-weight:800;letter-spacing:-.2px}
+.sess .rail{height:6px;border-radius:99px;background:var(--surface-3);margin-top:16px;overflow:hidden}
+.sess .rail i{display:block;height:100%;background:var(--brand);border-radius:99px;
+ transition:width .5s var(--ease)}
 .sess::before{content:'';position:absolute;inset:0;background:radial-gradient(420px 180px at 88% -40%,rgba(255,255,255,.22),transparent 62%);pointer-events:none}
-.sess .l{font-size:11px;letter-spacing:.2px;opacity:.85;font-weight:700}
+.sess .l{font-size:11.5px;letter-spacing:.3px;color:var(--faint);font-weight:700;text-transform:none}
 .sess .n{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Segoe UI',Roboto,Inter,system-ui,sans-serif;font-size:26px;font-weight:800;line-height:1.08;letter-spacing:-.6px;margin-top:4px}
-.sess .m{font-size:12px;opacity:.85;margin-top:4px}
-.sess .go{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;flex-shrink:0;margin-left:auto;backdrop-filter:blur(6px)}
+.sess .m{font-size:13px;color:var(--muted);margin-top:8px}
+/* the round floating icon belonged to the old lime-panel hero. The action is a
+   full-width button now, defined above; leaving this here silently won on
+   source order and the lime never reached the button. */
 .sess.done{background:var(--surface);border:1px solid var(--green);box-shadow:none;color:var(--txt)}
 .sess.done .go{background:var(--green-soft);color:var(--green)}
 
@@ -377,6 +393,34 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .prov{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5}
 .prov.unset{color:var(--amber)}
 
+/* THE MATHS STAYS VISIBLE, IT JUST STOPS BEING SHOUTED DAILY. A member reads
+   this once; printing it every visit costs them 90px a day forever. */
+.whyd{margin-top:14px;border-top:1px solid var(--line2);padding-top:12px}
+.whyd summary{list-style:none;cursor:pointer;font-size:12.5px;font-weight:700;
+ color:var(--muted);display:flex;align-items:center;gap:8px;min-height:32px}
+.whyd summary::-webkit-details-marker{display:none}
+.whyd summary::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;
+ border-bottom:2px solid currentColor;transform:rotate(45deg);margin-left:auto;
+ transition:transform .18s var(--ease)}
+.whyd[open] summary::after{transform:rotate(-135deg)}
+.whyd .why{margin-top:10px}
+
+/* THE FIRST QUESTION A MEMBER HAS. Quiet by default, never shaming. */
+.mstat{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+ background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);
+ padding:12px 14px;margin-bottom:16px;min-height:48px;color:var(--txt)}
+.mstat .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.mstat.ok .dot{background:var(--green)}
+.mstat.soon .dot{background:var(--amber)}
+.mstat.due .dot,.mstat.grace .dot{background:var(--amber)}
+.mstat.stopped .dot{background:var(--danger)}
+.mstat.frozen .dot,.mstat.unknown .dot{background:var(--faint)}
+.mstat.due,.mstat.grace{border-color:color-mix(in srgb,var(--amber) 35%,transparent)}
+.mstat.stopped{border-color:color-mix(in srgb,var(--danger) 40%,transparent)}
+.mstat .mt{font-size:13px;font-weight:700}
+.mstat .ms{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+.mstat .mg{margin-left:auto;font-size:12px;font-weight:750;color:var(--brand-txt);flex-shrink:0}
+
 /* ONE LINE where two history panels used to be. History belongs where you go to
    review, not where you go to act. */
 .lookback{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
@@ -527,10 +571,11 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
  .topbar{padding:calc(22px + var(--sat)) 0 18px}
  #pg-today.on{display:grid;grid-template-columns:1.04fr 1fr;column-gap:20px;align-items:start;
   /* the hero spans both columns on desktop too: it is the point of the screen */
-  grid-template-areas:"g g" "p p" "sess sess" "score tiles" "score ask" "score look"}
+  grid-template-areas:"ms ms" "g g" "p p" "sess sess" "score tiles" "score ask" "score look"}
  #pg-today>.greet{grid-area:g}
  #pg-today>.promise{grid-area:p;max-width:80%}
  .td-score{grid-area:score}
+ #tdMstat{grid-area:ms}
  #tdSess{grid-area:sess;margin-top:0}
  #tdLookback{grid-area:look}
  #tdTiles{grid-area:tiles}
@@ -605,6 +650,7 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
   <!-- ══ TODAY ══ -->
   <div class="page on" id="pg-today">
     <div class="demotag" id="demoTag"></div>
+    <button class="mstat" id="tdMstat" onclick="go('membership')"></button>
     <div id="installCard"></div>
     <div id="tdAccess"></div>
     <div class="greet" id="tdGreet"></div>
@@ -618,7 +664,8 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
         <div class="ring" id="tdRing"></div>
         <div class="bars" id="tdBars"></div>
       </div>
-      <div class="why" id="tdWhy"></div>
+      <details class="whyd"><summary id="tdWhySum">How this is worked out</summary>
+      <div class="why" id="tdWhy"></div></details>
       <div class="prov" id="tdProv"></div>
       <div class="stat3" id="tdStats"></div>
       <div class="hooks" id="tdHooks"></div>
@@ -658,6 +705,7 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
   <!-- ══ MEMBERSHIP (the member's own money record) ══ -->
   <div class="page" id="pg-membership">
     <div id="msAccess"></div>
+    <div id="msInstall"></div>
     <div class="greet" id="msPlan"></div>
     <div class="promise" style="font-size:24px;margin-bottom:16px">Your membership</div>
     <div class="card pad" id="msStatus"></div>
@@ -825,7 +873,9 @@ function silhouette(angle,shade){
    ════════════════════════════════════════════════════════════════════ */
 const AS_OF=CFG.demo.asOf?new Date(CFG.demo.asOf+'T16:20:00'):new Date();
 /* one source for both: the stamp and the label can never disagree */
-CFG.app.build=(CFG.demo.asOf||'live')+' demo';
+/* stamped by the BUILD, not by the demo clock. A version string that tracks
+   the wrong date is what hid a stale deploy for fifteen hours. */
+CFG.app.build='2026-08-05.0016c55';
 function todayISO(){const d=AS_OF;return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MN_FULL=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1350,6 +1400,42 @@ function renderDemoTag(){
  el.innerHTML='<span class="d"></span>'+s;
 }
 /* what the member is giving up on Today, said in one line so they can find it */
+/* EIGHT STATES, and not one of them shames anybody. A member short of money
+   this month gets a date, an amount and one action, in a normal voice. */
+function membershipState(){
+ const a=myAccess();
+ if(a.level==='frozen')return {k:'frozen',t:'Membership on hold',
+   s:'Nothing to pay while you are on hold. Your days come back.',go:'View'};
+ if(a.level==='gated')return {k:'stopped',t:'Training paused',
+   s:lkrM(a.amount)+' outstanding. Settle at the desk and it unlocks straight away.',go:'Details'};
+ const bal=msBalance(),left=msDaysLeft(),until=msPaidUntil();
+ if(bal>0&&a.level==='amber')return {k:'due',t:lkrM(bal)+' due',
+   s:'Pay at the desk. Your access is not affected yet.',go:'Details'};
+ if(bal>0)return {k:'due',t:lkrM(bal)+' due',s:'Pay at the desk when you are next in.',go:'Details'};
+ if(!until)return {k:'unknown',t:'Membership status unavailable',
+   s:'We could not read your record. It will refresh when you are back online.',go:'Retry'};
+ if(left<0)return {k:'stopped',t:'Membership ended '+fmtD(until),
+   s:'Your history stays here. Renew at the desk whenever you are ready.',go:'Renew'};
+ if(left<=7)return {k:'soon',t:'Renews in '+left+' day'+(left===1?'':'s'),
+   s:'Paid until '+fmtD(until)+'. Renew at the desk to avoid a gap.',go:'Details'};
+ return {k:'ok',t:'Membership active',s:'Paid until '+fmtD(until)+'.',go:'Details'};
+}
+function renderMstat(){
+ const el=document.getElementById('tdMstat');if(!el)return;
+ const m=membershipState();
+ el.className='mstat '+m.k;
+ el.innerHTML='<span class="dot"></span><span style="min-width:0;flex:1">'
+  +'<span class="mt">'+m.t+'</span><div class="ms">'+m.s+'</div></span>'
+  +'<span class="mg">'+m.go+'</span>';
+}
+/* THREE INSIGHTS COMPETING MEANS NONE LANDS. The chips were already ranked;
+   this just honours the ranking and sends the rest to Stats. */
+function topHookOnly(){
+ const el=document.getElementById('tdHooks');if(!el)return;
+ const chips=Array.from(el.children);
+ if(chips.length<=1)return;
+ chips.forEach((c,i)=>{if(i>0)c.style.display='none';});
+}
 function renderLookback(){
  const el=document.getElementById('tdLookback');if(!el)return;
  const m=DB.get('member');
@@ -1363,6 +1449,8 @@ function renderLookback(){
 function renderProvenance(){
  renderDemoTag();
  renderInstall();
+ renderMstat();
+ topHookOnly();
  renderLookback();
  const el=document.getElementById('tdProv');if(!el)return;
  const d=todayRow();
@@ -1407,9 +1495,17 @@ function renderToday(){
  el.className='sess'+(done||rest?' done':'');
  const exN=DB.get('exercises').length,setsDone=DB.get('exercises').reduce((a,e)=>a+e.sets.filter(x=>x.done).length,0);
  const setsAll=DB.get('exercises').reduce((a,e)=>a+e.sets.length,0);
+ const pct=setsAll?Math.round(setsDone/setsAll*100):0;
+ const mins=exN*9;
  el.innerHTML=rest
-  ? '<div><div class="l">Today</div><div class="n">Rest day</div><div class="m">Recovery is part of the plan. Walk if you can.</div></div><div class="go">'+I.check+'</div>'
-  : '<div><div class="l">'+(done?'Completed today':'Today\'s session')+'</div><div class="n">'+DB.get('sessionName')+'</div><div class="m">'+exN+' exercises · '+setsDone+' of '+setsAll+' sets logged</div></div><div class="go">'+(done?I.check:I.play)+'</div>';
+  ? '<div class="l">Today</div><div class="n">Rest day</div>'
+    +'<div class="m">Recovery is part of the plan. Walk if you can.</div>'
+    +'<div class="go">'+I.check+' Nothing to do today</div>'
+  : '<div class="l">'+(done?'Completed today':'Today\'s session')+'</div>'
+    +'<div class="n">'+DB.get('sessionName')+'</div>'
+    +'<div class="m">'+exN+' exercises · about '+mins+' min · '+setsDone+' of '+setsAll+' sets logged</div>'
+    +'<div class="rail"><i style="width:'+pct+'%"></i></div>'
+    +'<div class="go">'+(done?I.check+' Session complete':I.play+' '+(setsDone?'Resume session':'Start session'))+'</div>';
  /* live tiles */
  const prev=DB.get('days')[DB.get('days').length-2]||d;
  const dw=Math.round((d.weight-prev.weight)*10)/10;
@@ -1936,6 +2032,18 @@ function msBalance(){
 }
 function renderMembership(){
  renderAccessBars();
+ /* the permanent home for it, so dismissing it on Today never loses it */
+ (function(){const el=document.getElementById('msInstall');if(!el)return;
+  if(isInstalled()){el.innerHTML='<div class="mstat ok" style="margin-bottom:16px">'
+   +'<span class="dot"></span><span><span class="mt">Installed on this phone</span>'
+   +'<div class="ms">You are using the app version. It works without signal.</div></span></div>';return;}
+  const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  el.innerHTML='<button class="mstat" style="margin-bottom:16px" onclick="showInstallSheet()">'
+   +'<span class="dot" style="background:var(--brand)"></span>'
+   +'<span style="min-width:0;flex:1"><span class="mt">Install Total Uplift</span>'
+   +'<div class="ms">'+(iOS?'Two taps in Safari and the address bar is gone for good.'
+     :'Add it to your home screen. It opens like an app and works without signal.')+'</div></span>'
+   +'<span class="mg">How</span></button>';})();
  const c=CFG.membership,left=msDaysLeft(),until=msPaidUntil(),bal=msBalance();
  document.getElementById('msPlan').textContent=c.plan+' plan · '+lkrM(c.fee)+' a '+c.cycle;
  const state=bal>0?(left>=0?'part':'due'):'ok';
@@ -2558,8 +2666,21 @@ async function runSelfTest(){
       const ok2=SHOT_ANGLE!==was;setAngle(was);return ok2;})());
    /* the whole point: Today got shorter */
    go('today');
-   ok('Today: it is materially shorter than the 1,986px it was',
-     page.scrollHeight<1400,page.scrollHeight+'px');
+   /* Measure what a MEMBER sees, not what the harness left on screen. The
+      install card is transient by design and absent on a first visit, so
+      including its 114px would be measuring the test rig. */
+   (function(){
+    const ic=document.getElementById('installCard');
+    const was=ic?ic.innerHTML:'';if(ic)ic.innerHTML='';
+    const h=page.scrollHeight;
+    if(ic)ic.innerHTML=was;
+    ok('Today: one viewport plus one purposeful scroll, from 1,986px',
+      h<1250,h+'px, '+(h/innerHeight).toFixed(2)+' screens');
+   })();
+   /* and nothing was deleted to get there: the maths is one tap away */
+   ok('Today: the formula is still reachable, just not shouted daily',
+     !!document.querySelector('#pg-today .whyd')
+     &&(document.getElementById('tdWhy').textContent||'').indexOf('%')>-1);
    /* A NAMED GRID IS A CONTRACT WITH THE DOM. Moving a block between pages once
       left four areas pointing at nothing and collapsed the desktop layout. */
    (function(){
@@ -2595,6 +2716,66 @@ async function runSelfTest(){
     go('today');
    })();
   })();
+  /* THE HERO IS A CARD, AND LIME IS SPENT ON THE ACTION */
+  (function(){
+   go('today');
+   const sess=document.getElementById('tdSess');
+   const bgs=getComputedStyle(sess).backgroundColor+getComputedStyle(sess).backgroundImage;
+   ok('Hero: the panel is a dark card, not a lime block',bgs.indexOf('200, 255, 46')<0,bgs.slice(0,60));
+   const goBtn=sess.querySelector('.go');
+   ok('Hero: the lime is spent on the ACTION',
+     !!goBtn&&getComputedStyle(goBtn).backgroundColor.indexOf('200, 255, 46')>-1);
+   ok('Hero: the action is a real target',!!goBtn&&goBtn.getBoundingClientRect().height>=48,
+     goBtn?Math.round(goBtn.getBoundingClientRect().height)+'px':'missing');
+  })();
+  /* THE FIRST QUESTION A MEMBER HAS, ANSWERED FIRST */
+  (function(){
+   go('today');
+   const el=document.getElementById('tdMstat');
+   /* DOM order is not visual order once a named grid re-places things, so
+      "above" has to say which width it means. Third time this exact shape has
+      bitten: any positional check needs a width guard. */
+   if(innerWidth<960){
+    ok('Membership: the status sits above the greeting',
+      !!el&&el.getBoundingClientRect().top<document.getElementById('tdGreet').getBoundingClientRect().top);
+   }else{
+    ok('Membership: the status is placed deliberately on the wide layout',
+      !!el&&el.getBoundingClientRect().height>0
+      &&getComputedStyle(el).gridArea.indexOf('ms')>-1);
+   }
+   const me=DB.get('member').name;
+   const seen={};
+   [['open',0],['amber',4500],['gated',4500],['frozen',0]].forEach(function(p){
+    bridgeWrite({access:{date:todayISO(),name:me,level:p[0],amount:p[1],why:'t'}});
+    const m=membershipState();seen[p[0]]=m.k;
+    ok('Membership: the '+p[0]+' state says why, and offers one action',
+      m.t.length>4&&m.s.length>10&&!!m.go,m.k+' / '+m.t);
+   });
+   ok('Membership: a paused member is never shamed, and keeps their history',
+     (function(){bridgeWrite({access:{date:todayISO(),name:me,level:'gated',amount:4500,why:'t'}});
+      const m=membershipState();
+      return !/fail|blocked|denied|suspend/i.test(m.t+m.s)&&/unlock|settle/i.test(m.s);})());
+   bridgeClear();go('today');
+  })();
+  /* THE INSTALL PROMPT WAITS ITS TURN */
+  (function(){
+   const was=VISITS;
+   VISITS=1;renderInstall();
+   ok('Install: nothing is asked for on a first visit',
+     (document.getElementById('installCard').innerHTML||'')==='');
+   VISITS=2;try{localStorage.removeItem('tu_fs_dismissed');}catch(e){}
+   renderInstall();
+   ok('Install: it appears from the second visit',
+     isInstalled()||(document.getElementById('installCard').innerHTML||'').length>0);
+   go('membership');
+   ok('Install: it has a permanent home on Membership',
+     (document.getElementById('msInstall').textContent||'').length>10);
+   VISITS=was;go('today');
+  })();
+  /* THE BUILD ID TRACKS THE BUILD */
+  ok('Build: the stamp is a build date and a content hash, not the demo date',
+    /^\d{4}-\d{2}-\d{2}\.[0-9a-f]{7}$/.test(CFG.app.build)
+    &&CFG.app.build.indexOf(CFG.demo.asOf)<0,CFG.app.build);
   /* A COLOUR SAYS WHICH THING, OR HOW IT IS GOING. NEVER BOTH.
      After the rebrand a perfect Rest score rendered in the warning colour,
      because the bar had borrowed amber as a category tint years earlier and
@@ -2643,11 +2824,14 @@ async function runSelfTest(){
   /* THE DEMO IS LABELLED, AND THE STAMP CANNOT GO STALE */
   (function(){
    go('today');
-   ok('Demo: the build stamp is derived from the demo date, never typed',
-     CFG.app.build.indexOf(CFG.demo.asOf)===0,CFG.app.build);
-   ok('Demo: the stamp and the visible label agree on the date',
-     demoStamp().indexOf(String(+CFG.demo.asOf.split('-')[2]))>-1
-     &&CFG.app.build.indexOf(CFG.demo.asOf)>-1);
+   /* the stamp tracks the BUILD now, and the pill tracks the DEMO DATE. They are
+      two different clocks on purpose: conflating them is what hid a stale
+      deploy for fifteen hours. */
+   ok('Demo: the build stamp is a build date and a hash, not the demo date',
+     /^\d{4}-\d{2}-\d{2}\.[0-9a-f]{7}$/.test(CFG.app.build)
+     &&CFG.app.build.indexOf(CFG.demo.asOf)<0,CFG.app.build);
+   ok('Demo: the visible pill still states the DEMO date, which is a different clock',
+     demoStamp().indexOf(String(+CFG.demo.asOf.split('-')[2]))>-1,demoStamp());
    const tag=document.getElementById('demoTag');
    ok('Demo: the app says it is a demo, above the numbers',
      !!tag&&(tag.textContent||'').indexOf('Demo data')>-1,tag?tag.textContent:'missing');
@@ -3065,6 +3249,13 @@ function isInstalled(){
  return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)
   ||window.navigator.standalone===true;
 }
+/* a sheet, not a banner: it arrives when asked for and leaves cleanly */
+function showInstallSheet(){
+ const el=document.getElementById('installCard');if(!el)return;
+ try{localStorage.removeItem('tu_fs_dismissed');}catch(e){}
+ VISITS=99;renderInstall();
+ el.scrollIntoView({block:'center',behavior:'smooth'});
+}
 function dismissInstall(){
  try{localStorage.setItem('tu_fs_dismissed','1');}catch(e){}
  renderInstall();
@@ -3072,10 +3263,17 @@ function dismissInstall(){
 function fsDismissed(){
  try{return localStorage.getItem('tu_fs_dismissed')==='1';}catch(e){return false;}
 }
+/* asking for a favour before the product has done anything for you is the
+   wrong first impression, so this waits for the second visit */
+function visitCount(){
+ try{const n=(+localStorage.getItem('tu_visits')||0)+1;
+  localStorage.setItem('tu_visits',String(n));return n;}catch(e){return 1;}
+}
+let VISITS=1;
 function renderInstall(){
  const el=document.getElementById('installCard');if(!el)return;
  /* installed already: the card would be telling them to do what they have done */
- if(isInstalled()||fsDismissed()){el.innerHTML='';return;}
+ if(isInstalled()||fsDismissed()||VISITS<2){el.innerHTML='';return;}
  const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
  if(INSTALL_EVT){
   el.innerHTML='<div class="fs"><div class="fhead"><div><div class="ft">Use it fullscreen, like an app</div>'
@@ -3129,6 +3327,7 @@ if('serviceWorker' in navigator&&location.protocol==='https:'){
   navigator.serviceWorker.register('sw.js').catch(function(){});
  });
 }
+VISITS=visitCount();
 showSplash();
 if(location.search.indexOf('selftest')>-1)setTimeout(()=>runSelfTest(),160);
 </script>
