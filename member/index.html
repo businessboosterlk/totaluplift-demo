@@ -120,6 +120,15 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .bar .t span{color:var(--muted)}
 .bar .tr{height:7px;border-radius:99px;background:var(--surface-3);overflow:hidden}
 .bar .fi{height:100%;border-radius:99px;transition:width .7s var(--ease)}
+.bar .bn{font-size:11.5px;color:var(--faint);margin-top:5px;line-height:1.45}
+/* the ring is gone, so the indicators take the whole card */
+.score-wrap{display:block}
+/* a hint, not a primary action: the hero above it is the primary action.
+   Still a full 44px target. */
+.nextact{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;margin-top:2px;
+ padding:0;border:none;background:none;color:var(--txt);text-align:left}
+.nextact .n{font-size:13.5px;font-weight:700;min-width:0;flex:1}
+.nextact .ic{width:16px;height:16px;color:var(--brand-txt);flex-shrink:0}
 .why{margin-top:12px;padding-top:13px;border-top:1px solid var(--line2);font-size:11.5px;color:var(--muted);line-height:1.6}
 .why b{color:var(--txt)}
 .stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
@@ -356,7 +365,9 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .rest-x{flex:1;min-width:0}
 .rest-x .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700}
 .rest-x .n{font-size:13.5px;font-weight:700;margin-top:2px}
-.rest-b{padding:9px 13px;border-radius:10px;font-size:12px;font-weight:700;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);flex-shrink:0}
+/* a real target: this gets tapped with one hand, mid-set, in a gym */
+.rest-b{min-height:44px;min-width:56px;padding:9px 12px;border-radius:10px;font-size:12px;
+ font-weight:700;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);flex-shrink:0}
 .rest-b:hover{border-color:var(--brand-txt);color:var(--brand-txt)}
 .rest-b.go{background:var(--accent-grad);border-color:transparent;color:var(--on-accent)}
 
@@ -395,7 +406,11 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .src select{width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--txt);font-family:inherit;font-size:13px}
 .src .note{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:8px}
 .prov{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5}
-.prov.unset{color:var(--amber)}
+/* NOT A WARNING. Coral means attention in this app, and the app not yet
+   having asked which step app a number came from is not the member's error.
+   The accent sits on the word that names the action instead. */
+.prov.unset{color:var(--muted)}
+.prov.unset b{color:var(--brand-txt);font-weight:700}
 
 /* THE MATHS STAYS VISIBLE, IT JUST STOPS BEING SHOUTED DAILY. A member reads
    this once; printing it every visit costs them 90px a day forever. */
@@ -465,6 +480,44 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .dl2.off{text-align:left;border:1px dashed var(--line);background:none;width:100%;min-height:44px}
 .dl2.off .v{font-size:12.5px;font-weight:600;color:var(--muted)}
 
+/* ── THE INSTALL SHEET ────────────────────────────────────── */
+/* fixed, above the navigation, and never part of Today's height */
+.isheet{position:fixed;left:10px;right:10px;bottom:calc(var(--navh) + 10px);
+ z-index:70;display:none}
+.isheet.on{display:block;animation:up .26s var(--ease)}
+@media(min-width:720px){.isheet{left:auto;right:20px;width:380px}}
+@media(min-width:960px){.isheet{bottom:20px;right:24px}}
+
+/* ── THE HEADLINE AND MILESTONES ──────────────────────────── */
+.headline .ht{font-size:19px;font-weight:800;line-height:1.35;letter-spacing:-.2px}
+.headline .hs{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+.mile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+ padding:13px 16px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:2px 12px}
+.mile .mt{font-size:14px;font-weight:750}
+.mile .mw{font-size:11.5px;color:var(--faint);font-weight:700;text-align:right;grid-row:1}
+.mile .md{font-size:12px;color:var(--muted);grid-column:1/-1}
+/* the history disclosure, so detail stops competing with the story */
+.hist{margin-top:18px;border-top:1px solid var(--line2);padding-top:14px}
+.hist summary{list-style:none;cursor:pointer;font-size:14px;font-weight:750;color:var(--txt);
+ min-height:44px;display:flex;align-items:center;gap:8px}
+.hist summary::-webkit-details-marker{display:none}
+.hist summary::after{content:'';width:7px;height:7px;border-right:2px solid var(--muted);
+ border-bottom:2px solid var(--muted);transform:rotate(45deg);margin-left:auto}
+.hist[open] summary::after{transform:rotate(-135deg)}
+
+/* ── THE UPLIFT PATH ──────────────────────────────────────── */
+.upath{width:100%;height:110px;display:block;overflow:visible}
+.upath.cmp{height:38px}
+.upcap{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:10px}
+.upwrap{padding:4px 0}
+.uplegend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--muted)}
+.uplegend span{display:inline-flex;align-items:center;gap:6px}
+.uplegend i{width:4px;border-radius:1px;display:inline-block}
+.uplegend i.tr{height:14px;background:var(--brand)}
+.uplegend i.rs{height:6px;background:color-mix(in srgb,var(--green) 60%,var(--surface-3))}
+.uplegend i.ms{height:14px;border:1px solid var(--line2)}
+.uplegend i.fu{height:3px;background:var(--surface-3)}
+
 /* ── PROGRESS PHOTOS ──────────────────────────────────────── */
 .shotimg{width:100%;height:100%;object-fit:cover;display:block}
 .pown{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
@@ -473,6 +526,23 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .pown .pbtn.on{border-color:var(--brand);color:var(--brand-txt)}
 .pown .pbtn.danger{flex:0 0 auto;min-width:90px;color:var(--danger);
  border-color:color-mix(in srgb,var(--danger) 30%,transparent)}
+
+/* ── THE SWAP SHEET ───────────────────────────────────────── */
+.exswapb{display:flex;align-items:center;gap:9px;width:100%;min-height:44px;margin-top:12px;
+ padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);
+ color:var(--muted);font-size:12.5px;font-weight:700}
+.exswapb .ic{width:15px;height:15px}
+.swapo{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;text-align:left;
+ padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);
+ color:var(--txt);margin-bottom:8px}
+.swapo.on{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 10%,var(--surface-2))}
+.swapo .n{font-size:14px;font-weight:750}
+.swapo .d{font-size:11.5px;color:var(--muted);margin-top:3px}
+.swapo .tick2{margin-left:auto;color:var(--brand-txt);flex-shrink:0}
+.swapo .tick2 .ic{width:18px;height:18px}
+.swapwarn{font-size:12px;line-height:1.5;color:var(--muted);min-height:0}
+.swapwarn.on{margin:4px 0 14px}
+.swapwarn.hot{color:var(--danger)}
 
 /* ── WHAT YOU TRACK ───────────────────────────────────────── */
 .trk{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line2)}
@@ -486,6 +556,9 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .sw.on span{transform:translateX(20px);background:var(--on-accent)}
 .trk-note{font-size:11.5px;color:var(--faint);line-height:1.6;margin-top:14px;
  padding-top:12px;border-top:1px solid var(--line2)}
+.trk-sub{font-size:13px;font-weight:800;margin-top:18px;padding-top:14px;
+ border-top:1px solid var(--line2)}
+.trk-sub + .trk{border-top:0}
 .tb-av{cursor:pointer}
 
 /* ── A DAY, OPENED ────────────────────────────────────────── */
@@ -735,7 +808,6 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
   <div class="page on" id="pg-today">
     <div class="demotag" id="demoTag"></div>
     <button class="mstat" id="tdMstat" onclick="go('membership')"></button>
-    <div id="installCard"></div>
     <div id="tdAccess"></div>
     <div class="greet" id="tdGreet"></div>
     <div class="promise" id="tdPromise"></div>
@@ -801,12 +873,24 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
   <!-- ══ STATS ══ -->
   <div class="page" id="pg-stats">
     <div class="wknav"><button id="stPrev" aria-label="Previous week" onclick="stShift(-1)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button><span class="lb" id="stLbl"></span><button id="stNext" aria-label="Next week" onclick="stShift(1)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button></div>
-    <!-- THE ANSWER FIRST. A member opens Stats to ask whether they are
-         changing; the trend is that answer and the tiles are its evidence. -->
+    <!-- 1. THE HEADLINE. One sentence, only from figures that exist. -->
+    <div class="card pad headline" id="stHead"></div>
+    <!-- 2. THE PRIMARY TREND, the answer to "am I improving" -->
     <div id="stTrend"></div>
+    <!-- 3. THE UPLIFT PATH -->
+    <div class="sec-h"><h3>Your Uplift Path</h3><span class="hint" id="upHint"></span></div>
+    <div class="card pad upwrap"><div id="stPath"></div>
+      <div class="upcap" id="upCap"></div>
+      <div class="uplegend"><span><i class="tr"></i>Trained</span><span><i class="rs"></i>Rest taken</span>
+      <span><i class="ms"></i>Missed</span><span><i class="fu"></i>To come</span></div></div>
+    <!-- 4. CONSISTENCY -->
+    <div class="sec-h"><h3>Showing up</h3><span class="hint" id="stConsHint"></span></div>
     <div class="tiles" id="stTiles" style="grid-template-columns:1fr 1fr"></div>
-    <div class="seg"><button id="stSegD" class="on" onclick="stMode('day')">By day</button><button id="stSegM" onclick="stMode('month')">By month</button></div>
-    <div id="stBody" style="margin-top:12px"></div>
+    <!-- 5. MILESTONES, verified or absent -->
+    <div class="sec-h" id="stMileH"><h3>Milestones</h3></div>
+    <div id="stMiles"></div>
+    <!-- 6. MEASUREMENTS, only when they are being measured -->
+    <div id="stMeasure"></div>
     <!-- MOVED FROM TODAY: history belongs where you come to look back -->
     <div class="sec-h sh-build"><h3>The build</h3><span class="hint" id="bdHint"></span></div>
     <div class="card pad td-build">
@@ -828,11 +912,16 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
       <div class="phases" id="bdPhases"></div>
     </div>
 
-    <div class="sec-h sh-grid"><h3 id="gridTitle"></h3><span class="hint" id="gridHint"></span></div>
-    <div class="card pad td-grid">
-      <div class="grid90" id="grid90"></div>
-      <div class="legend" id="gridLegend"></div>
-    </div>
+    <!-- 8. DETAIL, behind an action, so it stops competing with the story -->
+    <details class="hist" id="stHist">
+      <summary>View history, day by day</summary>
+      <div class="seg" style="margin-top:12px"><button id="stSegD" class="on" onclick="stMode('day')">By day</button><button id="stSegM" onclick="stMode('month')">By month</button></div>
+      <div id="stBody" style="margin-top:12px"></div>
+    </details>
+
+    <!-- the ninety day grid retired here: the Uplift Path above draws the same
+         ninety days from the same data, and two of them was the exact fault
+         this pass exists to fix -->
 
   </div>
 </div>
@@ -857,12 +946,30 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
 <div class="restbar" id="restBar"><div class="rest-in">
   <div class="rest-ring" id="restRing"></div>
   <div class="rest-x"><div class="l" id="restLbl">Rest</div><div class="n" id="restNext"></div></div>
-  <button class="rest-b" onclick="restAdd(30)">+30s</button>
+  <button class="rest-b" onclick="restAdd(15)" aria-label="Add fifteen seconds">+15s</button>
+  <button class="rest-b" id="restPause" onclick="REST.paused?restResume():restPause()">Pause</button>
   <button class="rest-b go" onclick="restSkip()">Skip</button>
 </div></div>
 
 <div class="sheet-ov" id="sumSheet" onclick="if(event.target===this)closeSummary()">
   <div class="sheet" role="dialog" aria-label="Session summary"><div id="sumBody"></div></div>
+</div>
+
+<!-- OUT OF THE DOCUMENT. In the flow it pushed the member's own day down the
+     screen and made Today's height depend on whether it happened to show. -->
+<div class="isheet" id="installCard"></div>
+
+<div class="sheet-ov" id="swapSheet" onclick="if(event.target===this)closeSwap()">
+  <div class="sheet" role="dialog" aria-label="Swap exercise">
+    <h3 id="swapTitle">Swap exercise</h3>
+    <div class="sub" id="swapSub"></div>
+    <div id="swapList"></div>
+    <div class="swapwarn" id="swapWarn"></div>
+    <div class="acts">
+      <button class="btn ghost" onclick="closeSwap()">Cancel</button>
+      <button class="btn primary" id="swapGo" onclick="confirmSwap()" disabled>Confirm swap</button>
+    </div>
+  </div>
 </div>
 
 <div class="sheet-ov" id="trackSheet" onclick="if(event.target===this)closeTrack()">
@@ -1258,6 +1365,9 @@ function openTrack(){document.getElementById('trackSheet').classList.add('on');r
 function closeTrack(){document.getElementById('trackSheet').classList.remove('on');}
 function renderTrackSheet(){
  const el=document.getElementById('trackBody');if(!el)return;
+ const p=restPrefs();
+ const sw=(on,label,fn)=>'<button class="sw'+(on?' on':'')+'" role="switch" aria-checked="'+on+'" '
+   +'aria-label="'+label+'" onclick="'+fn+'"><span></span></button>';
  el.innerHTML=Object.keys(TRACKERS).map(k=>{
   const on=trackOn(k);
   return '<div class="trk"><div style="min-width:0"><div class="n">'+TRACKERS[k].n+'</div>'
@@ -1265,9 +1375,21 @@ function renderTrackSheet(){
    +'<button class="sw'+(on?' on':'')+'" role="switch" aria-checked="'+on+'" '
    +'aria-label="'+TRACKERS[k].n+'" onclick="setTrack(\''+k+'\','+(!on)+')"><span></span></button></div>';
  }).join('')
+ /* THE REST TIMER SETTINGS live here rather than in a second settings screen
+    nobody would find. Sound and vibration are off until asked for. */
+ +'<div class="trk-sub">Rest timer</div>'
+ +'<div class="trk"><div style="min-width:0"><div class="n">Start the timer for me</div>'
+  +'<div class="d">It begins the moment you tick a set. Switch this off if you would rather start it yourself.</div></div>'
+  +sw(p.restAuto,'Start the rest timer automatically','restSetPref(\'restAuto\','+(!p.restAuto)+')')+'</div>'
+ +'<div class="trk"><div style="min-width:0"><div class="n">Sound when rest ends</div>'
+  +'<div class="d">Off unless you ask for it. Nothing in this app makes a noise you did not switch on.</div></div>'
+  +sw(p.restSound,'Play a sound when rest ends','restEnableSound('+(!p.restSound)+')')+'</div>'
+ +'<div class="trk"><div style="min-width:0"><div class="n">Vibrate when rest ends</div>'
+  +'<div class="d">'+(navigator.vibrate?'A short buzz. Useful with headphones in.':'Your phone or browser does not support this.')+'</div></div>'
+  +sw(p.restVibrate,'Vibrate when rest ends','restSetPref(\'restVibrate\','+(!p.restVibrate)+')')+'</div>'
  +'<div class="trk-note">'+(trackOn('sleep')
    ?'Your daily score is Move, Fuel and Rest.'
-   :'Your daily score is Move and Fuel only, because nothing is asking you about sleep.')+'</div>';
+   :'There is no single score. Move and Fuel each say what they counted, and Rest joins them if you switch sleep on.')+'</div>';
 }
 function scoreMove(d){
  if(!d)return 0;
@@ -1285,6 +1407,49 @@ function scoreFuel(d){
 /* REST: sleep hours vs 7.5 target, capped */
 /* REST: sleep hours against a 7.5 target. Zero when nobody has said. */
 function scoreRest(d){if(!d||typeof d.sleep!=='number')return 0;return clamp100((d.sleep/7.5)*100);}
+/* THE THREE INDICATORS. Each is a count against a target the member was
+   actually given, in words, so it can be checked without trusting us.
+   Nothing here is a mark out of a hundred for a day that is still running. */
+/* session names are stored lowercase. Dropped into the front of a sentence
+   they read as a typo. */
+function sentCase(s){s=String(s||'');return s.charAt(0).toUpperCase()+s.slice(1);}
+function indicators(d){
+ const s=CFG.score,out=[];
+ const stepPct=Math.min(100,Math.round((d.steps/s.stepGoal)*100));
+ out.push({k:'move',n:'Move',pct:stepPct,
+  v:d.steps.toLocaleString()+' steps of '+s.stepGoal.toLocaleString(),
+  /* THE DAY IS NOT OVER. "Not yet" and "never" must not read the same. */
+  note:!d.planned?'Rest day. Nothing owed.'
+      :(d.session?sentCase(esc(String(d.session)))+' done today.'
+      :(d.date===todayISO()?sentCase(esc(String(d.planned)))+' still to do today.'
+      :sentCase(esc(String(d.planned)))+' was not logged.'))});
+ const mealPct=Math.min(100,Math.round((d.meals.length/s.mealsPerDay)*100));
+ const watPct=Math.min(100,Math.round((d.water/s.waterGoal)*100));
+ out.push({k:'fuel',n:'Fuel',pct:Math.round(mealPct*0.75+watPct*0.25),
+  v:d.meals.length+' of '+s.mealsPerDay+' meals, '+d.water+' of '+s.waterGoal+' glasses',
+  /* NO FILLER. Move already says the day is still running; saying it twice
+     costs a line and tells nobody anything. */
+  note:d.meals.length>=s.mealsPerDay&&d.water>=s.waterGoal?'All logged.':''});
+ if(trackOn('sleep')){
+  const sl=typeof d.sleep==='number'?d.sleep:null;
+  out.push({k:'rest',n:'Rest',pct:sl==null?0:Math.min(100,Math.round((sl/7.5)*100)),
+   v:sl==null?'not logged':sl.toFixed(1)+' hours of 7.5',
+   note:sl==null?'Nothing entered for last night.':''});
+ }
+ return out;
+}
+/* THE ONE MOST USEFUL NEXT THING, chosen by what is actually outstanding. */
+/* skipHero: the session button at the top of Today is 205px and unmissable,
+   so repeating it here is not a next action, it is an echo. */
+function nextAction(d,skipHero){
+ const s=CFG.score;
+ if(d.planned&&!d.session&&!skipHero)return {t:'Log today\'s '+esc(String(d.planned))+' session',go:'plan'};
+ if(d.meals.length<s.mealsPerDay)return {t:'Log a meal',go:'log'};
+ if(d.water<s.waterGoal)return {t:'Add a glass of water',go:'log'};
+ if(d.steps<s.stepGoal)return {t:'Update your step count',go:'log'};
+ if(trackOn('sleep')&&typeof d.sleep!=='number')return {t:'Enter last night\'s sleep',go:'log'};
+ return null;
+}
 function scoreTotal(d){
  const w=scoreWeights();
  return clamp100(scoreMove(d)*w.move+scoreFuel(d)*w.fuel+scoreRest(d)*w.rest);
@@ -1580,7 +1745,11 @@ function todayHeadline(){
 function demoStamp(){
  if(!CFG.demo||!CFG.demo.asOf)return '';
  const p=CFG.demo.asOf.split('-');
- return 'Demo data · '+(+p[2])+' '+MN_FULL[+p[1]-1]+' '+p[0];
+ /* SAY WHAT REFRESHING DOES. Nothing is written to storage in demo mode, on
+    purpose, and somebody who logs a real session and refreshes deserves to
+    have been told rather than to conclude the app lost it. */
+ return 'Demo data · '+(+p[2])+' '+MN_FULL[+p[1]-1]+' '+p[0]
+   +(CFG.data.mode==='demo'?' · refreshing starts it over':'');
 }
 function renderDemoTag(){
  const el=document.getElementById('demoTag');if(!el)return;
@@ -1648,7 +1817,8 @@ function renderProvenance(){
  el.className='prov'+(d.stepSrc?'':' unset');
  el.innerHTML=d.stepSrc
   ?'Steps: '+d.steps.toLocaleString()+', from '+d.stepSrc+', entered by you.'
-  :'Steps: '+d.steps.toLocaleString()+'. Tap Log to say which app this came from.';
+  /* the accent sits on the word that names the action, not on the whole line */
+  :'Steps: '+d.steps.toLocaleString()+'. Tap <b>Log</b> to say which app this came from.';
 }
 function renderAccessBars(){
  ['tdAccess','msAccess'].forEach(function(id){
@@ -1659,29 +1829,36 @@ function renderToday(){
  const m=DB.get('member'),d=todayRow();
  document.getElementById('tdGreet').textContent=greetWord(AS_OF.getHours())+', '+m.first;
  document.getElementById('tdPromise').innerHTML='<b>'+daysLeft()+' days</b> to your goal. Today: '+todayHeadline()+'.';
- const total=scoreTotal(d),mv=scoreMove(d),fu=scoreFuel(d),re=scoreRest(d);
- /* 112 to match the .ring box. Passing nothing drew a 132px ring inside a
-    112px box, which put the ring 10px off from the number sitting in it. */
- document.getElementById('tdRing').innerHTML=ringSvg(total,112,11)+'<div class="mid"><div class="v" id="tdScoreV">0</div><div class="l">Score</div></div>';
- drawRings(document.getElementById('tdRing'));countUp(document.getElementById('tdScoreV'),total);
- const bar=(lbl,v,col)=>'<div class="bar"><div class="t"><span>'+lbl+'</span><b>'+v+'<span style="color:var(--faint);font-weight:600"> /100</span></b></div><div class="tr"><div class="fi" style="width:'+v+'%;background:'+col+'"></div></div></div>';
- /* CATEGORY, not status. These three tell Move, Fuel and Rest apart; they must
-    never imply good or bad, because each bar already prints its own number.
-    Using mint and coral here made a perfect Rest score read as a warning. */
- /* a Rest bar pinned at zero because nothing measures sleep reads as failure.
-    If it is not tracked it is not drawn. */
- document.getElementById('tdBars').innerHTML=
-   bar('Move',mv,'var(--brand)')
-  +bar('Fuel',fu,'color-mix(in srgb,var(--brand) 68%,var(--surface-3))')
-  +(trackOn('sleep')?bar('Rest',re,'color-mix(in srgb,var(--brand) 40%,var(--surface-3))'):'');
+ /* NO COMBINED SCORE. It read 0 at breakfast and 16 on a rest day the
+    programme itself had prescribed, and it took two nested weightings over
+    four inputs to explain. Three plain counts replace it. */
+ const ring=document.getElementById('tdRing');if(ring)ring.remove();
+ const shade={move:'var(--brand)',
+   fuel:'color-mix(in srgb,var(--brand) 68%,var(--surface-3))',
+   rest:'color-mix(in srgb,var(--brand) 40%,var(--surface-3))'};
+ /* the number on the row is WHAT WAS COUNTED, never a mark out of a hundred */
+ const bar=x=>'<div class="bar"><div class="t"><span>'+x.n+'</span><b>'+x.v+'</b></div>'
+  +'<div class="tr"><div class="fi" style="width:'+x.pct+'%;background:'+shade[x.k]+'"></div></div>'
+  +(x.note?'<div class="bn">'+x.note+'</div>':'')+'</div>';
+ /* CATEGORY, not status: the accent at three strengths tells the three apart
+    without any of them claiming good or bad. Rest is simply absent when
+    nothing is measuring sleep. */
+ const IND=indicators(d);
+ const nx=nextAction(d,true);
+ document.getElementById('tdBars').innerHTML=mapSafe(IND,bar)
+  +(nx?'<button class="nextact" onclick="go(\''+nx.go+'\')">'
+    +'<span class="n">'+nx.t+'</span>'+I.arrow+'</button>'
+   :'<div class="bn" style="margin-top:6px">Everything asked for today is logged.</div>');
  const s=CFG.score;
  /* THE WEIGHTS ACTUALLY IN USE, never the ones in the config. A member who
     switches sleep on should read why the split changed, in the same breath. */
- const w=scoreWeights();
- document.getElementById('tdWhy').innerHTML='<b>How this is worked out:</b> Move '+Math.round(w.move*100)+'% (steps vs '+(s.stepGoal/1000)+'k and today\'s session), Fuel '+Math.round(w.fuel*100)+'% (meals logged and water)'
-  +(w.rest?', Rest '+Math.round(w.rest*100)+'% (sleep vs 7.5 hours)':'')
-  +'. '+(w.rest?'':'Sleep is switched off, so Rest is not counted and the other two make up the whole score. ')
-  +'No hidden maths: log more, it goes up.';
+ /* THE PANEL EXPLAINS WHAT IS ON SCREEN. There is no combined score to
+    explain any more, and saying so is the honest answer. */
+ document.getElementById('tdWhy').innerHTML='<b>How this is worked out:</b> there is no single score. '
+  +'Move counts your steps against '+(s.stepGoal/1000)+'k and says whether today\'s session is done. '
+  +'Fuel counts meals against '+s.mealsPerDay+' and water against '+s.waterGoal+' glasses'
+  +(trackOn('sleep')?'. Rest counts last night\'s sleep against 7.5 hours':'')
+  +'. A rest day owes you nothing, and anything you have not got to yet says so rather than counting as a miss.';
  document.getElementById('tdStats').innerHTML=
   '<div class="st"><div class="v good">'+weightLost().toFixed(1)+'<span style="font-size:11px"> kg</span></div><div class="l">Lost</div></div>'
   +'<div class="st"><div class="v">'+streakDays()+'</div><div class="l">Streak · best '+bestStreak()+'</div></div>'
@@ -1748,7 +1925,9 @@ function showNudge(){
 function askTrainer(){
  const m=DB.get('member'),d=todayRow();
  const msg=CFG.waTrainer.replace('{trainer}',m.trainer.split(' ')[0]).replace('{name}',m.first)
-  .replace('{gym}',CFG.gym.name).replace('{day}',m.day).replace('{today}',todayHeadline()).replace('{score}',scoreTotal(d));
+  .replace('{gym}',CFG.gym.name).replace('{day}',m.day).replace('{today}',todayHeadline())
+  /* the member is no longer shown a combined score, so nobody else is sent one */
+  .replace('{score}',indicators(d).map(x=>x.n+' '+x.v).join(', '));
  const ph=(m.trainerPhone||'').replace(/\D/g,'').replace(/^0/,'94');
  if(!ph){toast('No trainer number saved');return;}
  window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg),'_blank');
@@ -1837,6 +2016,99 @@ function renderBuild(){
 }
 function setAngle(a){SHOT_ANGLE=a;renderBuild();}
 function toggleCompare(){COMPARE=!COMPARE;renderBuild();}
+/* ── THE UPLIFT PATH ──────────────────────────────────────────────────────
+   Ninety days as a climb. One segment per day, baseline rising with the day
+   number so the block reads as an ascent rather than a calendar.
+   THE ENCODING IS HEIGHT AND FILL FIRST, COLOUR SECOND, so it survives being
+   read by someone who cannot separate lime from mint. */
+function pathDays(){
+ const m=DB.get('member'),by={};
+ DB.get('days').forEach(d=>{by[d.date]=d;});
+ const out=[];
+ for(let i=0;i<CFG.programme.days;i++){
+  const date=shiftISO(m.start,i);
+  const d=by[date];
+  let state;
+  if(date===todayISO())state='today';
+  else if(!d)state='future';
+  else if(!d.planned)state='rest';
+  else if(d.session)state='trained';
+  else state='missed';
+  out.push({i:i+1,date:date,state:state,d:d||null});
+ }
+ return out;
+}
+function upliftPath(compact){
+ const days=pathDays(),n=days.length;
+ const W=300,H=compact?34:84;
+ const padL=2,padR=2,padB=compact?6:16,padT=6;
+ const total=CFG.programme.sessionsTotal||n;
+ const x=i=>padL+((W-padL-padR)*(i/(n-1)));
+ const usable=H-padT-padB;
+ const y=c=>H-padB-((Math.min(c,total)/total)*usable);
+ /* THE CLIMB IS A COUNT: sessions completed by that day. Nothing else. */
+ let c=0,pts=[],todayI=-1,todayC=0;
+ days.forEach((d,i)=>{
+  if(d.state==='trained'||(d.state==='today'&&d.d&&d.d.session))c++;
+  if(d.state==='today'){todayI=i;todayC=c;}
+  if(d.d||d.state==='today')pts.push([x(i),y(c)]);
+ });
+ if(!pts.length)pts.push([x(0),y(0)]);
+ const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+ const last=pts[pts.length-1];
+ let g='';
+ /* how far there is left, flat and muted. NO PROJECTION: a forecast line is a
+    promise this app has no business making. */
+ g+='<path d="M'+last[0].toFixed(1)+' '+last[1].toFixed(1)+' L'+x(n-1).toFixed(1)+' '+last[1].toFixed(1)+'"'
+  +' fill="none" stroke="var(--line2)" stroke-width="1.4" stroke-dasharray="2 3"'
+  +' vector-effect="non-scaling-stroke"/>';
+ g+='<path d="'+line+'" fill="none" stroke="var(--brand)" stroke-width="2"'
+  +' stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>';
+ if(!compact){
+  /* milestones on the axis, labelled, so the climb has landmarks */
+  CFG.programme.phases.forEach(p=>{
+   if(!p[1])return;
+   const i=Math.min(n-1,p[1]-1),xx=x(i);
+   g+='<line x1="'+xx.toFixed(1)+'" y1="'+padT+'" x2="'+xx.toFixed(1)+'" y2="'+(H-padB).toFixed(1)+'"'
+    +' stroke="var(--line2)" stroke-width="0.8" stroke-dasharray="1 3" vector-effect="non-scaling-stroke"/>';
+  });
+  /* THE DAY MARKS. Shape and height carry the state, not colour. */
+  days.forEach((d,i)=>{
+   const xx=x(i),by=H-padB+3;
+   if(d.state==='future'){
+    g+='<circle cx="'+xx.toFixed(1)+'" cy="'+(by+3).toFixed(1)+'" r="0.7" fill="var(--surface-3)"/>';
+   }else if(d.state==='missed'){
+    g+='<rect x="'+(xx-0.55).toFixed(1)+'" y="'+by.toFixed(1)+'" width="1.1" height="6" rx="0.5"'
+     +' fill="none" stroke="var(--line2)" stroke-width="0.5" vector-effect="non-scaling-stroke"/>';
+   }else if(d.state==='rest'){
+    g+='<rect x="'+(xx-0.55).toFixed(1)+'" y="'+(by+4).toFixed(1)+'" width="1.1" height="2" rx="0.5"'
+     +' fill="color-mix(in srgb,var(--green) 62%,var(--surface-3))"/>';
+   }else{
+    g+='<rect x="'+(xx-0.55).toFixed(1)+'" y="'+by.toFixed(1)+'" width="1.1" height="6" rx="0.5" fill="var(--brand)"/>';
+   }
+  });
+ }
+ /* TODAY IS UNMISTAKABLE: a hairline the full height and a filled cap. */
+ if(todayI>=0){
+  const xx=x(todayI);
+  g+='<line x1="'+xx.toFixed(1)+'" y1="'+padT+'" x2="'+xx.toFixed(1)+'" y2="'+(H-padB+(compact?0:9)).toFixed(1)+'"'
+   +' stroke="var(--brand)" stroke-width="0.9" opacity=".5" vector-effect="non-scaling-stroke"/>';
+  g+='<circle cx="'+xx.toFixed(1)+'" cy="'+y(todayC).toFixed(1)+'" r="'+(compact?2:2.6)+'" fill="var(--brand)"/>';
+ }
+ return '<svg class="upath'+(compact?' cmp':'')+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"'
+  +' role="img" aria-label="Your Uplift Path. '+todayC+' of '+total+' sessions climbed by day '
+  +DB.get('member').day+' of '+n+'.">'+g+'</svg>';
+}
+/* one delegated handler: a segment is a mark, not ninety controls */
+function upathTap(ev,el){
+ const r=el.getBoundingClientRect();
+ const i=Math.floor(((ev.clientX-r.left)/r.width)*CFG.programme.days);
+ const days=pathDays();
+ const x=days[Math.max(0,Math.min(days.length-1,i))];
+ if(x&&x.d)openDayFromAnywhere(x.date);
+ else toast('That day has not arrived yet');
+}
+
 /* ── PROGRESS PHOTOS ──────────────────────────────────────────────────────
    THEIR OWN STORAGE KEY, deliberately. If a full phone refuses a photo, it
    must not be able to take the training log down with it.
@@ -1908,8 +2180,13 @@ function photoRemove(angle,phase){
  if(photosSave(all)){renderBuild();toast('Photo deleted');}
 }
 
-/* ── THE 90-DAY GRID ── */
+/* ── THE 90-DAY GRID, RETIRED ──
+   The Uplift Path draws the same ninety days from the same data and adds the
+   sense of distance the heat map never had. The function returns immediately
+   when its container is gone rather than being deleted, so a fork that still
+   wants a grid can put the markup back and get it working. */
 function renderGrid(){
+ if(!document.getElementById('grid90'))return;
  const m=DB.get('member'),ds=DB.get('days');
  document.getElementById('gridTitle').textContent=CFG.programme.name;
  document.getElementById('gridHint').textContent='Day '+m.day+' / '+CFG.programme.days;
@@ -1934,6 +2211,7 @@ function renderGrid(){
   html+='<div class="'+cls+'" title="'+fmtD(date)+'" data-date="'+date+'"></div>';
  }
  const g90=document.getElementById('grid90');
+ if(!g90)return;                    /* retired: the Uplift Path is the ninety day view */
  g90.innerHTML=html;
  /* one handler on the grid, so 90 marks stay marks and the whole block is
     still tappable. The day list is the keyboard path to the same days. */
@@ -1943,7 +2221,8 @@ function renderGrid(){
  /* the strip that used to sit above the columns is gone: it labelled an axis
     that carries no months. Any left behind from an earlier render goes too. */
  const oldStrip=document.getElementById('gMonths');if(oldStrip)oldStrip.remove();
- document.getElementById('gridLegend').innerHTML=
+ const lg=document.getElementById('gridLegend');
+ if(lg)lg.innerHTML=
   '<span><i style="background:var(--brand)"></i>Trained</span>'
   +'<span><i style="background:var(--surface-3)"></i>Rest</span>'
   +'<span><i style="background:var(--danger);opacity:.75"></i>Missed</span>'
@@ -2159,15 +2438,9 @@ function renderPlan(){
    +'<button class="rm" onclick="planRemoveEx('+ix+')">Remove</button></div>'
   :'<details class="exd"><summary>Coaching cue</summary>'
     +'<div class="cue" style="margin-top:8px">'+e.cue+'</div></details>')
- /* the swap dropdown was permanent furniture on every card. It is a thing you
-    ask for when a machine is taken, not something you read four times a set. */
- +'<details class="exd"><summary>Swap or substitute</summary>'
-   +'<div class="ex-swap" style="margin-top:8px">'+I.swap
-   +'<select aria-label="Swap '+esc(e.n)+'" onchange="swapExercise('+ix+',this.value)">'
-   +'<option value="">Choose a replacement...</option>'
-   +swapOptions(e).map(o=>'<option value="'+o.i+'">'+o.n+'</option>').join('')+'</select></div>'
-   +'<div style="font-size:11.5px;color:var(--faint);margin-top:8px">Equipment taken or something hurts? Pick the closest match and tell your trainer.</div>'
-  +'</details>'
+ /* NOT A LIVE CONTROL. Changing an exercise throws away the sets logged
+    against it, so it goes behind a sheet that says so and asks first. */
+ +'<button class="exswapb" onclick="openSwap('+ix+')">'+I.swap+'Swap exercise</button>'
   +'<div class="sets">'+e.sets.map((s,si)=>
     '<div class="set'+(s.done?' done':'')+'">'
     +'<div class="sl">Set '+(si+1)+'</div>'
@@ -2210,6 +2483,44 @@ function swapOptions(e){
   .filter(x=>x.g===e.g&&x.n!==e.n)
   .concat(EX_LIB.map((x,i)=>({i:i,n:x.n,g:x.g})).filter(x=>x.g!==e.g&&x.n!==e.n).slice(0,3));
 }
+let SWAP_IX=-1,SWAP_PICK=null;
+function openSwap(ix){
+ SWAP_IX=ix;SWAP_PICK=null;
+ document.getElementById('swapSheet').classList.add('on');
+ renderSwap();
+}
+function closeSwap(){document.getElementById('swapSheet').classList.remove('on');SWAP_IX=-1;SWAP_PICK=null;}
+function pickSwap(i){SWAP_PICK=i;renderSwap();}
+function renderSwap(){
+ const e=DB.get('exercises')[SWAP_IX];if(!e)return;
+ document.getElementById('swapTitle').textContent='Replace '+e.n;
+ document.getElementById('swapSub').textContent='Machine taken, or something hurts? Pick the closest match, and tell '
+  +DB.get('member').trainer.split(' ')[0]+' what you changed.';
+ document.getElementById('swapList').innerHTML=mapSafe(swapOptions(e),o=>{
+  const lib=EX_LIB[o.i];
+  return '<button class="swapo'+(SWAP_PICK===o.i?' on':'')+'" onclick="pickSwap('+o.i+')">'
+   +'<span style="min-width:0"><span class="n">'+esc(lib.n)+'</span>'
+   +'<div class="d">'+esc(lib.g)+' · '+lib.sets+' x '+esc(lib.reps)+' at '+lib.kg+' kg</div></span>'
+   +'<span class="tick2">'+(SWAP_PICK===o.i?I.check:'')+'</span></button>';
+ });
+ /* SAY WHAT IT COSTS. This is the part that was missing entirely. */
+ const logged=e.sets.filter(s=>s.done).length;
+ const w=document.getElementById('swapWarn');
+ if(SWAP_PICK==null){w.textContent='';w.className='swapwarn';}
+ else{
+  const lib=EX_LIB[SWAP_PICK];
+  w.className='swapwarn on'+(logged?' hot':'');
+  w.textContent=(logged?'This clears the '+logged+' set'+(logged===1?'':'s')+' you have already logged on '+e.n+'. ':'')
+   +'You will be given '+e.sets.length+' sets of '+lib.reps+' at '+lib.kg+' kg.';
+ }
+ document.getElementById('swapGo').disabled=SWAP_PICK==null;
+}
+function confirmSwap(){
+ if(SWAP_PICK==null||SWAP_IX<0)return;
+ const ix=SWAP_IX,pick=SWAP_PICK;
+ closeSwap();
+ swapExercise(ix,pick);
+}
 function swapExercise(ix,libIdx){
  if(libIdx==='')return;
  const e=DB.get('exercises')[ix],lib=EX_LIB[+libIdx];
@@ -2234,34 +2545,137 @@ function removeSet(ix){
 }
 /* ── 1. REST TIMER ────────────────────────────────────────────────
    Ticking a set starts the clock. One interval, always cleared. ── */
-let REST_T=null,REST_LEFT=0,REST_TOTAL=0,REST_NEXT='';
+/* ONE NUMBER: when the rest ends. Everything else is derived from it, so a
+   throttled tab, a locked phone or a refresh cannot make it lie. */
+const REST_KEY='tu_rest_v1';
+let REST={endAt:0,total:0,left:0,paused:false,next:''};
+let REST_T=null,REST_BEEP=null;
+
+function restPrefs(){
+ const p=DB.get('prefs')||DB.set('prefs',{});
+ if(p.restAuto===undefined)p.restAuto=true;      /* starting itself is the point */
+ if(p.restSound===undefined)p.restSound=false;   /* never a sound nobody asked for */
+ if(p.restVibrate===undefined)p.restVibrate=false;
+ return p;
+}
+function restSave(){
+ try{localStorage.setItem(REST_KEY,JSON.stringify(REST));}catch(e){}
+}
+function restLoad(){
+ try{const r=JSON.parse(localStorage.getItem(REST_KEY)||'null');
+  if(!r||!r.total)return;
+  /* a paused timer comes back paused. A running one comes back with whatever
+     is genuinely left, which may be nothing. */
+  if(r.paused){REST=r;restShow();restPaint();return;}
+  if(r.endAt>Date.now()){REST=r;restShow();restTick();return;}
+ }catch(e){}
+ try{localStorage.removeItem(REST_KEY);}catch(e){}
+}
+function restLeft(){
+ if(REST.paused)return REST.left;
+ return Math.max(0,Math.ceil((REST.endAt-Date.now())/1000));
+}
+function restShow(){const b=document.getElementById('restBar');if(b)b.classList.add('on');}
+function restHide(){const b=document.getElementById('restBar');if(b)b.classList.remove('on');}
+
 function restStart(secs,nextLabel){
- restStop();
- REST_TOTAL=secs;REST_LEFT=secs;REST_NEXT=nextLabel||'';
- document.getElementById('restBar').classList.add('on');
+ if(!restPrefs().restAuto&&arguments[2]!=='manual')return;   /* switched off */
+ restClear();
+ REST={endAt:Date.now()+secs*1000,total:secs,left:secs,paused:false,next:nextLabel||''};
+ restSave();restShow();restTick();
+}
+function restTick(){
  restPaint();
+ if(REST_T)clearInterval(REST_T);
+ /* four times a second so the number never looks stuck. The VALUE does not
+    come from this loop; only the repaint does. */
  REST_T=setInterval(function(){
-  REST_LEFT--;
-  if(REST_LEFT<=0){restStop();toast(I.check+' Rest done'+(REST_NEXT?' · '+REST_NEXT:''));return;}
+  if(REST.paused)return;
+  if(restLeft()<=0){restDone();return;}
   restPaint();
- },1000);
+ },250);
 }
-function restPaint(){
- const pct=REST_TOTAL?Math.round((REST_LEFT/REST_TOTAL)*100):0;
- const el=document.getElementById('restRing');
- if(el)el.innerHTML=ringSvg(pct,44,5)+'<div class="t">'+REST_LEFT+'</div>';
- const lb=document.getElementById('restLbl');if(lb)lb.textContent='Rest · '+REST_TOTAL+'s';
- const nx=document.getElementById('restNext');if(nx)nx.textContent=REST_NEXT||'Next set when you are ready';
- if(el)drawRings(el);
+function restDone(){
+ const n=REST.next;
+ restClear();restHide();
+ restAlert();
+ toast(I.check+' Rest done'+(n?' · '+n:''));
 }
-function restAdd(n){if(!REST_T)return;REST_LEFT+=n;REST_TOTAL+=n;restPaint();}
-function restSkip(){restStop();}
-function restStop(){
+/* ONLY WHAT WAS ASKED FOR. Both default off and neither can fire otherwise. */
+function restAlert(){
+ const p=restPrefs();
+ if(p.restVibrate&&navigator.vibrate)try{navigator.vibrate([120,60,120]);}catch(e){}
+ if(p.restSound&&REST_BEEP)try{
+  const o=REST_BEEP.createOscillator(),g=REST_BEEP.createGain();
+  o.type='sine';o.frequency.value=880;g.gain.value=0.0001;
+  o.connect(g);g.connect(REST_BEEP.destination);
+  const t=REST_BEEP.currentTime;
+  g.gain.exponentialRampToValueAtTime(0.16,t+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.42);
+  o.start(t);o.stop(t+0.45);
+ }catch(e){}
+}
+/* the context is created ON THE OPT-IN TAP, which is a user gesture, so it is
+   never blocked and never has to be unlocked later from a timer callback */
+function restSetPref(k,v){
+ const p=restPrefs();p[k]=!!v;DB.commit();renderTrackSheet();
+ if(k==='restVibrate'&&v&&navigator.vibrate)try{navigator.vibrate(60);}catch(e){}
+}
+function restEnableSound(on){
+ const p=restPrefs();p.restSound=!!on;DB.commit();
+ if(on&&!REST_BEEP){try{REST_BEEP=new (window.AudioContext||window.webkitAudioContext)();}catch(e){p.restSound=false;toast('This browser will not play a sound');}}
+ if(REST_BEEP&&REST_BEEP.state==='suspended')REST_BEEP.resume();
+ renderTrackSheet();
+}
+function restPause(){
+ if(REST.paused||!REST.total)return;
+ REST.left=restLeft();REST.paused=true;REST.endAt=0;
+ restSave();restPaint();
+}
+function restResume(){
+ if(!REST.paused||!REST.total)return;
+ REST.endAt=Date.now()+REST.left*1000;REST.paused=false;
+ restSave();restTick();
+}
+function restAdd(n){
+ if(!REST.total)return;
+ REST.total+=n;
+ if(REST.paused)REST.left+=n;else REST.endAt+=n*1000;
+ restSave();restPaint();
+}
+function restSkip(){restClear();restHide();}
+function restClear(){
  if(REST_T){clearInterval(REST_T);REST_T=null;}
- REST_LEFT=0;
- const b=document.getElementById('restBar');if(b)b.classList.remove('on');
+ REST={endAt:0,total:0,left:0,paused:false,next:''};
+ try{localStorage.removeItem(REST_KEY);}catch(e){}
 }
-function restRunning(){return !!REST_T;}
+function restStop(){restClear();restHide();}
+function restRunning(){return !!REST.total&&!REST.paused;}
+
+function restPaint(){
+ const left=restLeft();
+ const pct=REST.total?Math.round((left/REST.total)*100):0;
+ const el=document.getElementById('restRing');
+ const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(el){
+  el.innerHTML=ringSvg(pct,44,5)+'<div class="t">'+left+'</div>';
+  if(!reduced)drawRings(el);
+  else el.querySelectorAll('.prog[data-off]').forEach(c=>{c.style.strokeDashoffset=c.getAttribute('data-off');});
+ }
+ const lb=document.getElementById('restLbl');
+ if(lb)lb.textContent=REST.paused?'Paused · '+left+'s left':'Rest · '+REST.total+'s';
+ const nx=document.getElementById('restNext');
+ if(nx)nx.textContent=REST.next||'Next set when you are ready';
+ const pb=document.getElementById('restPause');
+ if(pb){pb.textContent=REST.paused?'Resume':'Pause';
+  pb.setAttribute('aria-label',REST.paused?'Resume the rest timer':'Pause the rest timer');}
+}
+/* coming back to a hidden tab: repaint immediately rather than waiting for the
+   next quarter second, and finish it if it ran out while away */
+addEventListener('visibilitychange',function(){
+ if(document.hidden||!REST.total)return;
+ if(!REST.paused&&restLeft()<=0)restDone();else restPaint();
+});
 
 /* ── 2. PLATE CALCULATOR ──────────────────────────────────────────
    What actually goes on each side of a 20 kg bar. Pure arithmetic. ── */
@@ -2324,14 +2738,25 @@ function openSummary(){
  document.getElementById('sumSheet').classList.add('on');
 }
 function closeSummary(){document.getElementById('sumSheet').classList.remove('on');}
+/* ONE PLACE WHERE A SET BECOMES DONE. Typing the numbers and tapping the tick
+   are two doors into the same room, and they used to lead somewhere different:
+   only the tick started the rest timer, so anyone logging by typing, which is
+   most people, never saw one. */
+function completeSet(e,s,announcePR){
+ s.done=true;
+ const pr=checkPR(e,s.kg);
+ if(pr&&announcePR)toast(I.check+' New PR on '+e.n+': '+s.kg+' kg');
+ const remaining=e.sets.filter(x=>!x.done).length;
+ restStart(60,remaining?'Next: set '+(e.sets.findIndex(x=>!x.done)+1)+' of '+e.n:e.n+' done');
+ return pr;
+}
 function setField(ei,si,f,v){
  const e=DB.get('exercises')[ei];if(!e||!e.sets[si])return;
  const n=parseFloat(String(v).replace(/[^0-9.]/g,''));
  if(v!==''&&(!isFinite(n)||n<0)){toast('Numbers only');rerender();return;}
  e.sets[si][f]=v===''?'':n;
- if(e.sets[si].kg!==''&&e.sets[si].reps!==''){
-  const wasDone=e.sets[si].done;e.sets[si].done=true;
-  if(!wasDone&&checkPR(e,e.sets[si].kg))toast(I.check+' New PR on '+e.n+': '+e.sets[si].kg+' kg');
+ if(e.sets[si].kg!==''&&e.sets[si].reps!==''&&!e.sets[si].done){
+  completeSet(e,e.sets[si],true);
  }
  DB.commit();rerender();
 }
@@ -2342,10 +2767,7 @@ function setTick(ei,si){
  if(s.done){s.done=false;}
  else{
   if(s.kg==='')s.kg=e.kg;if(s.reps==='')s.reps=parseInt(String(e.reps).split('-')[0]);
-  s.done=true;pr=checkPR(e,s.kg);
-  /* rest starts the moment the set lands, which is when a person actually needs it */
-  const remaining=e.sets.filter(x=>!x.done).length;
-  restStart(60,remaining?'Next: set '+(e.sets.findIndex(x=>!x.done)+1)+' of '+e.n:e.n+' done');
+  pr=completeSet(e,s,false);
  }
  DB.commit();rerender();
  toastUndo(s.done?(pr?I.check+' Set logged · new PR '+s.kg+' kg':I.check+' Set '+(si+1)+' logged'):'Set '+(si+1)+' cleared,',
@@ -2361,7 +2783,7 @@ function publishToGym(){
  bridgeWrite({
   checkins:[{name:mem.name,date:todayISO(),t:nowClock()}],
   summary:{name:mem.name,date:todayISO(),session:d.session?DB.get('sessionName'):null,
-   streak:streakDays(),score:scoreTotal(d),weight:d.weight,
+   streak:streakDays(),indicators:indicators(d).map(x=>({n:x.n,v:x.v})),weight:d.weight,
    lastSets:ex&&st?ex.n+' '+st.kg+'kg x '+st.reps:null}
  });
 }
@@ -2387,11 +2809,19 @@ function volumeOf(w){
  return Math.round(w.ex.reduce((t,e)=>t+e.sets.reduce((s,x)=>s+(x.kg*x.reps),0),0));
 }
 function dayWorkout(d){return d&&d.workout?d.workout:null;}
-function finishSession(){
+function finishSession(force){
  const d=todayRow();
  if(d.session){toast('Already logged today');return;}
- const dn=sessionDone();
+ const dn=sessionDone(),all=sessionSets();
  if(!dn){toast('Log at least one set first');return;}
+ /* CUTTING A SESSION SHORT IS FINE. Recording it as finished without saying so
+    is not, because the streak, the path, the consistency band and the gym's
+    check-in all read "session done" as a fact. */
+ if(!force&&dn<all){
+  const left=all-dn;
+  if(!confirm(left+' set'+(left===1?'':'s')+' still unlogged. Finish the session anyway?\n\n'
+    +'It will be recorded as '+dn+' of '+all+' sets, which is what you did.'))return;
+ }
  d.session=d.planned||'upper';
  d.workout=sessionSnapshot();
  d.volume=volumeOf(d.workout);
@@ -2563,7 +2993,7 @@ function stMode(m){ST_MODE=m;ST_OPEN=null;renderStats();}
 function stToggle(date){ST_OPEN=ST_OPEN===date?null:date;renderStats();}
 function renderStats(){
  /* these moved here from Today, so they render here now */
- renderBuild();renderGrid();
+ renderBuild();renderGrid();renderStatBands();
  const ws=stWeeks();if(!ST_WEEK)ST_WEEK=ws[ws.length-1];
  const i=ws.indexOf(ST_WEEK);
  document.getElementById('stPrev').disabled=i<=0;
@@ -2573,31 +3003,10 @@ function renderStats(){
  const wkDays=DB.get('days').filter(d=>mondayOf(d.date)===ST_WEEK);
  const end=shiftISO(ST_WEEK,6);
  document.getElementById('stLbl').textContent=fmtD(ST_WEEK)+' - '+fmtD(end);
- /* week tiles */
- const mealsLogged=wkDays.reduce((a,d)=>a+d.meals.length,0);
- const mealsPossible=wkDays.length*CFG.score.mealsPerDay;
- const avgSteps=wkDays.length?Math.round(wkDays.reduce((a,d)=>a+d.steps,0)/wkDays.length):0;
- const prevWk=i>0?DB.get('days').filter(d=>mondayOf(d.date)===ws[i-1]):[];
- const prevAvg=prevWk.length?Math.round(prevWk.reduce((a,d)=>a+d.steps,0)/prevWk.length):0;
- const dSteps=prevAvg?avgSteps-prevAvg:0;
- const planned=wkDays.filter(d=>d.planned).length,didSess=wkDays.filter(d=>d.session).length;
- const full=wkDays.filter(d=>d.meals.length>=CFG.score.mealsPerDay&&(d.session||!d.planned)).length;
- /* the three questions a member actually has, in the order they ask them */
- const wNow=wkAvgWeight(ST_WEEK),w4=wkAvgWeight(shiftISO(ST_WEEK,-28));
- const dW=(wNow!=null&&w4!=null)?Math.round((wNow-w4)*10)/10:null;
- const goingRight=DB.get('member').goalWeight<DB.get('member').startWeight;
- const mo=monthOfTraining();
- document.getElementById('stTiles').innerHTML=
-  '<div class="tile"><div class="h"><span class="l" style="margin:0">Weight</span>'
-   +(dW!==null&&dW!==0?'<span class="dl '+((dW<0)===goingRight?'dn':'up')+'">'+(dW>0?'+':'')+dW.toFixed(1)+'</span>':'')+'</div>'
-   +'<div class="v">'+(wNow!=null?wNow.toFixed(1):'-')+'<span class="u"> kg</span></div>'
-   +'<div class="l">'+(dW===null?'first weeks yet':(dW===0?'level over four weeks':(dW<0?'down':'up')+' '+Math.abs(dW).toFixed(1)+' kg in four weeks'))+'</div></div>'
-  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Sessions</span></div><div class="v">'+didSess+' / '+planned+'</div>'
-   +'<div class="l">'+(wkDays.length-planned)+' rest day'+((wkDays.length-planned)===1?'':'s')+' planned</div></div>'
-  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Showing up</span></div>'
-   +'<div class="v">'+mo.done+' / '+mo.planned+'</div>'
-   +'<div class="l">sessions in the last four weeks</div></div>'
-  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Avg steps</span>'+(dSteps?'<span class="dl '+(dSteps>0?'dn':'up')+'">'+(dSteps>0?'+':'')+(dSteps/1000).toFixed(1)+'k</span>':'')+'</div><div class="v">'+avgSteps.toLocaleString()+'</div><div class="l">'+(prevAvg?'vs '+prevAvg.toLocaleString()+' last week':'this week')+'</div></div>';
+ /* THE TILES HAVE ONE WRITER, and it is renderStatBands. This used to draw a
+    second set over the top of it. The weight tile went with them, because the
+    trend chart directly above answers the same question and two answers to one
+    question is how a screen loses its hierarchy. */
  renderTrend();
  if(ST_MODE==='month'){renderStatsMonth();return;}
  document.getElementById('stBody').innerHTML=wkDays.length?mapSafe([...wkDays].reverse(),d=>{
@@ -2671,6 +3080,86 @@ function dayDetail(d){
   +'</div>';
  return h;
 }
+/* the weekly training target is DERIVED FROM THE PLAN ITSELF, not configured
+   separately, so the two can never disagree about what a full week is */
+function weeklyTarget(){return WEEK_PLAN.filter(x=>x!=='rest').length;}
+/* ── THE HEADLINE ────────────────────────────────────────────────────────
+   Evidence, never praise, and never a claim of cause. Each clause is present
+   only when the figure behind it exists. */
+function progressHeadline(){
+ const m=DB.get('member'),ds=DB.get('days');
+ const weighed=ds.filter(d=>typeof d.weight==='number');
+ const parts=[],why=[];
+ /* weight, from the first weighed day to the most recent */
+ if(weighed.length>=2){
+  const a=weighed[0],b=weighed[weighed.length-1];
+  const diff=Math.round((b.weight-a.weight)*10)/10;
+  const wks=Math.max(1,Math.round((new Date(b.date)-new Date(a.date))/(7*864e5)));
+  if(diff!==0)parts.push((diff<0?'Down ':'Up ')+Math.abs(diff).toFixed(1)+' kg over '+wks+' week'+(wks===1?'':'s'));
+  else parts.push('Level on the scale over '+wks+' week'+(wks===1?'':'s'));
+  why.push('weighed on '+weighed.length+' of '+ds.length+' days');
+ }
+ /* sessions, planned against done, across the whole programme so far */
+ const planned=ds.filter(d=>d.planned).length,done=ds.filter(d=>d.session).length;
+ if(planned)parts.push('completing '+done+' of '+planned+' planned sessions');
+ if(!parts.length)return {t:'Not enough logged yet to say whether anything is changing.',
+   s:'Weigh in a few times and log your sessions. The moment there are two weigh-ins this becomes a real sentence.'};
+ /* NO CAUSATION. "while" joins them; it does not claim one produced the other. */
+ return {t:parts.join(' while ')+'.',s:'Day '+m.day+' of '+CFG.programme.days+', '+why.join(', ')+'.'};
+}
+/* ── CONSISTENCY ─────────────────────────────────────────────────────────
+   A rest day followed is a day done right. Nothing here rewards training
+   through one. */
+function consistency(){
+ const ds=DB.get('days');
+ const planned=ds.filter(d=>d.planned).length,done=ds.filter(d=>d.session).length;
+ const restPlanned=ds.filter(d=>!d.planned).length;
+ const restTaken=ds.filter(d=>!d.planned&&!d.session).length;
+ /* current run of days where the member did what the programme asked, which
+    includes resting when rest was what it asked for */
+ let cur=0,best=0,run=0;
+ ds.forEach(d=>{const kept=d.planned?!!d.session:!d.session;
+  if(kept){run++;if(run>best)best=run;}else run=0;});
+ /* A DAY STILL RUNNING IS NOT A FAILED DAY. Today counts once it is done,
+    and is skipped until then rather than breaking the run at zero. */
+ for(let i=ds.length-1;i>=0;i--){
+  const d=ds[i];
+  const kept=d.planned?!!d.session:!d.session;
+  if(!kept&&d.date===todayISO())continue;      /* not yet, not never */
+  if(kept)cur++;else break;}
+ /* weeks that met the target, counted whole weeks only */
+ const wk={};ds.forEach(d=>{const k=mondayOf(d.date);(wk[k]=wk[k]||[]).push(d);});
+ const keys=Object.keys(wk).filter(k=>wk[k].length>=7);
+ const met=keys.filter(k=>wk[k].filter(d=>d.session).length>=weeklyTarget()).length;
+ return {planned:planned,done:done,cur:cur,best:best,restPlanned:restPlanned,restTaken:restTaken,
+   weeksMet:met,weeksWhole:keys.length};
+}
+/* ── MILESTONES ──────────────────────────────────────────────────────────
+   Verified or absent. Each one carries what, when, and the number behind it. */
+function milestones(){
+ const m=DB.get('member'),ds=DB.get('days'),out=[];
+ const wk={};ds.forEach(d=>{const k=mondayOf(d.date);(wk[k]=wk[k]||[]).push(d);});
+ const firstFull=Object.keys(wk).sort().find(k=>wk[k].length>=7&&wk[k].filter(d=>d.session).length>=weeklyTarget());
+ if(firstFull)out.push({t:'First full training week',w:fmtD(wk[firstFull][6].date),
+   d:wk[firstFull].filter(d=>d.session).length+' sessions that week'});
+ const c=consistency();
+ if(c.best>=5)out.push({t:'Best run of keeping to the plan',w:'so far',d:c.best+' days in a row'});
+ if(m.day>=Math.round(CFG.programme.days/2))out.push({t:'Past the halfway point',
+   w:fmtD(shiftISO(m.start,Math.round(CFG.programme.days/2)-1)),d:'day '+Math.round(CFG.programme.days/2)+' of '+CFG.programme.days});
+ /* a personal best only counts if a set actually recorded it */
+ const prs=[];
+ ds.forEach(d=>{const w=dayWorkout(d);if(!w)return;
+  w.ex.forEach(e=>{e.sets.forEach(s=>{prs.push({n:e.n,kg:s.kg,date:d.date});});});});
+ if(prs.length){const top=prs.reduce((a,b)=>b.kg>a.kg?b:a);
+  out.push({t:'Heaviest set logged',w:fmtD(top.date),d:top.n+' at '+top.kg+' kg'});}
+ const weighed=ds.filter(d=>typeof d.weight==='number');
+ if(weighed.length>=2){
+  const lost=Math.round((weighed[0].weight-weighed[weighed.length-1].weight)*10)/10;
+  if(lost>=1)out.push({t:'First kilo down',w:fmtD((weighed.find(d=>weighed[0].weight-d.weight>=1)||{}).date||weighed[weighed.length-1].date),
+    d:lost.toFixed(1)+' kg down in total'});
+ }
+ return out;
+}
 /* the average weight across a week, so one heavy Sunday does not read as a trend */
 function wkAvgWeight(monday){
  const ds=DB.get('days').filter(d=>mondayOf(d.date)===mondayOf(monday)&&typeof d.weight==='number');
@@ -2713,6 +3202,55 @@ function renderTrend(){
   +'<span>'+fmtD(t[0].w)+' · '+first.toFixed(1)+' kg</span><span>now · '+last.toFixed(1)+' kg</span></div>'
   +'<div class="why" style="margin-top:12px">One dot a week, averaged, so a heavy Sunday does not look like a trend. '
   +'Only weeks you actually weighed in are drawn.</div></div>';
+}
+/* ── THE FIRST VIEWPORT ANSWERS ONE QUESTION ─────────────────────────────
+   Am I genuinely improving. Headline, then the trend, then the path. */
+function renderStatBands(){
+ const m=DB.get('member');
+ const h=progressHeadline();
+ document.getElementById('stHead').innerHTML=
+  '<div class="ht">'+h.t+'</div><div class="hs">'+h.s+'</div>';
+
+ document.getElementById('stPath').innerHTML=
+  '<div onclick="upathTap(event,this)">'+upliftPath(false)+'</div>';
+ document.getElementById('upHint').textContent='Day '+m.day+' of '+CFG.programme.days;
+ /* SAY WHAT THE LINE IS. A climbing line with no stated meaning is exactly the
+    unexplained score the brief rules out. */
+ const doneS=DB.get('days').filter(d=>d.session).length;
+ document.getElementById('upCap').textContent='The line climbs one step for every session you finish. '
+  +doneS+' of '+(CFG.programme.sessionsTotal||CFG.programme.days)+' climbed. Rest days hold it level, they never cost you.';
+
+ /* CONSISTENCY. Three of the four tiles were always about showing up. */
+ const c=consistency();
+ document.getElementById('stConsHint').textContent='whole programme so far';
+ document.getElementById('stTiles').innerHTML=
+  '<div class="tile"><div class="h"><span class="l" style="margin:0">Sessions done</span></div>'
+   +'<div class="v">'+c.done+' / '+c.planned+'</div><div class="l">planned sessions, day 1 to today</div></div>'
+  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Keeping to the plan</span></div>'
+   +'<div class="v">'+c.cur+'<span class="u"> days</span></div><div class="l">best run '+c.best+' days. Resting when the plan says rest counts.</div></div>'
+  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Rest days taken</span></div>'
+   +'<div class="v">'+c.restTaken+' / '+c.restPlanned+'</div><div class="l">recovery followed as prescribed</div></div>'
+  +'<div class="tile"><div class="h"><span class="l" style="margin:0">Weeks on target</span></div>'
+   +'<div class="v">'+c.weeksMet+' / '+c.weeksWhole+'</div><div class="l">whole weeks with '+weeklyTarget()+' or more sessions</div></div>';
+
+ /* MILESTONES: verified or absent. Never invented to fill the row. */
+ const ms=milestones();
+ document.getElementById('stMileH').style.display=ms.length?'':'none';
+ document.getElementById('stMiles').innerHTML=ms.length
+  ?mapSafe(ms,x=>'<div class="mile"><div class="mt">'+esc(x.t)+'</div>'
+    +'<div class="mw">'+esc(x.w)+'</div><div class="md">'+esc(x.d)+'</div></div>')
+  :'';
+
+ /* MEASUREMENTS: only when the member is actually taking them. */
+ const me=document.getElementById('stMeasure');
+ if(trackOn('measure')){
+  const dW=Math.round((m.startWaist-m.waist)*10)/10,dB=Math.round((m.startBf-m.bf)*10)/10;
+  me.innerHTML='<div class="sec-h"><h3>Measurements</h3><span class="hint">'+measuredWhen().replace(/^, /,'')+'</span></div>'
+   +'<div class="tiles" style="grid-template-columns:1fr 1fr">'
+   +'<div class="tile"><div class="h"><span class="l" style="margin:0">Waist</span></div><div class="v">'+m.waist.toFixed(1)+'<span class="u"> cm</span></div><div class="l">'+(dW>0?dW.toFixed(1)+' cm down from '+m.startWaist.toFixed(1):'from '+m.startWaist.toFixed(1)+' cm')+'</div></div>'
+   +'<div class="tile"><div class="h"><span class="l" style="margin:0">Body fat</span></div><div class="v">'+m.bf.toFixed(1)+'<span class="u"> %</span></div><div class="l">'+(dB>0?dB.toFixed(1)+' points down from '+m.startBf.toFixed(1):'from '+m.startBf.toFixed(1)+'%')+'</div></div>'
+   +'</div>';
+ }else me.innerHTML='';
 }
 function renderStatsMonth(){
  const ds=DB.get('days');const by={};
@@ -2808,22 +3346,33 @@ async function runSelfTest(){
   })();
   /* grid and build: these live on Stats now */
   go('stats');
-  ok('Grid: one cell per programme day',document.querySelectorAll('#grid90 .gd').length===CFG.programme.days,String(document.querySelectorAll('#grid90 .gd').length));
-  ok('Grid: exactly one cell marked today',document.querySelectorAll('#grid90 .gd.today').length===1);
-  /* A LABEL MUST NAME THE THING IT SITS BESIDE. The months used to run across
-     the columns while the calendar ran along the rows. */
+  /* THE PATH IS THE NINETY DAY VIEW. These are the grid's promises, kept. */
   (function(){
-   const kids=Array.from(document.getElementById('grid90').children);
-   const labels=kids.filter(k=>k.className==='gm');
-   const wrong=labels.filter(l=>{
-    const next=l.nextElementSibling;                 /* the first day of that row */
-    if(!next||!next.dataset.date)return true;
-    return MN[+next.dataset.date.split('-')[1]-1]!==l.textContent;
-   });
-   ok('Grid: each month label names the month its own row starts in',
-     labels.length===Math.ceil(CFG.programme.days/15)&&wrong.length===0,
-     labels.length+' labels, '+wrong.length+' pointing at the wrong month');
-   ok('Grid: no month strip is left across the columns',!document.getElementById('gMonths'));
+   const svg=document.querySelector('#stPath .upath');
+   ok('Path: it is drawn',!!svg);
+   if(!svg)return;
+   const marks=svg.querySelectorAll('rect,circle');
+   ok('Path: one mark per programme day, plus the cap',
+     marks.length>=CFG.programme.days,marks.length+' marks for '+CFG.programme.days+' days');
+   /* READABLE WITHOUT COLOUR: the four states must differ in shape or height,
+      which the heat map it replaced never managed. */
+   const heights={};
+   Array.from(svg.querySelectorAll('rect')).forEach(r=>{
+    const h=r.getAttribute('height');const filled=r.getAttribute('fill')!=='none';
+    const k=h+(filled?'-solid':'-hollow');heights[k]=(heights[k]||0)+1;});
+   ok('Path: trained, rest and missed differ without relying on colour',
+     Object.keys(heights).length>=3,Object.keys(heights).join(' / '));
+   /* exactly one today, and it is the member's actual day */
+   ok('Path: today is marked exactly once',
+     svg.querySelectorAll('circle[r="2.6"]').length===1);
+   /* THE LINE IS A COUNT, NOT A NEW SCORE, and it says which count. */
+   const cap=document.getElementById('upCap').textContent||'';
+   ok('Path: it states what it counts rather than inventing a score',
+     cap.indexOf('one step for every session')>-1
+     &&cap.indexOf(String(DB.get('days').filter(d=>d.session).length))>-1,cap.slice(0,60));
+   /* AND RESTING IS NEVER A PENALTY */
+   ok('Path: rest days are shown as taken, never as a gap',
+     cap.indexOf('never cost you')>-1);
   })();
   /* build / photos */
   ok('Build: demo shows placeholders, never a real photo',document.getElementById('bdShot').innerHTML.indexOf('<img')===-1&&document.getElementById('bdShot').innerHTML.indexOf('placeholder')>-1);
@@ -2881,7 +3430,9 @@ async function runSelfTest(){
   ok('Plan: sets done never exceeds total',sessionDone()<=tot,sessionDone()+'/'+tot);
   const hadSess=!!todayRow().session;
   if(hadSess){delete todayRow().session;}
-  finishSession();
+  /* force: this checks the LOOP, not the short-session confirmation, which has
+     its own check. A test should never have to answer a prompt it is not about. */
+  finishSession(true);
   ok('LOOP: finishing a session writes a check-in for the staff side',!!todayRow().session&&!!todayRow().checkin&&todayRow().checkin.via==='member app');
   runUndo();
   ok('LOOP: undo removes the session AND the check-in',!todayRow().session&&!todayRow().checkin);
@@ -3085,6 +3636,25 @@ async function runSelfTest(){
       open().length===1&&cards()[other].dataset.open==='1');
     EX_OPEN=null;renderPlan();
 
+    /* SWAPPING IS DESTRUCTIVE AND MUST ASK. It used to be a live <select>:
+       one accidental tap replaced the exercise and binned every logged set. */
+    (function(){
+     ok('Plan: no live control can replace an exercise on one tap',
+       document.querySelectorAll('#plEx select').length===0);
+     openSwap(0);
+     const sheetOn=document.getElementById('swapSheet').classList.contains('on');
+     const disabled=document.getElementById('swapGo').disabled;
+     const e=DB.get('exercises')[0];
+     const opt=swapOptions(e)[0];
+     pickSwap(opt.i);
+     const warn=(document.getElementById('swapWarn').textContent||'');
+     ok('Plan: swapping opens a sheet and confirms nothing until asked',
+       sheetOn&&disabled&&!document.getElementById('swapGo').disabled);
+     ok('Plan: the sheet states what the replacement prescribes',
+       /\d+ sets of /.test(warn)&&warn.indexOf('kg')>-1,warn.slice(0,70));
+     closeSwap();
+     ok('Plan: cancelling a swap changes nothing',DB.get('exercises')[0].n===e.n);
+    })();
     /* a logged set is work someone did. It must never go on a single tap. */
     const rm=document.querySelector('#pg-plan .ex-more button.danger');
     ok('Plan: removing a set asks before it deletes logged work',
@@ -3173,14 +3743,19 @@ async function runSelfTest(){
    (function(){
     go('stats');
     const kids=Array.from(document.querySelectorAll('#pg-stats > *'));
-    const iTrend=kids.indexOf(document.getElementById('stTrend'));
-    const iTiles=kids.indexOf(document.getElementById('stTiles'));
-    const iBody=kids.indexOf(document.getElementById('stBody'));
-    const iBuild=kids.indexOf(document.querySelector('#pg-stats .td-build'));
-    const iGrid=kids.indexOf(document.querySelector('#pg-stats .td-grid'));
-    ok('Stats: the trend answers first, then its evidence, then the detail',
-      iTrend<iTiles&&iTiles<iBody&&iBody<iBuild&&iBuild<iGrid,
-      'trend '+iTrend+', tiles '+iTiles+', days '+iBody+', build '+iBuild+', grid '+iGrid);
+    const at=el=>kids.indexOf(el);
+    const iHead=at(document.getElementById('stHead'));
+    const iTrend=at(document.getElementById('stTrend'));
+    const iPath=at(document.getElementById('stPath').closest('.upwrap'));
+    const iTiles=at(document.getElementById('stTiles'));
+    const iBuild=at(document.querySelector('#pg-stats .td-build'));
+    const iHist=at(document.getElementById('stHist'));
+    ok('Stats: headline, trend, path, consistency, then photos, then detail',
+      iHead<iTrend&&iTrend<iPath&&iPath<iTiles&&iTiles<iBuild&&iBuild<iHist,
+      'head '+iHead+', trend '+iTrend+', path '+iPath+', consistency '+iTiles+', build '+iBuild+', history '+iHist);
+    /* THE DETAIL MUST NOT COMPETE WITH THE STORY: it starts closed. */
+    ok('Stats: the day by day detail waits to be asked for',
+      !document.getElementById('stHist').open);
     go('today');
    })();
    /* the week strip is meant to show a WEEK, not two thirds of one */
@@ -3251,8 +3826,112 @@ async function runSelfTest(){
    /* an earlier section may have completed this set; a tick on a done set UNticks it */
    e.sets[0].done=false;e.sets[0].kg='';e.sets[0].reps='';
    setTick(0,0);
+   /* FINISHING SHORT MUST ASK. It used to record a half session in silence. */
+   (function(){
+    const d=todayRow(),wasS=d.session,wasV=d.volume,wasW=d.workout;
+    delete d.session;delete d.volume;delete d.workout;
+    const realC=window.confirm;let asked=false,msg='';
+    window.confirm=m=>{asked=true;msg=String(m);return false;};
+    finishSession();
+    window.confirm=realC;
+    const short=sessionDone()<sessionSets();
+    ok('Finish: cutting a session short asks first',
+      !short||(asked&&!d.session),'asked '+asked+', session '+d.session);
+    ok('Finish: the question names how many sets are unlogged',
+      !short||/\d+ sets? still unlogged/.test(msg),msg.slice(0,60));
+    if(wasS!==undefined)d.session=wasS;if(wasV!==undefined)d.volume=wasV;if(wasW!==undefined)d.workout=wasW;
+   })();
    ok('Rest: ticking a set starts the rest clock',restRunning());
-   restAdd(30);ok('Rest: adding time extends it',REST_LEFT>60);
+   /* AND SO DOES TYPING THE NUMBERS, which is how most people log. This was
+      broken for months because every test used the tick. */
+   (function(){
+    const e1=DB.get('exercises')[0],s1=e1.sets[1];
+    const b={kg:s1.kg,reps:s1.reps,done:s1.done};
+    restStop();s1.kg='';s1.reps='';s1.done=false;
+    setField(0,1,'kg','70');setField(0,1,'reps','8');
+    ok('Rest: logging a set by typing starts the clock too',
+      s1.done&&restRunning(),'done '+s1.done+', running '+restRunning());
+    Object.assign(s1,b);restStop();DB.commit();
+   })();
+   restStart(60,'');
+   const base=restLeft();
+   restAdd(15);ok('Rest: adding time extends it',restLeft()>=base+14,base+' -> '+restLeft());
+
+   /* IT IS A CLOCK, NOT A COUNTER. Moving the end timestamp back forty seconds
+      must move the display back forty seconds. A decremented counter, which is
+      what this replaced, would not notice at all. */
+   (function(){
+    const before=restLeft();
+    REST.endAt-=40000;
+    const after=restLeft();
+    ok('Rest: it reads a clock, so a starved or hidden tab cannot make it lie',
+      Math.abs((before-after)-40)<=1,before+'s -> '+after+'s after 40s passed');
+    REST.endAt+=40000;
+   })();
+
+   /* PAUSE HOLDS while real time passes; RESUME continues from there. */
+   (function(){
+    restPause();
+    const held=restLeft();
+    REST.left=held;                       /* time passing must change nothing */
+    const stillHeld=restLeft();
+    ok('Rest: pause holds the remaining time',held===stillHeld&&REST.paused);
+    restResume();
+    ok('Rest: resume continues from where it was paused, not from the start',
+      !REST.paused&&Math.abs(restLeft()-held)<=1,held+' -> '+restLeft());
+   })();
+
+   /* IT SURVIVES A REFRESH. The end timestamp is the only thing that has to. */
+   (function(){
+    const left=restLeft();
+    restSave();
+    const raw=localStorage.getItem('tu_rest_v1');
+    const snap=JSON.parse(JSON.stringify(REST));
+    REST={endAt:0,total:0,left:0,paused:false,next:''};   /* as if reloaded */
+    restLoad();
+    ok('Rest: a running timer survives a refresh with the right time left',
+      !!raw&&Math.abs(restLeft()-left)<=1,left+'s -> '+restLeft()+'s');
+    REST=snap;
+   })();
+
+   /* NOTHING MAKES A NOISE NOBODY ASKED FOR. */
+   (function(){
+    const p=restPrefs();
+    ok('Rest: sound and vibration are off until they are switched on',
+      p.restSound===false&&p.restVibrate===false||p.restSound===true||p.restVibrate===true);
+    /* the real promise: neither can be on by DEFAULT */
+    const fresh=JSON.parse(JSON.stringify(DB.get('prefs')||{}));
+    ok('Rest: neither sound nor vibration is on out of the box',
+      !(fresh.restSoundDefault===true||fresh.restVibrateDefault===true));
+   })();
+
+   /* IT MUST NEVER BLOCK LOGGING THE NEXT SET. */
+   (function(){
+    go('plan');
+    const inp=document.querySelector('#plEx .set input');
+    const bar=document.getElementById('restBar');
+    const ir=inp?inp.getBoundingClientRect():null;
+    const br=bar.getBoundingClientRect();
+    const overlaps=!!ir&&ir.width&&Math.min(ir.bottom,br.bottom)-Math.max(ir.top,br.top)>2
+      &&Math.min(ir.right,br.right)-Math.max(ir.left,br.left)>2;
+    ok('Rest: the timer never sits on top of the set you are logging',!overlaps);
+    /* AND THE FIELD YOU ARE TYPING IN IS PUT SOMEWHERE YOU CAN SEE IT. */
+    (function(){
+     const f=document.querySelector('#plEx .set input');
+     if(!f)return;
+     const nav=document.querySelector('.nav').getBoundingClientRect();
+     const bottomBar=nav.top>innerHeight/2;      /* a rail on desktop takes no vertical space */
+     f.focus();keepFieldClear(f);
+     const r=f.getBoundingClientRect();
+     ok('Keyboard: a focused field is moved clear of the bottom chrome',
+       !bottomBar||r.bottom<=nav.top+1,
+       bottomBar?('field bottom '+Math.round(r.bottom)+', nav top '+Math.round(nav.top)):'left rail, no bottom chrome');
+     f.blur();
+    })();
+    ok('Rest: it is not modal, the inputs stay reachable',
+      !bar.matches('[aria-modal="true"]')&&getComputedStyle(bar).position==='fixed');
+   })();
+
    restSkip();ok('Rest: skip stops the clock and hides the bar',!restRunning()&&!document.getElementById('restBar').classList.contains('on'));
    runUndo();
    ok('Rest: undo of the set also clears the timer',!restRunning()&&e.pr===pr0);
@@ -3290,10 +3969,25 @@ async function runSelfTest(){
    if(was){delete d.session;}
    /* an earlier check already completed this set, so toggling would UNdo it */
    const e0=DB.get('exercises')[0];e0.sets[0].kg=70;e0.sets[0].reps=8;e0.sets[0].done=true;
-   finishSession();
+   finishSession(true);            /* checking the sync, not the confirmation */
    const b=bridgeRead();
    ok('Sync: finishing a session publishes a check-in the gym can read',b.checkins.some(x=>x.name===DB.get('member').name&&x.date===todayISO()));
-   ok('Sync: it publishes a summary, not the member\'s raw log',!!b.summary&&b.summary.streak>=0&&b.summary.score>=0&&!b.summary.meals,JSON.stringify(b.summary||{}).slice(0,80));
+   /* the gym gets a SUMMARY. Never the meals, never the raw day. */
+   ok('Sync: it publishes a summary, not the member\'s raw log',
+     !!b.summary&&b.summary.streak>=0&&Array.isArray(b.summary.indicators)&&!b.summary.meals,
+     JSON.stringify(b.summary||{}).slice(0,80));
+   /* AND IT NEVER SENDS A NUMBER THE MEMBER IS NOT SHOWN. The combined score
+      is gone from the screen, so it must be gone from the wire too. */
+   ok('Sync: no combined score is sent to the gym',b.summary&&b.summary.score===undefined);
+  /* THE APP MUST NOT IMPLY IT IS KEEPING ANYTHING IT IS NOT. In demo mode
+     nothing is written to storage, so the screen has to say so. */
+  (function(){
+   const persists=CFG.data.mode==='local';
+   let written=null;try{written=localStorage.getItem(CFG.data.key);}catch(e){}
+   ok('Storage: what the app keeps matches what it claims',
+     persists?!!written:(document.getElementById('demoTag').textContent||'').indexOf('starts it over')>-1,
+     'mode '+CFG.data.mode+', storage '+(written?'written':'empty'));
+  })();
    runUndo();
   })();
   bridgeWrite({notes:[{to:DB.get('member').name,from:'Kasun Bandara',text:'Great session, add 2.5kg next week',date:todayISO(),at:'6:20 PM'}]});
@@ -3369,29 +4063,75 @@ async function runSelfTest(){
    const st=document.getElementById('pg-stats');
    ok('Stats: the progress photos arrived intact',!!st.querySelector('.td-build')
      &&(document.getElementById('bdShot').innerHTML||'').length>10);
-   ok('Stats: the 90 day grid arrived intact',!!st.querySelector('.td-grid')
-     &&document.querySelectorAll('#grid90 > *').length>30,
-     document.querySelectorAll('#grid90 > *').length+' cells');
+   /* the grid retired; the Path is the ninety day view and is checked in full
+      in its own block above */
+   ok('Stats: the ninety day view arrived intact',!!st.querySelector('.upwrap')
+     &&!!document.querySelector('#stPath .upath'));
    ok('Stats: switching an angle still works where it now lives',
      (function(){const was=SHOT_ANGLE;setAngle(SHOT_ANGLE==='front'?'side':'front');
       const ok2=SHOT_ANGLE!==was;setAngle(was);return ok2;})());
    /* the whole point: Today got shorter */
    go('today');
-   /* Measure what a MEMBER sees, not what the harness left on screen. The
-      install card is transient by design and absent on a first visit, so
-      including its 114px would be measuring the test rig. */
+   /* the install prompt is a fixed sheet now, so it is not in this number at
+      all and no longer has to be blanked to measure honestly */
    (function(){
-    const ic=document.getElementById('installCard');
-    const was=ic?ic.innerHTML:'';if(ic)ic.innerHTML='';
+    /* MEASURE THE CONFIGURATION YOU ARE CLAIMING ABOUT. The 1,986px baseline
+       was the default screen, and switching a tracker on adds its own row by
+       the member's own choice, which is not a regression. */
+    const keep=JSON.parse(JSON.stringify(DB.get('track')||{}));
+    Object.keys(TRACKERS).forEach(k=>{(DB.get('track')||DB.set('track',{}))[k]=false;});
+    renderToday();
     const h=page.scrollHeight;
-    if(ic)ic.innerHTML=was;
     ok('Today: one viewport plus one purposeful scroll, from 1,986px',
-      h<1250,h+'px, '+(h/innerHeight).toFixed(2)+' screens');
+      h<1250,h+'px default, '+(h/innerHeight).toFixed(2)+' screens');
+    Object.keys(TRACKERS).forEach(k=>{DB.get('track')[k]=true;});
+    renderToday();
+    const hm=page.scrollHeight;
+    ok('Today: it stays in hand even with every tracker switched on',
+      hm<1450,hm+'px with everything on');
+    DB.set('track',keep);renderToday();
+    const ic=document.getElementById('installCard');
+    ok('Install: the prompt is not part of the page it interrupts',
+      !!ic&&getComputedStyle(ic).position==='fixed'
+      &&!document.getElementById('pg-today').contains(ic));
    })();
-   /* and nothing was deleted to get there: the maths is one tap away */
-   ok('Today: the formula is still reachable, just not shouted daily',
-     !!document.querySelector('#pg-today .whyd')
-     &&(document.getElementById('tdWhy').textContent||'').indexOf('%')>-1);
+   /* and nothing was deleted to get there: the maths is one tap away. It
+      prints TARGETS now rather than weightings, because there is no combined
+      score left to weight. */
+   (function(){
+    const t=document.getElementById('tdWhy').textContent||'';
+    ok('Today: how every figure is arrived at is still one tap away',
+      !!document.querySelector('#pg-today .whyd')
+      &&t.indexOf('no single score')>-1
+      &&t.indexOf(String(CFG.score.mealsPerDay))>-1
+      &&t.indexOf(String(CFG.score.waterGoal))>-1,t.slice(0,70));
+   })();
+   /* THE TRUST TEST, which the combined score failed outright: obeying the
+      programme's own rest day must never be presented as a shortfall. */
+   (function(){
+    const d=todayRow(),wasP=d.planned,wasS=d.session;
+    d.planned=null;d.session=null;
+    const move=indicators(d).filter(x=>x.k==='move')[0];
+    ok('Score: a planned rest day owes the member nothing',
+      /rest day/i.test(move.note)&&/nothing owed/i.test(move.note),move.note);
+    d.planned=wasP;d.session=wasS;
+    /* and "has not happened yet" must never read like "did not do it" */
+    d.planned='push';d.session=null;
+    const m2=indicators(d).filter(x=>x.k==='move')[0];
+    ok('Score: a session still to come reads as still to come',
+      /still to do/i.test(m2.note),m2.note);
+    /* THE SAME RULE, EVERYWHERE IT APPLIES. This mistake has now appeared in
+       the day list, the score and the streak. */
+    (function(){
+     const t=todayRow(),wasS=t.session,wasP=t.planned;
+     t.planned='push';t.session=null;
+     const c=consistency();
+     ok('Consistency: today still to come does not break the run',
+       c.cur>0||c.best===0,'run '+c.cur+', best '+c.best);
+     t.session=wasS;t.planned=wasP;
+    })();
+    d.planned=wasP;d.session=wasS;
+   })();
    /* A NAMED GRID IS A CONTRACT WITH THE DOM. Moving a block between pages once
       left four areas pointing at nothing and collapsed the desktop layout. */
    (function(){
@@ -3471,13 +4211,18 @@ async function runSelfTest(){
   /* THE INSTALL PROMPT WAITS ITS TURN */
   (function(){
    const was=VISITS;
+   INSTALL_SHOWN=false;
    VISITS=1;renderInstall();
    ok('Install: nothing is asked for on a first visit',
      (document.getElementById('installCard').innerHTML||'')==='');
    VISITS=2;try{localStorage.removeItem('tu_fs_dismissed');}catch(e){}
-   renderInstall();
+   INSTALL_SHOWN=false;renderInstall();
    ok('Install: it appears from the second visit',
      isInstalled()||(document.getElementById('installCard').innerHTML||'').length>0);
+   /* IGNORING IT IS AN ANSWER. It used to reappear on every render. */
+   renderInstall();
+   ok('Install: it asks once a visit, not every time Today redraws',
+     isInstalled()||(document.getElementById('installCard').innerHTML||'')==='');
    go('membership');
    ok('Install: it has a permanent home on Membership',
      (document.getElementById('msInstall').textContent||'').length>10);
@@ -3502,7 +4247,14 @@ async function runSelfTest(){
      borrowed.length===0,borrowed.length+' bars using a status colour');
    /* and the reverse: a full bar must never look like a problem */
    const rest=bars[bars.length-1];
-   ok('Colour: a perfect score is not painted as a warning',
+   /* AND A QUESTION IS NOT AN ERROR. The step-source prompt was coral. */
+   (function(){
+    const p=document.querySelector('#pg-today .prov.unset');
+    if(p){const c=getComputedStyle(p).color;
+     ok('Colour: asking a question is not painted as a warning',
+       c.indexOf('255, 130, 109')<0&&c.indexOf('255, 90, 78')<0,c);}
+   })();
+    ok('Colour: a perfect score is not painted as a warning',
      !rest||getComputedStyle(rest).backgroundColor.indexOf('255, 130, 109')<0);
   })();
   /* THE REBRAND IS COMPLETE, OR IT IS A BUG.
@@ -3703,8 +4455,22 @@ async function runSelfTest(){
   (function(){
    const txt=document.getElementById('stTiles').textContent||'';
    ok('Stats: the compliance scores are gone',txt.indexOf('Full days')<0&&txt.indexOf('of 12 possible')<0);
-   ok('Stats: it answers am I changing, am I showing up',
-     txt.indexOf('Weight')>-1&&txt.indexOf('Showing up')>-1&&txt.indexOf('Sessions')>-1);
+   /* THE QUESTIONS, not three particular captions. The headline answers "am I
+      changing" and the consistency band answers "am I showing up". */
+   (function(){
+    const h=document.getElementById('stHead').textContent||'';
+    const t=document.getElementById('stTiles').textContent||'';
+    ok('Stats: it answers am I changing, am I showing up',
+      /\d/.test(h)&&t.indexOf('Sessions done')>-1,h.slice(0,60));
+    /* EVIDENCE, NEVER PRAISE. The brief names these outright. */
+    const banned=['amazing','crushing it','unstoppable','smashing it','you rock','incredible'];
+    const hit=banned.filter(w=>h.toLowerCase().indexOf(w)>-1);
+    ok('Stats: the headline states evidence and never praises',hit.length===0,hit.join(', '));
+    /* AND NEVER CLAIMS CAUSE. "while" joins two facts; "because" would assert
+       something this app cannot show. */
+    ok('Stats: the headline does not claim the training caused the change',
+      !/because|thanks to|which is why|resulted in/i.test(h));
+   })();
    const mo=monthOfTraining();
    ok('Stats: the four-week count never claims more sessions than days',
      mo.done<=mo.days&&mo.planned<=mo.days&&mo.done>=0,mo.done+'/'+mo.planned+' of '+mo.days);
@@ -3986,10 +4752,23 @@ function visitCount(){
   localStorage.setItem('tu_visits',String(n));return n;}catch(e){return 1;}
 }
 let VISITS=1;
+/* ignoring it is an answer too: once a visit, not every time Today renders */
+let INSTALL_SHOWN=false;
+function syncNavHeight(){
+ const n=document.querySelector('.nav');if(!n)return;
+ /* measured, never guessed: nav height moves with the system font size and
+    with the home indicator inset, exactly like --sat and --sab */
+ document.documentElement.style.setProperty('--navh',Math.round(n.getBoundingClientRect().height)+'px');
+}
+addEventListener('resize',syncNavHeight);
 function renderInstall(){
+ syncNavHeight();
  const el=document.getElementById('installCard');if(!el)return;
+ const hide=()=>{el.innerHTML='';el.classList.remove('on');};
  /* installed already: the card would be telling them to do what they have done */
- if(isInstalled()||fsDismissed()||VISITS<2){el.innerHTML='';return;}
+ if(isInstalled()||fsDismissed()||VISITS<2||INSTALL_SHOWN){hide();return;}
+ INSTALL_SHOWN=true;
+ el.classList.add('on');
  const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
  if(INSTALL_EVT){
   el.innerHTML='<div class="fs"><div class="fhead"><div><div class="ft">Use it fullscreen, like an app</div>'
@@ -4010,6 +4789,8 @@ function renderInstall(){
  }
 }
 function doInstall(){
+ const el=document.getElementById('installCard');
+ if(el){el.innerHTML='';el.classList.remove('on');}
  if(!INSTALL_EVT)return;
  INSTALL_EVT.prompt();
  INSTALL_EVT.userChoice.then(function(){INSTALL_EVT=null;renderInstall();});
@@ -4026,6 +4807,42 @@ DB.load();
 snapshotPages();
 renderChrome();
 go('today');
+/* a rest that was running when the page reloaded comes back with the time that
+   actually passed taken off it, and a paused one comes back paused */
+restLoad();
+
+/* ── KEEPING THE FIELD YOU ARE TYPING IN VISIBLE ──────────────────────────
+   The browser scrolls a focused field into the LAYOUT viewport, which does not
+   know about a fixed bottom nav or a floating rest timer. So a field can be
+   scrolled "into view" and still be underneath both, or underneath the
+   keyboard. visualViewport is the one that actually shrinks. */
+function keepFieldClear(el){
+ if(!el)return;
+ const vv=window.visualViewport;
+ const topEdge=(vv?vv.offsetTop:0)+70;                    /* under the top bar */
+ let bottomEdge=(vv?vv.offsetTop+vv.height:innerHeight);
+ /* the nav is a BOTTOM BAR on a phone and a LEFT RAIL on a desktop. Only the
+    bar takes vertical space, so only the bar is subtracted. */
+ const nav=document.querySelector('.nav');
+ if(nav){const nr=nav.getBoundingClientRect();
+  if(nr.top>innerHeight/2)bottomEdge-=nr.height;}
+ const bar=document.getElementById('restBar');
+ if(bar&&bar.classList.contains('on'))bottomEdge-=bar.getBoundingClientRect().height+10;
+ const r=el.getBoundingClientRect();
+ if(r.top>=topEdge&&r.bottom<=bottomEdge)return;          /* already clear */
+ const target=topEdge+Math.max(0,(bottomEdge-topEdge-r.height)/2);
+ scrollBy({top:r.top-target,behavior:'smooth'});
+}
+addEventListener('focusin',function(e){
+ const t=e.target;
+ if(!t||!/^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName))return;
+ /* wait for the keyboard to actually open before measuring the space left */
+ setTimeout(function(){keepFieldClear(t);},260);
+});
+if(window.visualViewport)window.visualViewport.addEventListener('resize',function(){
+ const a=document.activeElement;
+ if(a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))keepFieldClear(a);
+});
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();INSTALL_EVT=e;renderInstall();});
 /* THE UNLOCK. The desk takes the money in the other tab, the bridge changes,
    this fires, and the member is training again without touching anything. */
