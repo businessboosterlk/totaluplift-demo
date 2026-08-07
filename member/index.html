@@ -180,10 +180,17 @@ input,textarea{font-family:inherit;color:var(--txt)}
  background:var(--brand);opacity:.9}
 /* the halo goes where the thumb goes: the one action that matters is also the
    warmest thing on the screen, same light the day badge and the ember carry */
+/* THE LETTERING IS BLUE, not black. Total Uplift's own navy pushed deep enough
+   to clear AA on the orange, which lands it at a saturation that reads as blue
+   rather than as a dark neutral, and ties the one loud button back to the
+   canvas it sits on. The glow is a soft brand halo behind the glyphs, so the
+   words lift off the button instead of being stamped into it. */
 .sess .go{width:100%;min-height:52px;margin-top:18px;border-radius:14px;
- background:var(--accent-grad);color:var(--on-accent);display:flex;align-items:center;
+ background:var(--accent-grad);color:#0A2A5E;display:flex;align-items:center;
  justify-content:center;gap:10px;font-size:15px;font-weight:800;letter-spacing:-.2px;
+ text-shadow:0 0 14px rgba(255,220,190,.55),0 1px 0 rgba(255,255,255,.28);
  box-shadow:0 10px 30px var(--brand-glow),0 2px 8px rgba(0,0,0,.35)}
+.sess .go .ic,.sess .go svg{filter:drop-shadow(0 0 8px rgba(255,220,190,.5))}
 .sess .rail{height:6px;border-radius:99px;background:var(--surface-3);margin-top:16px;overflow:hidden}
 .sess .rail i{display:block;height:100%;background:var(--brand);border-radius:99px;
  transition:width .5s var(--ease)}
