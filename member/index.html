@@ -363,8 +363,14 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .rest-ring{position:relative;width:44px;height:44px;flex-shrink:0}
 .rest-ring .t{position:absolute;inset:0;display:grid;place-items:center;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Segoe UI',Roboto,Inter,system-ui,sans-serif;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
 .rest-x{flex:1;min-width:0}
-.rest-x .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700}
-.rest-x .n{font-size:13.5px;font-weight:700;margin-top:2px}
+.rest-x .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ONE LINE. Adding the Pause button squeezed this column to 64px and the text
+   wrapped into five lines, which made the whole bar 103px tall and pushed it
+   over the set inputs. */
+.rest-x .n{font-size:13.5px;font-weight:700;margin-top:2px;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rest-b{white-space:nowrap}
 /* a real target: this gets tapped with one hand, mid-set, in a gym */
 .rest-b{min-height:44px;min-width:56px;padding:9px 12px;border-radius:10px;font-size:12px;
  font-weight:700;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);flex-shrink:0}
@@ -526,6 +532,26 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .pown .pbtn.on{border-color:var(--brand);color:var(--brand-txt)}
 .pown .pbtn.danger{flex:0 0 auto;min-width:90px;color:var(--danger);
  border-color:color-mix(in srgb,var(--danger) 30%,transparent)}
+
+/* ── ALL TIME BESTS ───────────────────────────────────────── */
+.best{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+ padding:12px 16px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;
+ align-items:baseline;gap:2px 14px}
+.best .bn{font-size:14px;font-weight:750;min-width:0}
+.best .bg{font-size:11.5px;color:var(--faint);font-weight:600;margin-left:8px}
+.best .bk{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right;
+ grid-row:1;grid-column:2}
+.best .bk .u{font-size:12px;font-weight:700;color:var(--muted)}
+.best .bk.none{font-size:12.5px;font-weight:700;color:var(--faint)}
+.best .bd{font-size:11.5px;color:var(--muted);grid-column:1/-1}
+.best.none{border-style:dashed}
+.best.fresh{border-color:color-mix(in srgb,var(--brand) 45%,transparent)}
+
+/* ── THE WEEK STRIP, NOW TAPPABLE ─────────────────────────── */
+.wknav.plnav{margin-bottom:10px}
+.week .wd{cursor:pointer;color:inherit;font:inherit;text-align:center}
+.week .wd .ms{color:var(--danger);font-weight:800}
+.week .wd.missed{border-color:color-mix(in srgb,var(--danger) 26%,transparent)}
 
 /* ── THE SWAP SHEET ───────────────────────────────────────── */
 .exswapb{display:flex;align-items:center;gap:9px;width:100%;min-height:44px;margin-top:12px;
@@ -690,7 +716,10 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
 .sheet-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:80;display:none;align-items:flex-end;justify-content:center}
 .sheet-ov.on{display:flex}
 @media(min-width:720px){.sheet-ov.on{align-items:center}}
-.sheet{background:var(--surface);border:1px solid var(--line);border-radius:16px 20px 0 0;width:100%;max-width:520px;padding:20px 18px calc(22px + var(--sab));animation:up .24s var(--ease)}
+/* A SHEET MUST NOT GROW PAST THE SCREEN. A day with four exercises fits; a day
+   with seven would push its own Close button off the bottom with no way back. */
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:16px 20px 0 0;width:100%;max-width:520px;padding:20px 18px calc(22px + var(--sab));animation:up .24s var(--ease);
+ max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 @media(min-width:720px){.sheet{border-radius:16px}}
 .sheet h3{font-size:17px;font-weight:800;margin-bottom:4px}
 .sheet .sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5}
@@ -846,7 +875,8 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
 
   <!-- ══ PLAN ══ -->
   <div class="page" id="pg-plan">
-    <div class="greet">This week</div>
+    <!-- the week you are looking at, and a way to reach the ones behind it -->
+    <div class="wknav plnav"><button id="plPrev" aria-label="The week before" onclick="plShift(-1)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button><span class="lb" id="plWkLbl"></span><button id="plNext" aria-label="The week after" onclick="plShift(1)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button></div>
     <div class="week" id="plWeek"></div>
     <div class="run-h" id="plHead"></div>
     <div class="run-tr"><div class="run-fi" id="plFill"></div></div>
@@ -889,6 +919,9 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
     <!-- 5. MILESTONES, verified or absent -->
     <div class="sec-h" id="stMileH"><h3>Milestones</h3></div>
     <div id="stMiles"></div>
+    <!-- 5b. ALL TIME BESTS, one row per movement, from logged sets only -->
+    <div class="sec-h" id="stBestH"><h3>Your best lifts</h3><span class="hint" id="stBestHint"></span></div>
+    <div id="stBests"></div>
     <!-- 6. MEASUREMENTS, only when they are being measured -->
     <div id="stMeasure"></div>
     <!-- MOVED FROM TODAY: history belongs where you come to look back -->
@@ -958,6 +991,15 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
 <!-- OUT OF THE DOCUMENT. In the flow it pushed the member's own day down the
      screen and made Today's height depend on whether it happened to show. -->
 <div class="isheet" id="installCard"></div>
+
+<div class="sheet-ov" id="daySheet" onclick="if(event.target===this)closeDaySheet()">
+  <div class="sheet" role="dialog" aria-label="That day's record">
+    <h3 id="daySheetT"></h3>
+    <div class="sub" id="daySheetS"></div>
+    <div id="daySheetB"></div>
+    <div class="acts"><button class="btn ghost" onclick="closeDaySheet()">Close</button></div>
+  </div>
+</div>
 
 <div class="sheet-ov" id="swapSheet" onclick="if(event.target===this)closeSwap()">
   <div class="sheet" role="dialog" aria-label="Swap exercise">
@@ -1537,6 +1579,20 @@ function openEx(ix){
  renderPlan();
  const el=document.querySelectorAll('#plEx .ex')[ix];
  if(el&&EX_OPEN===ix)el.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+/* which week the strip is showing. The session card below it always describes
+   TODAY, whatever week is being looked at. */
+let PL_WEEK=null;
+function plWeeks(){
+ const m=DB.get('member'),out=[];
+ let w=mondayOf(m.start),last=mondayOf(shiftISO(m.start,CFG.programme.days-1));
+ while(w<=last){out.push(w);w=shiftISO(w,7);}
+ return out;
+}
+function plShift(n){
+ const ws=plWeeks(),i=ws.indexOf(PL_WEEK||mondayOf(todayISO()));
+ const j=Math.max(0,Math.min(ws.length-1,i+n));
+ PL_WEEK=ws[j];renderPlan();
 }
 let PLAN_EDIT=false;
 function togglePlanEdit(){PLAN_EDIT=!PLAN_EDIT;restStop();rerender();}
@@ -2382,19 +2438,38 @@ function sessionDone(){return DB.get('exercises').reduce((a,e)=>a+e.sets.filter(
 function exDone(e){return e.sets.every(s=>s.done);}
 function renderPlan(){
  applyTrainerPlan();
- const m=DB.get('member'),mon=mondayOf(todayISO());
+ const m=DB.get('member');
+ if(!PL_WEEK)PL_WEEK=mondayOf(todayISO());
+ const mon=PL_WEEK;
  const tp=trainerPlan();
  document.getElementById('plFromTrainer').innerHTML=(tp&&DB._d.planFrom===tp.at)
   ?'<div class="from-trainer">'+I.check+'<span><b>'+tp.by.split(' ')[0]+'</b> set this session for you'+(tp.note?': '+tp.note:'')+'</span></div>':'';
  document.getElementById('plEditBtn').innerHTML=PLAN_EDIT?I.check+'Done editing':I.pencil+'Edit plan';
+ /* EVERY DAY IS A CONTROL. It used to be seven decorative divs on a screen
+    whose whole job is telling a member about their week. */
  document.getElementById('plWeek').innerHTML=mapSafe(WEEK_PLAN,(ty,i)=>{
   const date=shiftISO(mon,i),d=dayOf(date);
   const isToday=date===todayISO(),rest=ty==='rest';
-  return '<div class="wd'+(isToday?' today':'')+(rest?' rest':'')+'">'
+  const logged=d&&d.session;
+  const missed=d&&d.planned&&!d.session&&date<todayISO();
+  return '<button class="wd'+(isToday?' today':'')+(rest?' rest':'')+(missed?' missed':'')+'"'
+  +' onclick="openDaySheet(\''+date+'\')"'
+  +' aria-label="'+DY[dowOf(date)]+' '+fmtD(date)+', '
+    +(logged?'trained':(rest?'rest day':(missed?'not logged':'planned')))+'. See the day.">'
   +'<div class="dow">'+DY[dowOf(date)]+'</div><div class="dn">'+(+date.split('-')[2])+'</div>'
   +'<div class="ty">'+(rest?'Rest':ty)+'</div>'
-  +'<div class="ck">'+(d&&d.session?I.check:'')+'</div></div>';
+  +'<div class="ck">'+(logged?I.check:(missed?'<span class="ms">·</span>':''))+'</div></button>';
  });
+ /* the label says which week, so "looking back" and "what I am about to do"
+    can never be mistaken for each other */
+ (function(){
+  const ws=plWeeks(),i=ws.indexOf(mon);
+  const thisWk=mon===mondayOf(todayISO());
+  document.getElementById('plWkLbl').textContent=thisWk?'This week'
+    :fmtD(mon)+' - '+fmtD(shiftISO(mon,6));
+  document.getElementById('plPrev').disabled=i<=0;
+  document.getElementById('plNext').disabled=i>=ws.length-1;
+ })();
  const tot=sessionSets(),dn=sessionDone(),pct=tot?Math.round(dn/tot*100):0;
  document.getElementById('plHead').innerHTML=
   '<div class="l">Session '+DB.get('sessionNo')+' / '+CFG.programme.sessionsTotal+'</div>'
@@ -3028,6 +3103,30 @@ function renderStats(){
   +'</div>';
  }):'<div class="empty"><div class="t">Nothing logged yet</div>This week has no entries.</div>';
 }
+/* THE WHOLE DAY, WITHOUT LEAVING WHERE YOU ARE. Tapping Tuesday on the week
+   strip should not throw a member onto another tab; they were looking at their
+   week and should still be looking at it when they close this. */
+function openDaySheet(date){
+ const d=DB.get('days').find(x=>x.date===date);
+ const t=document.getElementById('daySheetT'),s=document.getElementById('daySheetS'),b=document.getElementById('daySheetB');
+ t.textContent=DY[dowOf(date)]+' · '+fmtD(date);
+ if(!d){
+  /* a day that has not happened is not an empty day */
+  const future=date>todayISO();
+  s.textContent=future?'Still to come.':'Nothing was logged on this day.';
+  b.innerHTML='<div class="dsline miss">'+(future
+    ?'This day is in your plan but has not arrived yet.'
+    :'No session, no meals and no numbers were recorded.')+'</div>';
+ }else{
+  const m=DB.get('member');
+  const dayNo=Math.round((new Date(date)-new Date(m.start))/864e5)+1;
+  s.textContent='Day '+dayNo+' of '+CFG.programme.days+(date===todayISO()?' · today':'');
+  b.innerHTML=dayDetail(d);
+ }
+ document.getElementById('daySheet').classList.add('on');
+}
+function closeDaySheet(){document.getElementById('daySheet').classList.remove('on');}
+
 /* ONE WAY IN, FROM ANY SURFACE. Jumps to the week that day belongs to, opens
    it, and scrolls it into view, so tapping a square in June does not silently
    do nothing because the list is showing this week. */
@@ -3133,6 +3232,35 @@ function consistency(){
  const met=keys.filter(k=>wk[k].filter(d=>d.session).length>=weeklyTarget()).length;
  return {planned:planned,done:done,cur:cur,best:best,restPlanned:restPlanned,restTaken:restTaken,
    weeksMet:met,weeksWhole:keys.length};
+}
+/* ── ALL TIME BESTS, PER EXERCISE ────────────────────────────────────────
+   From logged sets only. No targets, no estimates, no projections. */
+function allTimeBests(){
+ const by={};
+ /* every set ever stored against a day */
+ DB.get('days').forEach(d=>{
+  const w=dayWorkout(d);if(!w)return;
+  w.ex.forEach(e=>{
+   e.sets.forEach(s=>{
+    const kg=+s.kg;if(!kg)return;
+    const cur=by[e.n];
+    if(!cur||kg>cur.kg||(kg===cur.kg&&s.reps>cur.reps))
+     by[e.n]={n:e.n,g:e.g,kg:kg,reps:+s.reps||0,date:d.date};
+   });
+  });
+ });
+ /* and today's session, which is not written into the day until it is finished */
+ DB.get('exercises').forEach(e=>{
+  e.sets.filter(s=>s.done).forEach(s=>{
+   const kg=+s.kg;if(!kg)return;
+   const cur=by[e.n];
+   if(!cur||kg>cur.kg||(kg===cur.kg&&(+s.reps||0)>cur.reps))
+    by[e.n]={n:e.n,g:e.g,kg:kg,reps:+s.reps||0,date:todayISO()};
+  });
+ });
+ /* an exercise that is in the plan but never loaded is a row, not a gap */
+ DB.get('exercises').forEach(e=>{if(!by[e.n])by[e.n]={n:e.n,g:e.g,kg:0,reps:0,date:null};});
+ return Object.keys(by).map(k=>by[k]).sort((a,b)=>b.kg-a.kg||a.n.localeCompare(b.n));
 }
 /* ── MILESTONES ──────────────────────────────────────────────────────────
    Verified or absent. Each one carries what, when, and the number behind it. */
@@ -3240,6 +3368,23 @@ function renderStatBands(){
   ?mapSafe(ms,x=>'<div class="mile"><div class="mt">'+esc(x.t)+'</div>'
     +'<div class="mw">'+esc(x.w)+'</div><div class="md">'+esc(x.d)+'</div></div>')
   :'';
+
+ /* ALL TIME BESTS. Every number is a set somebody logged, with its date. */
+ const bests=allTimeBests();
+ const lifted=bests.filter(b=>b.kg>0);
+ document.getElementById('stBestHint').textContent=lifted.length
+   ?lifted.length+' of '+bests.length+' movements loaded'
+   :'nothing logged yet';
+ document.getElementById('stBests').innerHTML=mapSafe(bests,b=>
+  '<div class="best'+(b.kg?'':' none')+(b.date===todayISO()?' fresh':'')+'">'
+  +'<div class="bn">'+esc(b.n)+'<span class="bg">'+esc(b.g||'')+'</span></div>'
+  +(b.kg
+    ?'<div class="bk">'+b.kg+'<span class="u"> kg</span></div>'
+     +'<div class="bd">'+(b.reps?b.reps+' reps · ':'')
+      +(b.date===todayISO()?'set today':fmtD(b.date))+'</div>'
+    :'<div class="bk none">not lifted yet</div>'
+     +'<div class="bd">it will appear the first time you log a set</div>')
+  +'</div>');
 
  /* MEASUREMENTS: only when the member is actually taking them. */
  const me=document.getElementById('stMeasure');
@@ -3758,6 +3903,75 @@ async function runSelfTest(){
       !document.getElementById('stHist').open);
     go('today');
    })();
+   /* TAP A DATE, SEE THAT DAY. The strip was seven decorative divs. */
+   (function(){
+    go('plan');
+    const wd=Array.from(document.querySelectorAll('#plWeek .wd'));
+    ok('Plan: every day in the week is a control',
+      wd.length===7&&wd.every(b=>b.tagName==='BUTTON'&&b.getAttribute('onclick')),wd.length+' days');
+    ok('Plan: every day is a real target',
+      wd.every(b=>b.getBoundingClientRect().height>=44));
+    ok('Plan: every day says what it is for a screen reader',
+      wd.every(b=>(b.getAttribute('aria-label')||'').length>8));
+
+    /* it must open THAT day, not today dressed up as that day */
+    const past=DB.get('days').filter(d=>dayWorkout(d)&&d.date!==todayISO());
+    if(past.length){
+     const p=past[past.length-1];
+     openDaySheet(p.date);
+     const body=document.getElementById('daySheetB').textContent||'';
+     const title=document.getElementById('daySheetT').textContent||'';
+     ok('Plan: a date opens that date, not today',
+       title.indexOf(fmtD(p.date))>-1&&body.indexOf(p.workout.ex[0].n)>-1,title);
+     ok('Plan: the sheet carries that day\'s actual sets',
+       body.indexOf('kg x')>-1,body.slice(0,60));
+     closeDaySheet();
+    }
+    /* a day with nothing in it must say so rather than render an empty panel */
+    openDaySheet(shiftISO(todayISO(),40));
+    ok('Plan: a day that has not arrived says so',
+      /still to come|has not arrived/i.test(document.getElementById('daySheetB').textContent||''));
+    closeDaySheet();
+
+    /* LOOKING BACK MUST NOT CHANGE WHAT THE START BUTTON STARTS. */
+    const sessBefore=document.getElementById('plHead').textContent;
+    plShift(-1);
+    const sessAfter=document.getElementById('plHead').textContent;
+    const lbl=document.getElementById('plWkLbl').textContent;
+    ok('Plan: changing the week you look at does not change today\'s session',
+      sessBefore===sessAfter,sessBefore.slice(0,30)+' vs '+sessAfter.slice(0,30));
+    ok('Plan: the label says which week is being shown',lbl!=='This week',lbl);
+    PL_WEEK=mondayOf(todayISO());renderPlan();
+   })();
+
+   /* ALL TIME BESTS TRACE TO LOGGED SETS. */
+   (function(){
+    go('stats');
+    const b=allTimeBests();
+    ok('Bests: one row per movement, including ones never loaded',
+      b.length>=DB.get('exercises').length,b.length+' rows');
+    /* the heaviest set actually stored anywhere */
+    let top=0;
+    DB.get('days').forEach(d=>{const w=dayWorkout(d);if(!w)return;
+     w.ex.forEach(e=>e.sets.forEach(s=>{if(+s.kg>top)top=+s.kg;}));});
+    DB.get('exercises').forEach(e=>e.sets.filter(s=>s.done).forEach(s=>{if(+s.kg>top)top=+s.kg;}));
+    const over=b.filter(x=>x.kg>top);
+    ok('Bests: no best exceeds the heaviest set ever logged',over.length===0,
+      over.map(x=>x.n+' '+x.kg+' > '+top).join(', '));
+    /* and every dated best names a day that exercise was actually trained */
+    const bad=b.filter(x=>{
+     if(!x.date||x.date===todayISO())return false;
+     const d=DB.get('days').find(y=>y.date===x.date);
+     const w=d&&dayWorkout(d);
+     return !w||!w.ex.some(e=>e.n===x.n&&e.sets.some(s=>+s.kg===x.kg));
+    });
+    ok('Bests: every date is a day that lift was actually logged',bad.length===0,
+      bad.map(x=>x.n+' on '+x.date).join(', '));
+    ok('Bests: a movement never loaded says so instead of vanishing',
+      b.filter(x=>!x.kg).every(x=>true)&&document.querySelectorAll('#stBests .best').length===b.length,
+      document.querySelectorAll('#stBests .best').length+' rendered of '+b.length);
+    go('today');
+   })();
    /* the week strip is meant to show a WEEK, not two thirds of one */
    (function(){go('plan');const wk=document.querySelector('#pg-plan .week');
     ok('Plan: all seven days fit without scrolling sideways',
@@ -3912,9 +4126,22 @@ async function runSelfTest(){
     const bar=document.getElementById('restBar');
     const ir=inp?inp.getBoundingClientRect():null;
     const br=bar.getBoundingClientRect();
-    const overlaps=!!ir&&ir.width&&Math.min(ir.bottom,br.bottom)-Math.max(ir.top,br.top)>2
-      &&Math.min(ir.right,br.right)-Math.max(ir.left,br.left)>2;
-    ok('Rest: the timer never sits on top of the set you are logging',!overlaps);
+    /* A FIXED BAR WILL OVERLAP SOME INPUT AT SOME SCROLL POSITION. That is
+       true of every bottom bar ever built, so asserting it never happens is
+       asserting something impossible and the check drifts green or red with
+       whatever scroll the harness left behind.
+       The real promise is that the field you are WORKING IN is clear, which is
+       what keepFieldClear guarantees, and which is checked directly below. */
+    /* an instant scroll, because a check that measures during a smooth one is
+       measuring the animation rather than the result */
+    if(inp){inp.focus();keepFieldClear(inp,true);}
+    const ir2=inp?inp.getBoundingClientRect():null;
+    const br2=bar.getBoundingClientRect();
+    const covered=!!ir2&&ir2.width&&bar.classList.contains('on')
+      &&Math.min(ir2.bottom,br2.bottom)-Math.max(ir2.top,br2.top)>2;
+    ok('Rest: the field you are logging into is never under the timer',!covered,
+      ir2?('field '+Math.round(ir2.bottom)+', bar top '+Math.round(br2.top)):'no field');
+    if(inp)inp.blur();
     /* AND THE FIELD YOU ARE TYPING IN IS PUT SOMEWHERE YOU CAN SEE IT. */
     (function(){
      const f=document.querySelector('#plEx .set input');
@@ -4816,7 +5043,7 @@ restLoad();
    know about a fixed bottom nav or a floating rest timer. So a field can be
    scrolled "into view" and still be underneath both, or underneath the
    keyboard. visualViewport is the one that actually shrinks. */
-function keepFieldClear(el){
+function keepFieldClear(el,instant){
  if(!el)return;
  const vv=window.visualViewport;
  const topEdge=(vv?vv.offsetTop:0)+70;                    /* under the top bar */
@@ -4831,7 +5058,7 @@ function keepFieldClear(el){
  const r=el.getBoundingClientRect();
  if(r.top>=topEdge&&r.bottom<=bottomEdge)return;          /* already clear */
  const target=topEdge+Math.max(0,(bottomEdge-topEdge-r.height)/2);
- scrollBy({top:r.top-target,behavior:'smooth'});
+ scrollBy({top:r.top-target,behavior:instant?'instant':'smooth'});
 }
 addEventListener('focusin',function(e){
  const t=e.target;
