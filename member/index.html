@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
-<link rel="mask-icon" href="icon-mono.svg" color="#C8FF2E">
+<link rel="mask-icon" href="icon-mono.svg" color="#FF7A1F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Total Uplift">
@@ -41,10 +41,12 @@
 --sat:env(safe-area-inset-top,0px);
 --sab:env(safe-area-inset-bottom,0px);
 /* ── BRAND (swap these per client) ───────────────────────── */
---brand:#C8FF2E;            /* the one accent: Total Uplift red-orange */
---brand-dark:#A9E800;
+--brand:#FF7A1F;            /* the one accent: Total Uplift orange. Warmer and
+   one step further from red than the staff surface's, deliberately: on a dark
+   canvas "start" and "error" must never blur. */
+--brand-dark:#E85D0A;
 --ink-deep:#0E141B;         /* Total Uplift navy, the app base */
---on-accent:#0A0D08;
+--on-accent:#1C0A03;
 /* ── DERIVED (do not edit) ───────────────────────────────── */
 --brand-soft:color-mix(in srgb,var(--brand) 16%,transparent);
 --brand-glow:color-mix(in srgb,var(--brand) 30%,transparent);
@@ -59,10 +61,12 @@
    fine on a monitor and not fine on a phone held at arm's length in a gym. */
 /* lime measures ~17:1 on the canvas, so unlike the old orange it needs no
    separate text token. It is legible everywhere it appears. */
---brand-txt:#C8FF2E;--txt:#F4F7F3;--muted:#A6AFA8;--faint:#8A938C;
+--brand-txt:#FF8E4D;--txt:#F4F7F3;--muted:#A6AFA8;--faint:#8A938C;
 --line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.05);
 --green:#4FD7B0;--green-soft:rgba(34,181,115,.16);
---amber:#FF826D;--amber-soft:rgba(224,161,27,.16);
+/* AMBER, not coral. Coral beside an orange brand is the same collision mint
+   made beside green: a status hue one step from the accent. */
+--amber:#F7B23B;--amber-soft:rgba(247,178,59,.16);
 --danger:#FF5A4E;--danger-soft:rgba(224,80,58,.16);
 --radius:18px;--r-md:14px;--r-sm:10px;
 --ease:cubic-bezier(.16,1,.3,1);
@@ -122,7 +126,20 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .bar .fi{height:100%;border-radius:99px;transition:width .7s var(--ease)}
 .bar .bn{font-size:11.5px;color:var(--faint);margin-top:5px;line-height:1.45}
 /* the ring is gone, so the indicators take the whole card */
-.score-wrap{display:block}
+.score-wrap{display:block;position:relative;z-index:1}
+/* THE EMBER AURA. One breath of brand light, from the corner, behind everything
+   on the card. Decoration lives on the card, never on the data. */
+.td-score{position:relative;overflow:hidden}
+.td-score::before{content:'';position:absolute;top:-70px;left:-40px;width:260px;height:220px;
+ background:radial-gradient(closest-side,var(--brand-glow),transparent 70%);
+ pointer-events:none;opacity:.8}
+.td-score>*{position:relative;z-index:1}
+/* the flame at three strengths: category by intensity, never by a status hue */
+.bar .fi.move{background:linear-gradient(90deg,var(--brand-dark),var(--brand) 55%,#FFC08A);
+ box-shadow:0 0 14px var(--brand-glow)}
+.bar .fi.fuel{background:linear-gradient(90deg,color-mix(in srgb,var(--brand-dark) 66%,var(--surface-3)),color-mix(in srgb,var(--brand) 66%,var(--surface-3)));
+ box-shadow:0 0 10px color-mix(in srgb,var(--brand) 14%,transparent)}
+.bar .fi.rest{background:linear-gradient(90deg,color-mix(in srgb,var(--brand-dark) 38%,var(--surface-3)),color-mix(in srgb,var(--brand) 38%,var(--surface-3)))}
 /* a hint, not a primary action: the hero above it is the primary action.
    Still a full 44px target. */
 .nextact{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;margin-top:2px;
@@ -455,6 +472,8 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .lookback .lt{font-size:14px;font-weight:750}
 .lookback .ls{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
 .lookback .lg{margin-left:auto;color:var(--faint);flex-shrink:0}
+.lookback .lpath{margin-top:2px;line-height:0}
+.lookback .lpath .upath.cmp{height:20px}
 
 /* ── PLAN: ONE EXERCISE AT A TIME ─────────────────────────── */
 /* collapse is PRESENTATIONAL. Everything still renders, so every action and
@@ -513,6 +532,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 
 /* ── THE UPLIFT PATH ──────────────────────────────────────── */
 .upath{width:100%;height:110px;display:block;overflow:visible}
+.upath .climb{filter:drop-shadow(0 0 5px var(--brand-glow))}
 .upath.cmp{height:38px}
 .upcap{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:10px}
 .upwrap{padding:4px 0}
@@ -1855,10 +1875,14 @@ function renderLookback(){
  const el=document.getElementById('tdLookback');if(!el)return;
  const m=DB.get('member');
  const shots=(DB.get('shots')||[]).length;
+ /* the doorway to your progress DRAWS your progress, in the space its second
+    line of copy used to spend on words. And that line still said "90 day
+    grid", which retired when the Path arrived. */
  el.innerHTML='<span style="min-width:0;flex:1">'
   +'<span class="lt">Your progress so far</span>'
-  +'<div class="ls">'+m.day+' days in'+(shots?', '+shots+' progress photos':'')
-  +', and the whole 90 day grid. All in Stats.</div></span>'
+  +'<div class="ls">Day '+m.day+' of '+CFG.programme.days
+   +(shots?' · '+shots+' photo'+(shots===1?'':'s'):'')+' · all in Stats</div>'
+  +'<div class="lpath">'+upliftPath(true)+'</div></span>'
   +'<span class="lg">'+I.arrow+'</span>';
 }
 function renderProvenance(){
@@ -1889,12 +1913,11 @@ function renderToday(){
     programme itself had prescribed, and it took two nested weightings over
     four inputs to explain. Three plain counts replace it. */
  const ring=document.getElementById('tdRing');if(ring)ring.remove();
- const shade={move:'var(--brand)',
-   fuel:'color-mix(in srgb,var(--brand) 68%,var(--surface-3))',
-   rest:'color-mix(in srgb,var(--brand) 40%,var(--surface-3))'};
- /* the number on the row is WHAT WAS COUNTED, never a mark out of a hundred */
+ /* the number on the row is WHAT WAS COUNTED, never a mark out of a hundred.
+    The fill is a class, not an inline colour, so the flame gradient and its
+    glow live in one place in the stylesheet. */
  const bar=x=>'<div class="bar"><div class="t"><span>'+x.n+'</span><b>'+x.v+'</b></div>'
-  +'<div class="tr"><div class="fi" style="width:'+x.pct+'%;background:'+shade[x.k]+'"></div></div>'
+  +'<div class="tr"><div class="fi '+x.k+'" style="width:'+x.pct+'%"></div></div>'
   +(x.note?'<div class="bn">'+x.note+'</div>':'')+'</div>';
  /* CATEGORY, not status: the accent at three strengths tells the three apart
     without any of them claiming good or bad. Rest is simply absent when
@@ -2118,7 +2141,15 @@ function upliftPath(compact){
  g+='<path d="M'+last[0].toFixed(1)+' '+last[1].toFixed(1)+' L'+x(n-1).toFixed(1)+' '+last[1].toFixed(1)+'"'
   +' fill="none" stroke="var(--line2)" stroke-width="1.4" stroke-dasharray="2 3"'
   +' vector-effect="non-scaling-stroke"/>';
- g+='<path d="'+line+'" fill="none" stroke="var(--brand)" stroke-width="2"'
+ /* the climb burns dark into light along its length, and carries a soft glow.
+    The id is unique per draw: two paths on one screen sharing a gradient id
+    would silently paint one of them black. */
+ const uid='upg'+Math.floor((typeof performance!=='undefined'?performance.now():0)*10)%100000+Math.floor(W)+(compact?'c':'f');
+ g='<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="1" y2="0">'
+  +'<stop offset="0" stop-color="var(--brand-dark)"/>'
+  +'<stop offset=".62" stop-color="var(--brand)"/>'
+  +'<stop offset="1" stop-color="#FFC08A"/></linearGradient></defs>'+g;
+ g+='<path class="climb" d="'+line+'" fill="none" stroke="url(#'+uid+')" stroke-width="2"'
   +' stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>';
  if(!compact){
   /* milestones on the axis, labelled, so the climb has landmarks */
@@ -3014,7 +3045,7 @@ function receiptFor(month){
  const mem=DB.get('member');
  const w=window.open('','_blank');
  if(!w){toast('Allow pop-ups to open your receipt');return;}
- const brand=getComputedStyle(document.documentElement).getPropertyValue('--brand').trim()||'#C8FF2E';
+ const brand=getComputedStyle(document.documentElement).getPropertyValue('--brand').trim()||'#FF7A1F';
  w.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
  +'<title>Receipt '+month+'</title><style>*{margin:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}'
  +'body{background:#eee;color:#1a1a1a;padding:18px}.p{max-width:520px;margin:0 auto;background:#fff;padding:26px}'
@@ -4401,8 +4432,15 @@ async function runSelfTest(){
    const bgs=getComputedStyle(sess).backgroundColor+getComputedStyle(sess).backgroundImage;
    ok('Hero: the panel is a dark card, not a lime block',bgs.indexOf('200, 255, 46')<0,bgs.slice(0,60));
    const goBtn=sess.querySelector('.go');
-   ok('Hero: the lime is spent on the ACTION',
-     !!goBtn&&getComputedStyle(goBtn).backgroundColor.indexOf('200, 255, 46')>-1);
+   /* pinned to the LIVE brand token, not to a hard-coded rgb: this check was
+      stranded once by the lime era ending and once is enough */
+   (function(){
+    const want=(function(){const d=document.createElement('div');d.style.color='var(--brand)';
+     document.body.appendChild(d);const c=getComputedStyle(d).color;d.remove();return c;})();
+    ok('Hero: the accent is spent on the ACTION',
+      !!goBtn&&getComputedStyle(goBtn).backgroundImage.indexOf('gradient')>-1
+      ||(!!goBtn&&getComputedStyle(goBtn).backgroundColor===want));
+   })();
    ok('Hero: the action is a real target',!!goBtn&&goBtn.getBoundingClientRect().height>=48,
      goBtn?Math.round(goBtn.getBoundingClientRect().height)+'px':'missing');
   })();
@@ -4466,7 +4504,7 @@ async function runSelfTest(){
   (function(){
    go('today');
    const bars=Array.from(document.querySelectorAll('#tdBars .fi'));
-   const status=['255, 130, 109','255, 90, 78','79, 215, 176'];  /* coral, red, mint */
+   const status=['247, 178, 59','255, 90, 78','79, 215, 176'];  /* amber, red, mint */
    const borrowed=bars.filter(b=>{
     const bg=getComputedStyle(b).backgroundColor+getComputedStyle(b).backgroundImage;
     return status.some(s=>bg.indexOf(s)>-1);});
@@ -4479,10 +4517,10 @@ async function runSelfTest(){
     const p=document.querySelector('#pg-today .prov.unset');
     if(p){const c=getComputedStyle(p).color;
      ok('Colour: asking a question is not painted as a warning',
-       c.indexOf('255, 130, 109')<0&&c.indexOf('255, 90, 78')<0,c);}
+       c.indexOf('247, 178, 59')<0&&c.indexOf('255, 90, 78')<0,c);}
    })();
     ok('Colour: a perfect score is not painted as a warning',
-     !rest||getComputedStyle(rest).backgroundColor.indexOf('255, 130, 109')<0);
+     !rest||getComputedStyle(rest).backgroundColor.indexOf('247, 178, 59')<0);
   })();
   /* THE REBRAND IS COMPLETE, OR IT IS A BUG.
      The first palette pass swapped the hexes I expected the file to hold, not
@@ -4490,9 +4528,11 @@ async function runSelfTest(){
      dark orange plus blue-grey borders on every card. One contrast failure
      exposed seven leftovers. This makes a half-done palette impossible. */
   (function(){
+   /* two dead eras now: the first orange, and the lime experiment */
    const DEAD=['#EF3A1B','#F86E52','#C22C10','#B82A10','#E0503A','#E05555',
                '#E0A11B','#D97706','#22B573','#16A34A','#22303D','#1B2733',
-               '#2A3947','#3A4A58','#243341','#0B1117','#131C25','#18232E'];
+               '#2A3947','#3A4A58','#243341','#0B1117','#131C25','#18232E',
+               '#C8FF2E','#A9E800','#FF826D'];
    /* stylesheets ONLY. innerHTML includes this script, so the DEAD array below
       would match itself and the check could never pass. */
    const src=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('');
