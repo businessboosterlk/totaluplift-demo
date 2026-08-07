@@ -513,6 +513,17 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .dl2.off{text-align:left;border:1px dashed var(--line);background:none;width:100%;min-height:44px}
 .dl2.off .v{font-size:12.5px;font-weight:600;color:var(--muted)}
 
+/* ── THE CLOUD INBOX ──────────────────────────────────────── */
+.cmsg{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
+ padding:13px 15px;margin-bottom:8px}
+.cmsg.unread{border-color:color-mix(in srgb,var(--brand) 40%,transparent)}
+.cmsg .ct{font-size:14px;font-weight:750;display:flex;align-items:baseline;gap:10px}
+.cmsg .ck{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--faint)}
+.cmsg.unread .ck{color:var(--brand-txt)}
+.cmsg .cb{font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:5px}
+.cmsg .cd{font-size:11px;color:var(--faint);margin-top:7px}
+.cok{color:var(--green);flex-shrink:0}
+
 /* ── THE INSTALL SHEET ────────────────────────────────────── */
 /* fixed, above the navigation, and never part of Today's height */
 .isheet{position:fixed;left:10px;right:10px;bottom:calc(var(--navh) + 10px);
@@ -1447,6 +1458,15 @@ function renderTrackSheet(){
  }).join('')
  /* THE REST TIMER SETTINGS live here rather than in a second settings screen
     nobody would find. Sound and vibration are off until asked for. */
+ +'<div class="trk-sub">Live demo</div>'
+ +'<div class="trk"><div style="min-width:0"><div class="n">Total Uplift Cloud</div>'
+  +'<div class="d">'+(CLOUD.state==='connected'
+    ?'Connected as the demo member. The bell is a live inbox with real read receipts.'
+    :'Signs the demo member into a real database. The bell becomes a live inbox and the desk sees real read receipts. Demo account, demo gym, fictional data.')+'</div></div>'
+  +(CLOUD.state==='connected'
+    ?'<span class="cok">'+I.check+'</span>'
+    :'<button class="pbtn" style="flex:0 0 auto;min-width:96px" onclick="cloudSignIn()">'
+     +(CLOUD.state==='connecting'?'Connecting':'Connect')+'</button>')+'</div>'
  +'<div class="trk-sub">Rest timer</div>'
  +'<div class="trk"><div style="min-width:0"><div class="n">Start the timer for me</div>'
   +'<div class="d">It begins the moment you tick a set. Switch this off if you would rather start it yourself.</div></div>'
@@ -1836,6 +1856,14 @@ function demoStamp(){
    +(CFG.data.mode==='demo'?' · refreshing starts it over':'');
 }
 function renderDemoTag(){
+ /* BOTH truths, always: the inbox is a real database, and every training
+    number on screen is still demo fiction. Dropping either half is a lie.
+    And ONLY while this is a demo build: a live cast for a real gym has real
+    numbers, and its connected state is simply the app working as sold. */
+ if(CLOUD.state==='connected'&&CFG.demo.asOf){
+  const el=document.getElementById('demoTag');
+  if(el){el.innerHTML='<span class="d" style="background:var(--green)"></span>Demo data · inbox live via Total Uplift Cloud';return;}
+ }
  const el=document.getElementById('demoTag');if(!el)return;
  const s=demoStamp();
  if(!s){el.style.display='none';el.innerHTML='';return;}
@@ -2004,7 +2032,83 @@ function renderToday(){
   document.getElementById('pg-today').appendChild(bs);}
  bs.textContent=CFG.gym.name+' · build '+CFG.app.build;
 }
+/* ── TOTAL UPLIFT CLOUD ──────────────────────────────────────────────────
+   Plain fetch against Supabase auth + REST. The publishable key is public by
+   design; every read is decided by row level security on the server, which is
+   the entire point of having one. */
+const CLOUD_CFG={
+ url:'https://yyviiwnqgphyklcoijyd.supabase.co',
+ key:'sb_publishable_RkGimnQ1rzRrU4Io5qn9xg_Fgi4LxiO',
+ /* STAGE PROP: a demo member of a demo gym holding fictional data, in an org
+    the database walls off from every real one. Not production auth. */
+ demo:{email:'ravindu@demo.totaluplift.lk',pass:'uplift-demo-2026'}
+};
+let CLOUD={token:null,inbox:[],state:'demo'};
+async function cloudSignIn(){
+ if(CLOUD.state==='connecting')return;
+ CLOUD.state='connecting';renderDemoTag();
+ try{
+  const r=await fetch(CLOUD_CFG.url+'/auth/v1/token?grant_type=password',{
+   method:'POST',headers:{apikey:CLOUD_CFG.key,'Content-Type':'application/json'},
+   body:JSON.stringify({email:CLOUD_CFG.demo.email,password:CLOUD_CFG.demo.pass})});
+  if(!r.ok)throw new Error('sign in refused ('+r.status+')');
+  const j=await r.json();
+  CLOUD.token=j.access_token;CLOUD.state='connected';
+  await cloudFetchInbox();
+  renderDemoTag();rerender();
+  toast(I.check+' Connected. Your inbox is live from Total Uplift Cloud.',4200);
+ }catch(e){
+  CLOUD.state='failed';CLOUD.token=null;renderDemoTag();
+  /* SAY IT PLAINLY. A connection that fails silently is the worst state. */
+  toast('Could not connect: '+(navigator.onLine===false?'no signal.':e.message),4600);
+ }
+}
+async function cloudFetchInbox(){
+ if(!CLOUD.token)return;
+ const r=await fetch(CLOUD_CFG.url+'/rest/v1/tu_message_recipients'
+  +'?select=message_id,read_at,delivered_at,msg:tu_messages(title,body,mtype,created_at)'
+  +'&order=delivered_at.desc',{
+  headers:{apikey:CLOUD_CFG.key,Authorization:'Bearer '+CLOUD.token}});
+ if(!r.ok)throw new Error('inbox read refused ('+r.status+')');
+ CLOUD.inbox=await r.json();
+ const dot=document.getElementById('tbDot');
+ if(dot)dot.style.display=CLOUD.inbox.some(x=>!x.read_at)?'':'none';
+}
+/* THE RECEIPT IS A SERVER ROW. RLS only lets this member touch their own rows,
+   and a trigger only lets read_at change, so a receipt can never be forged
+   into anything else. */
+async function cloudMarkRead(id){
+ if(!CLOUD.token)return;
+ await fetch(CLOUD_CFG.url+'/rest/v1/tu_message_recipients?message_id=eq.'+id,{
+  method:'PATCH',headers:{apikey:CLOUD_CFG.key,Authorization:'Bearer '+CLOUD.token,
+   'Content-Type':'application/json',Prefer:'return=minimal'},
+  body:JSON.stringify({read_at:new Date().toISOString()})});
+}
+function cloudInboxHtml(){
+ if(!CLOUD.inbox.length)return '<div class="dsline miss">Nothing in your inbox yet.</div>';
+ return mapSafe(CLOUD.inbox,x=>{
+  const m=x.msg||{};
+  return '<div class="cmsg'+(x.read_at?'':' unread')+'">'
+   +'<div class="ct">'+esc(m.title||'')+'<span class="ck">'
+    +(x.read_at?'read':'new')+'</span></div>'
+   +'<div class="cb">'+esc(m.body||'')+'</div>'
+   +'<div class="cd">'+esc(String(m.mtype||''))+' · '+(m.created_at?fmtD(m.created_at.slice(0,10)):'')+'</div></div>';
+ });
+}
 function showNudge(){
+ /* connected: the bell is a real inbox. Opening it writes the receipts. */
+ if(CLOUD.state==='connected'){
+  document.getElementById('daySheetT').textContent='Your inbox';
+  document.getElementById('daySheetS').textContent='Live from '+CFG.gym.name+'. Opening this marks things read, and the desk can see that.';
+  document.getElementById('daySheetB').innerHTML=cloudInboxHtml();
+  document.getElementById('daySheet').classList.add('on');
+  const unread=CLOUD.inbox.filter(x=>!x.read_at);
+  unread.forEach(x=>{x.read_at=new Date().toISOString();});
+  const dot=document.getElementById('tbDot');if(dot)dot.style.display='none';
+  Promise.all(unread.map(x=>cloudMarkRead(x.message_id))).catch(()=>{});
+  return;
+ }
+ if(CLOUD.state!=='demo'){toast(navigator.onLine===false?'The inbox needs signal. Everything else keeps working.':'Not connected. Open your profile to connect the live demo.');return;}
  const n=DB.get('nudges');
  if(!n.length){toast('Nothing new right now');return;}
  toast(n[0].t+': '+n[0].m,4200);
@@ -3942,6 +4046,24 @@ async function runSelfTest(){
       !document.getElementById('stHist').open);
     go('today');
    })();
+   /* THE CLOUD LAYER, checked without touching the network: the harness must
+      be green on a plane. Connection itself is proven by hand against the
+      real database, and the server's own isolation test is the real gate. */
+   (function(){
+    ok('Cloud: the adapter exists and starts in demo mode',
+      typeof cloudSignIn==='function'&&['demo','connected','failed','connecting'].indexOf(CLOUD.state)>-1);
+    const keep={state:CLOUD.state,inbox:CLOUD.inbox};
+    CLOUD.state='connected';
+    CLOUD.inbox=[{message_id:'x',read_at:null,msg:{title:'August fees are due',body:'b',mtype:'payment',created_at:'2026-08-01T00:00:00Z'}}];
+    const html=cloudInboxHtml();
+    ok('Cloud: an unread message renders as new',html.indexOf('unread')>-1&&html.indexOf('August fees are due')>-1);
+    CLOUD.inbox[0].read_at='2026-08-01T01:00:00Z';
+    ok('Cloud: a read message stops claiming to be new',cloudInboxHtml().indexOf('unread')<0);
+    CLOUD.state=keep.state;CLOUD.inbox=keep.inbox;
+    /* and the stage-prop credentials must never be anything but the demo persona */
+    ok('Cloud: only the demo stage-prop account is baked into the app',
+      CLOUD_CFG.demo.email.indexOf('@demo.totaluplift.lk')>-1);
+   })();
    /* TAP A DATE, SEE THAT DAY. The strip was seven decorative divs. */
    (function(){
     go('plan');
@@ -4251,7 +4373,8 @@ async function runSelfTest(){
    const persists=CFG.data.mode==='local';
    let written=null;try{written=localStorage.getItem(CFG.data.key);}catch(e){}
    ok('Storage: what the app keeps matches what it claims',
-     persists?!!written:(document.getElementById('demoTag').textContent||'').indexOf('starts it over')>-1,
+     persists?!!written:(document.getElementById('demoTag').textContent||'').indexOf('starts it over')>-1
+       ||(CLOUD.state==='connected'&&(document.getElementById('demoTag').textContent||'').indexOf('Demo data')>-1),
      'mode '+CFG.data.mode+', storage '+(written?'written':'empty'));
   })();
    runUndo();
