@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
-<link rel="mask-icon" href="icon-mono.svg" color="#FF7A1F">
+<link rel="mask-icon" href="icon-mono.svg" color="#FF4D1C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Total Uplift">
@@ -41,12 +41,12 @@
 --sat:env(safe-area-inset-top,0px);
 --sab:env(safe-area-inset-bottom,0px);
 /* ── BRAND (swap these per client) ───────────────────────── */
---brand:#FF7A1F;            /* the one accent: Total Uplift orange. Warmer and
-   one step further from red than the staff surface's, deliberately: on a dark
-   canvas "start" and "error" must never blur. */
---brand-dark:#E85D0A;
+--brand:#FF4D1C;            /* the one accent: Total Uplift fire. The vivid
+   red-orange Thulaib chose side by side against the muted candidate. Danger
+   moved COLD to crimson so "start" and "error" still cannot blur. */
+--brand-dark:#D63008;
 --ink-deep:#0E141B;         /* Total Uplift navy, the app base */
---on-accent:#1C0A03;
+--on-accent:#200602;
 /* ── DERIVED (do not edit) ───────────────────────────────── */
 --brand-soft:color-mix(in srgb,var(--brand) 16%,transparent);
 --brand-glow:color-mix(in srgb,var(--brand) 30%,transparent);
@@ -61,13 +61,15 @@
    fine on a monitor and not fine on a phone held at arm's length in a gym. */
 /* lime measures ~17:1 on the canvas, so unlike the old orange it needs no
    separate text token. It is legible everywhere it appears. */
---brand-txt:#FF8E4D;--txt:#F4F7F3;--muted:#A6AFA8;--faint:#8A938C;
+--brand-txt:#FF7448;--txt:#F4F7F3;--muted:#A6AFA8;--faint:#8A938C;
 --line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.05);
 --green:#4FD7B0;--green-soft:rgba(34,181,115,.16);
 /* AMBER, not coral. Coral beside an orange brand is the same collision mint
    made beside green: a status hue one step from the accent. */
 --amber:#F7B23B;--amber-soft:rgba(247,178,59,.16);
---danger:#FF5A4E;--danger-soft:rgba(224,80,58,.16);
+/* CRIMSON, not red-orange: beside a fire brand, danger has to run cold or a
+   Start button and an error read as brothers */
+--danger:#F43F5E;--danger-soft:rgba(244,63,94,.16);
 --radius:18px;--r-md:14px;--r-sm:10px;
 --ease:cubic-bezier(.16,1,.3,1);
 --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
@@ -135,7 +137,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
  pointer-events:none;opacity:.8}
 .td-score>*{position:relative;z-index:1}
 /* the flame at three strengths: category by intensity, never by a status hue */
-.bar .fi.move{background:linear-gradient(90deg,var(--brand-dark),var(--brand) 55%,#FFC08A);
+.bar .fi.move{background:linear-gradient(90deg,var(--brand-dark),var(--brand) 55%,#FF9A62);
  box-shadow:0 0 14px var(--brand-glow)}
 .bar .fi.fuel{background:linear-gradient(90deg,color-mix(in srgb,var(--brand-dark) 66%,var(--surface-3)),color-mix(in srgb,var(--brand) 66%,var(--surface-3)));
  box-shadow:0 0 10px color-mix(in srgb,var(--brand) 14%,transparent)}
@@ -166,9 +168,12 @@ input,textarea{font-family:inherit;color:var(--txt)}
 /* a thin lime edge at the top: enough to say "this one", not enough to shout */
 .sess::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;
  background:var(--brand);opacity:.9}
+/* the halo goes where the thumb goes: the one action that matters is also the
+   warmest thing on the screen, same light the day badge and the ember carry */
 .sess .go{width:100%;min-height:52px;margin-top:18px;border-radius:14px;
- background:var(--brand);color:var(--on-accent);display:flex;align-items:center;
- justify-content:center;gap:10px;font-size:15px;font-weight:800;letter-spacing:-.2px}
+ background:var(--accent-grad);color:var(--on-accent);display:flex;align-items:center;
+ justify-content:center;gap:10px;font-size:15px;font-weight:800;letter-spacing:-.2px;
+ box-shadow:0 10px 30px var(--brand-glow),0 2px 8px rgba(0,0,0,.35)}
 .sess .rail{height:6px;border-radius:99px;background:var(--surface-3);margin-top:16px;overflow:hidden}
 .sess .rail i{display:block;height:100%;background:var(--brand);border-radius:99px;
  transition:width .5s var(--ease)}
@@ -332,7 +337,10 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .wknav .lb{flex:1;text-align:center;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
 .seg{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:4px;margin-top:12px}
 .seg button{flex:1;padding:10px;min-height:44px;border-radius:10px;font-size:12.5px;font-weight:700;color:var(--muted)}
-.seg button.on{background:var(--accent-grad);color:var(--on-accent)}
+/* FLAT brand, not the gradient: at 12.5px the dark text has to clear AA against
+   the WORST stop of any sweep behind it, and brand-dark is too deep for that.
+   The gradient is for the hero; a tab pill just needs to say which one is on. */
+.seg button.on{background:var(--brand);color:var(--on-accent)}
 .day{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:8px;overflow:hidden}
 .day-h{display:flex;align-items:center;gap:12px;padding:13px 15px;width:100%;text-align:left}
 .day-h .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
@@ -2148,7 +2156,7 @@ function upliftPath(compact){
  g='<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="1" y2="0">'
   +'<stop offset="0" stop-color="var(--brand-dark)"/>'
   +'<stop offset=".62" stop-color="var(--brand)"/>'
-  +'<stop offset="1" stop-color="#FFC08A"/></linearGradient></defs>'+g;
+  +'<stop offset="1" stop-color="#FF9A62"/></linearGradient></defs>'+g;
  g+='<path class="climb" d="'+line+'" fill="none" stroke="url(#'+uid+')" stroke-width="2"'
   +' stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>';
  if(!compact){
@@ -3045,7 +3053,7 @@ function receiptFor(month){
  const mem=DB.get('member');
  const w=window.open('','_blank');
  if(!w){toast('Allow pop-ups to open your receipt');return;}
- const brand=getComputedStyle(document.documentElement).getPropertyValue('--brand').trim()||'#FF7A1F';
+ const brand=getComputedStyle(document.documentElement).getPropertyValue('--brand').trim()||'#FF4D1C';
  w.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
  +'<title>Receipt '+month+'</title><style>*{margin:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}'
  +'body{background:#eee;color:#1a1a1a;padding:18px}.p{max-width:520px;margin:0 auto;background:#fff;padding:26px}'
@@ -4504,7 +4512,7 @@ async function runSelfTest(){
   (function(){
    go('today');
    const bars=Array.from(document.querySelectorAll('#tdBars .fi'));
-   const status=['247, 178, 59','255, 90, 78','79, 215, 176'];  /* amber, red, mint */
+   const status=['247, 178, 59','244, 63, 94','79, 215, 176'];  /* amber, crimson, mint */
    const borrowed=bars.filter(b=>{
     const bg=getComputedStyle(b).backgroundColor+getComputedStyle(b).backgroundImage;
     return status.some(s=>bg.indexOf(s)>-1);});
@@ -4517,7 +4525,7 @@ async function runSelfTest(){
     const p=document.querySelector('#pg-today .prov.unset');
     if(p){const c=getComputedStyle(p).color;
      ok('Colour: asking a question is not painted as a warning',
-       c.indexOf('247, 178, 59')<0&&c.indexOf('255, 90, 78')<0,c);}
+       c.indexOf('247, 178, 59')<0&&c.indexOf('244, 63, 94')<0,c);}
    })();
     ok('Colour: a perfect score is not painted as a warning',
      !rest||getComputedStyle(rest).backgroundColor.indexOf('247, 178, 59')<0);
