@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#070908">
+<meta name="theme-color" content="#0B1117">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -53,16 +53,22 @@
 --accent-grad:linear-gradient(135deg,color-mix(in srgb,var(--brand) 82%,#fff) 0%,var(--brand) 45%,var(--brand-dark) 100%);
 --ring:0 0 0 3px color-mix(in srgb,var(--brand) 34%,transparent);
 /* ── SURFACES (dark-first: a gym floor is dim, phones are bright) ── */
-/* ── TOTAL UPLIFT, dark-first. Canvas is near-black so the lime has somewhere
-   to be electric; charcoal cards separate by TONE rather than by shadow. ── */
---bg:#070908;--surface:#121614;--surface-2:#171C19;--surface-3:#1E2521;
+/* ── TOTAL UPLIFT NAVY, dark-first. The canvas is the brand's own blue, not a
+   neutral black: it is what makes the orange read as Total Uplift rather than
+   as any dark fitness app. Cards separate by TONE, never by shadow.
+   These eight navies were killed by the lime experiment and restored with it,
+   because a palette is a system and reverting an accent is not reverting a
+   palette. ── */
+--bg:#0B1117;--surface:#131C25;--surface-2:#18232E;--surface-3:#243341;
 /* measured, not chosen: at these values every label in the app clears WCAG AA
    4.5:1 on its own background. The old --faint #637383 sat at 3.5:1, which is
    fine on a monitor and not fine on a phone held at arm's length in a gym. */
 /* lime measures ~17:1 on the canvas, so unlike the old orange it needs no
    separate text token. It is legible everywhere it appears. */
 --brand-txt:#FF7448;--txt:#F4F7F3;--muted:#A6AFA8;--faint:#8A938C;
---line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.05);
+/* navy edges, not grey ones: a white-alpha line on a blue canvas desaturates
+   every card border and was half of why the app read as black */
+--line:#22303D;--line2:#1B2733;
 --green:#4FD7B0;--green-soft:rgba(34,181,115,.16);
 /* AMBER, not coral. Coral beside an orange brand is the same collision mint
    made beside green: a status hue one step from the accent. */
@@ -70,6 +76,10 @@
 /* CRIMSON, not red-orange: beside a fire brand, danger has to run cold or a
    Start button and an error read as brothers */
 --danger:#F43F5E;--danger-soft:rgba(244,63,94,.16);
+/* danger AS TEXT needs its own lighter token, exactly as the brand does: the
+   fill value clears AA on the old near-black and misses it on navy, which is
+   lighter. One token, so every place danger is words is fixed at once. */
+--danger-txt:#FF8FA3;
 --radius:18px;--r-md:14px;--r-sm:10px;
 --ease:cubic-bezier(.16,1,.3,1);
 --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
@@ -508,7 +518,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .ex-more button{flex:1;min-width:120px;min-height:44px;border-radius:10px;
  border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
  font-size:12.5px;font-weight:700}
-.ex-more button.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 30%,transparent)}
+.ex-more button.danger{color:var(--danger-txt);border-color:color-mix(in srgb,var(--danger) 30%,transparent)}
 .ex-rest{font-size:11.5px;color:var(--faint);margin-top:10px}
 .dl2.off{text-align:left;border:1px dashed var(--line);background:none;width:100%;min-height:44px}
 .dl2.off .v{font-size:12.5px;font-weight:600;color:var(--muted)}
@@ -569,7 +579,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .pown .pbtn{flex:1;min-width:140px;min-height:44px;border-radius:10px;border:1px solid var(--line);
  background:var(--surface-2);color:var(--muted);font-size:12.5px;font-weight:700;padding:0 12px}
 .pown .pbtn.on{border-color:var(--brand);color:var(--brand-txt)}
-.pown .pbtn.danger{flex:0 0 auto;min-width:90px;color:var(--danger);
+.pown .pbtn.danger{flex:0 0 auto;min-width:90px;color:var(--danger-txt);
  border-color:color-mix(in srgb,var(--danger) 30%,transparent)}
 
 /* ── ALL TIME BESTS ───────────────────────────────────────── */
@@ -589,7 +599,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 /* ── THE WEEK STRIP, NOW TAPPABLE ─────────────────────────── */
 .wknav.plnav{margin-bottom:10px}
 .week .wd{cursor:pointer;color:inherit;font:inherit;text-align:center}
-.week .wd .ms{color:var(--danger);font-weight:800}
+.week .wd .ms{color:var(--danger-txt);font-weight:800}
 .week .wd.missed{border-color:color-mix(in srgb,var(--danger) 26%,transparent)}
 
 /* ── THE SWAP SHEET ───────────────────────────────────────── */
@@ -607,7 +617,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .swapo .tick2 .ic{width:18px;height:18px}
 .swapwarn{font-size:12px;line-height:1.5;color:var(--muted);min-height:0}
 .swapwarn.on{margin:4px 0 14px}
-.swapwarn.hot{color:var(--danger)}
+.swapwarn.hot{color:var(--danger-txt)}
 
 /* ── WHAT YOU TRACK ───────────────────────────────────────── */
 .trk{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line2)}
@@ -739,7 +749,7 @@ body.is-offline .topbar{top:30px}
 .ex-tools{display:flex;gap:8px;padding:0 16px 14px}
 .ex-tools button{min-height:44px;min-width:44px;flex:1;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .ex-tools button:hover{border-color:var(--brand-txt);color:var(--brand-txt)}
-.ex-tools button.rm:hover{border-color:var(--danger);color:var(--danger)}
+.ex-tools button.rm:hover{border-color:var(--danger);color:var(--danger-txt)}
 .from-trainer{display:flex;align-items:center;gap:8px;background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 42%,transparent);border-radius:var(--r-md);padding:11px 14px;margin-top:12px;font-size:12.5px;font-weight:600}
 .from-trainer .ic{width:15px;height:15px;color:var(--brand-txt);flex-shrink:0}
 
@@ -766,7 +776,7 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
 .sheet label{display:block;font-size:11.5px;letter-spacing:.2px;color:var(--faint);font-weight:700;margin-bottom:8px}
 .sheet input,.sheet select{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;color:var(--txt);outline:none;font-family:inherit}
 .sheet input:focus,.sheet select:focus{border-color:var(--brand-txt)}
-.sheet .err{color:var(--danger);font-size:11.5px;font-weight:600;min-height:16px;margin-top:4px}
+.sheet .err{color:var(--danger-txt);font-size:11.5px;font-weight:600;min-height:16px;margin-top:4px}
 .sheet .acts{display:flex;gap:8px;margin-top:8px}
 .sheet .acts .btn{flex:1}
 .ex-swap{margin:0 16px 12px;display:flex;align-items:center;gap:8px}
@@ -849,13 +859,13 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
 .st-hd{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .st-b{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Segoe UI',Roboto,Inter,system-ui,sans-serif;font-size:14px;font-weight:800;padding:5px 13px;border-radius:99px}
 .st-b.p{background:var(--green-soft);color:var(--green)}
-.st-b.f{background:var(--danger-soft);color:var(--danger)}
+.st-b.f{background:var(--danger-soft);color:var(--danger-txt)}
 .st-bd{overflow-y:auto;padding:6px 20px 14px}
 .st-r{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:12px}
 .st-r:last-child{border:none}
 .st-r .n{font-weight:650}
 .st-r .d{color:var(--faint);font-size:11px;margin-top:2px;word-break:break-word}
-.st-r.f .n{color:var(--danger)}
+.st-r.f .n{color:var(--danger-txt)}
 .st-ft{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
 @media(min-width:560px){.tiles,.stat3{gap:12px}}
 </style>
@@ -1143,7 +1153,7 @@ const I={
 /* progress-photo placeholder: a designed SILHOUETTE. The demo never shows a real
    person's body (see MEMBER-APP-SPEC PRIVACY). Live builds swap in a Storage URL. */
 function silhouette(angle,shade){
- const c=shade||'#1E2521';
+ const c=shade||'#243341';
  const bodies={
   front:'<ellipse cx="50" cy="22" rx="11" ry="12"/><path d="M32 42c0-6 8-8 18-8s18 2 18 8v26c0 4-2 6-6 6H38c-4 0-6-2-6-6z"/><rect x="38" y="76" width="10" height="26" rx="4"/><rect x="52" y="76" width="10" height="26" rx="4"/>',
   back:'<ellipse cx="50" cy="22" rx="11" ry="12"/><path d="M30 44c0-7 9-10 20-10s20 3 20 10v24c0 4-2 6-6 6H36c-4 0-6-2-6-6z"/><rect x="38" y="76" width="10" height="26" rx="4"/><rect x="52" y="76" width="10" height="26" rx="4"/>',
@@ -2169,7 +2179,7 @@ function renderBuild(){
      +'<span class="tag">'+(start&&now?'Day 1 · today'
         :(!start&&!now?'No photos yet for this angle'
         :(!start?'No day 1 photo for this angle':'No photo yet at this stage')))+'</span>'
-   : face(SHOT_ANGLE,ph,'#1E2521')
+   : face(SHOT_ANGLE,ph,'#243341')
      +'<span class="tag">'+SHOT_ANGLE+' · '+(now?'day '+now.day:'no photo yet')+'</span>')
   +'<span class="cmp">'+(COMPARE?'Comparing':'Compare')+'</span>';
  /* share and delete, per photo, never in bulk */
@@ -2190,7 +2200,7 @@ function renderBuild(){
    +'<div class="v">Not being measured. Tap to switch it on.</div></button>';
  document.getElementById('bdAngles').innerHTML=mapSafe(DB.get('shots'),s=>
   '<button class="angle'+(s.angle===SHOT_ANGLE?' on':'')+'" onclick="setAngle(\''+s.angle+'\')">'
-  +face(s.angle,ph,'#171C19')+'<span class="tag">'+s.angle+'</span></button>');
+  +face(s.angle,ph,'#18232E')+'<span class="tag">'+s.angle+'</span></button>');
  document.getElementById('bdCmpBtn').innerHTML=(COMPARE?I.x+'Stop comparing':I.arrow+'Compare day 1 vs today');
  /* THE LINE HAS TO MATCH WHAT IS ACTUALLY STORED. It was still promising
     "placeholder outlines" the moment a real photo existed. */
@@ -4659,11 +4669,13 @@ async function runSelfTest(){
      dark orange plus blue-grey borders on every card. One contrast failure
      exposed seven leftovers. This makes a half-done palette impossible. */
   (function(){
-   /* two dead eras now: the first orange, and the lime experiment */
+   /* DEAD: the first orange, the old status hues, and the lime experiment.
+      The eight NAVIES that used to sit here are alive again: they were never a
+      dead era of their own, only collateral damage of the lime one. */
    const DEAD=['#EF3A1B','#F86E52','#C22C10','#B82A10','#E0503A','#E05555',
-               '#E0A11B','#D97706','#22B573','#16A34A','#22303D','#1B2733',
-               '#2A3947','#3A4A58','#243341','#0B1117','#131C25','#18232E',
-               '#C8FF2E','#A9E800','#FF826D'];
+               '#E0A11B','#D97706','#22B573','#16A34A',
+               '#C8FF2E','#A9E800','#FF826D',
+               '#070908','#121614','#171C19','#1E2521'];
    /* stylesheets ONLY. innerHTML includes this script, so the DEAD array below
       would match itself and the check could never pass. */
    const src=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('');
