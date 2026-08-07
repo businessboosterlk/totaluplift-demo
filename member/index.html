@@ -582,6 +582,20 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .pown .pbtn.danger{flex:0 0 auto;min-width:90px;color:var(--danger-txt);
  border-color:color-mix(in srgb,var(--danger) 30%,transparent)}
 
+/* ── THE BAR CALL ─────────────────────────────────────────── */
+.barcall{margin:14px 0 4px;padding:12px 14px;border-radius:12px;
+ background:linear-gradient(135deg,color-mix(in srgb,var(--brand) 13%,var(--surface-2)),var(--surface-2));
+ border:1px solid color-mix(in srgb,var(--brand) 26%,transparent)}
+.bc-t{font-size:15px;font-weight:750;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.bc-t b{font-size:19px;font-weight:800;color:var(--brand-txt);font-variant-numeric:tabular-nums}
+.bc-up{font-size:10.5px;font-weight:800;color:var(--on-accent);background:var(--brand);
+ border-radius:99px;padding:2px 8px}
+.bc-w{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:6px}
+.bc-p{font-size:11.5px;color:var(--faint);line-height:1.5;margin-top:8px;
+ padding-top:8px;border-top:1px solid var(--line2)}
+.ex-n .prw{font-size:11px;color:var(--faint);font-weight:600;margin-left:8px}
+.ex-n .pr.stale{background:var(--amber-soft);color:var(--amber)}
+
 /* ── ALL TIME BESTS ───────────────────────────────────────── */
 .best{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
  padding:12px 16px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;
@@ -637,6 +651,29 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .tb-av{cursor:pointer}
 
 /* ── A DAY, OPENED ────────────────────────────────────────── */
+.dhead{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 4px}
+.dhead .dh{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.dhead .v{font-size:22px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;line-height:1}
+.dhead .v .u{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:0}
+.dhead .l{font-size:11px;color:var(--faint);margin-top:5px}
+/* a set is a pill: the weight is the number that matters, reps sit beside it */
+.dex .sets{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.setp{display:inline-flex;align-items:baseline;gap:3px;background:var(--surface-3);
+ border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-variant-numeric:tabular-nums}
+.setp b{font-size:14px;font-weight:800}
+.setp em{font-size:13px;font-weight:700;font-style:normal;margin-left:5px}
+.setp i{font-size:10px;font-style:normal;color:var(--faint);font-weight:600}
+.dfood{margin-top:2px}
+.dmeal{display:flex;gap:14px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line2)}
+.dmeal:first-child{border-top:0}
+.dmeal .n{font-size:11.5px;color:var(--faint);font-weight:700;flex:0 0 66px}
+.dmeal .v{font-size:13px;min-width:0;line-height:1.45}
+.dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dt{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.dt .v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.dt .v .u{font-size:11px;font-weight:700;color:var(--muted)}
+.dt .l{font-size:11px;color:var(--faint);margin-top:5px}
+.dsrc{font-size:11px;color:var(--faint);margin-top:9px;line-height:1.5}
 .dsec{margin-top:14px}
 .dsec:first-child{margin-top:4px}
 .dsh{font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--faint);
@@ -2649,7 +2686,17 @@ function renderPlan(){
   +'<div class="ex-h"><div class="ex-m">'
    /* a typed-in exercise has no personal best yet, and the app will not invent
       one to fill the gap where a badge would look nice */
-   +'<div class="ex-n">'+(e.pr?'<span class="pr">PR '+e.pr+' kg</span>':'<span class="pr none">No PR yet</span>')+'</div>'
+   /* THE REAL BEST, from logged sets, with its age. A best from nine weeks
+      ago is history, not a capability, and saying so turns it into a target. */
+   +(function(){
+     const b=bestFor(e.n);
+     if(!b)return '<div class="ex-n"><span class="pr none">No best yet. Your first logged set sets it.</span></div>';
+     const wk=weeksSince(b.date);
+     const stale=wk>=6;
+     return '<div class="ex-n"><span class="pr'+(stale?' stale':'')+'">Best '+b.kg+' kg x '+b.reps+'</span>'
+      +'<span class="prw">'+(b.date===todayISO()?'set today'
+        :(wk<1?'this week':(stale?wk+' weeks ago, still standing':wk+' weeks ago')))+'</span></div>';
+    })()
    +(e.g?'<div class="ex-t">'+e.g+'</div>':'')+'</div>'
   +sparkline(e.hist)+'</div>'
   +(e.prHit?'<div class="pr-hit">'+I.check+'New personal best: '+e.pr+' kg</div>':'')
@@ -2669,6 +2716,19 @@ function renderPlan(){
  /* NOT A LIVE CONTROL. Changing an exercise throws away the sets logged
     against it, so it goes behind a sheet that says so and asks first. */
  +'<button class="exswapb" onclick="openSwap('+ix+')">'+I.swap+'Swap exercise</button>'
+  /* THE BAR CALL SITS ABOVE THE SETS, because it answers what to LOAD and
+     you load the bar before you log anything. Underneath the inputs it was
+     telling somebody what to lift after they had already lifted it. */
+  +(function(){
+    const c=barCall(e),p=provenAt(e);
+    return '<div class="barcall"><div class="bc-t">Put <b>'+c.kg+' kg</b> on the bar'
+     +(c.up?'<span class="bc-up">going up</span>':'')+'</div>'
+     +'<div class="bc-w">'+esc(c.why)+'</div>'
+     /* PRESCRIBED VS PROVEN. Unflattering on purpose. */
+     +(p&&p.of>1?'<div class="bc-p">Your plan says '+e.sets.length+' x '+e.reps+' at '+e.kg
+       +' kg. You have completed all of it '+p.done+' time'+(p.done===1?'':'s')+' in '+p.of+'.</div>':'')
+     +'</div>';
+   })()
   +'<div class="sets">'+e.sets.map((s,si)=>
     '<div class="set'+(s.done?' done':'')+'">'
     +'<div class="sl">Set '+(si+1)+'</div>'
@@ -2678,8 +2738,7 @@ function renderPlan(){
     +'<button class="tick" aria-label="Complete set '+(si+1)+'" onclick="setTick('+ix+','+si+')">'+I.check+'</button>'
     +plateHtml(s.kg)+'</div>').join('')
   +'</div>'
-  +'<div class="ex-rest">Rest '+(CFG.rest&&CFG.rest.seconds?CFG.rest.seconds:60)+'s between sets.'
-   +(e.pr?' Your best here is '+e.pr+' kg.':'')+'</div>'
+  +'<div class="ex-rest">Rest '+(CFG.rest&&CFG.rest.seconds?CFG.rest.seconds:60)+'s between sets.</div>'
   /* Add a set is a quiet secondary. Removing a LOGGED set is the one destructive
      thing on this screen, so it goes behind a disclosure and a confirmation. */
   +'<div class="ex-more"><button onclick="addSet('+ix+')">+ Add a set</button></div>'
@@ -3296,44 +3355,55 @@ function openDayFromAnywhere(date){
 function dayDetail(d){
  const isToday=d.date===todayISO();
  const w=dayWorkout(d);
+ const vol=w?(d.volume||volumeOf(w)):0;
  let h='';
+ /* THE HEADLINE: the three figures somebody opens a past day to see. */
+ h+='<div class="dhead">'
+  +'<div class="dh"><div class="v">'+(vol?Math.round(vol/100)/10:0)+'<span class="u">t</span></div><div class="l">lifted</div></div>'
+  +'<div class="dh"><div class="v">'+d.meals.length+'<span class="u">/'+CFG.score.mealsPerDay+'</span></div><div class="l">meals</div></div>'
+  +'<div class="dh"><div class="v">'+(d.steps>=1000?(Math.round(d.steps/100)/10)+'<span class="u">k</span>':d.steps)+'</div><div class="l">steps</div></div>'
+  +'</div>';
  /* TRAINING */
  h+='<div class="dsec"><div class="dsh">Training</div>';
  if(w&&w.ex.length){
   h+='<div class="dsline">'+esc(w.name)+' · '+w.ex.length+' exercise'+(w.ex.length===1?'':'s')
-   +' · '+(d.volume||volumeOf(w)).toLocaleString()+' kg moved</div>'
+   +' · '+vol.toLocaleString()+' kg moved</div>'
+   /* EACH SET IS A PILL: weight large, reps beside it, readable at a glance
+      instead of a run-on line of text. */
    +w.ex.map(e=>'<div class="dex"><div class="l">'+esc(e.n)+'</div>'
      +'<div class="t">planned '+esc(e.target)+'</div>'
-     +'<div class="v">'+e.sets.map(s=>s.kg+' kg x '+s.reps).join('  ·  ')+'</div></div>').join('');
+     +'<div class="sets">'+e.sets.map(s=>'<span class="setp"><b>'+s.kg+'</b><i>kg</i>'
+       +'<em>'+s.reps+'</em><i>reps</i></span>').join('')+'</div></div>').join('');
  }else if(w){
   h+='<div class="dsline">'+esc(w.name)+' session. Nothing to load on this one.</div>';
  }else if(!d.planned){
   h+='<div class="dsline">Rest day, as planned.</div>';
  }else if(isToday){
-  h+='<div class="dsline">'+esc(String(d.planned))+' is planned. Not logged yet, the day is not over.</div>';
+  h+='<div class="dsline">'+sentCase(esc(String(d.planned)))+' is planned. Not logged yet, the day is not over.</div>';
  }else{
-  h+='<div class="dsline miss">'+esc(String(d.planned))+' was planned. Never logged.</div>';
+  h+='<div class="dsline miss">'+sentCase(esc(String(d.planned)))+' was planned. Never logged.</div>';
  }
  h+='</div>';
- /* FOOD */
+ /* FOOD: name left, what was eaten right. One row each, not two. */
  h+='<div class="dsec"><div class="dsh">Food</div>';
  h+=d.meals.length
-   ?MEAL_DEFS.map((md,mi)=>d.meals[mi]?'<div class="ml"><div class="l">'+md[0]+'</div><div class="v">'+esc(String(d.meals[mi]))+'</div></div>':'').join('')
+   ?'<div class="dfood">'+MEAL_DEFS.map((md,mi)=>d.meals[mi]
+     ?'<div class="dmeal"><span class="n">'+md[0]+'</span><span class="v">'+esc(String(d.meals[mi]))+'</span></div>'
+     :'').join('')+'</div>'
    :'<div class="dsline miss">No meals logged this day.</div>';
  h+='</div>';
- /* WATER, BODY, STEPS */
- h+='<div class="dsec"><div class="dsh">The rest of it</div>'
-  +'<div class="ml"><div class="l">Water</div><div class="v">'+d.water+' of '+CFG.score.waterGoal+' glasses</div></div>'
-  +'<div class="ml"><div class="l">Weight</div><div class="v">'+(typeof d.weight==='number'?d.weight.toFixed(1)+' kg':'not weighed')+'</div></div>'
+ /* THE NUMBERS: a three-up grid of the same tiles the rest of the app uses. */
+ h+='<div class="dsec"><div class="dsh">The numbers</div><div class="dgrid">'
+  +'<div class="dt"><div class="v">'+d.water+'<span class="u">/'+CFG.score.waterGoal+'</span></div><div class="l">water</div></div>'
+  +'<div class="dt"><div class="v">'+(typeof d.weight==='number'?d.weight.toFixed(1):'-')+'<span class="u">kg</span></div><div class="l">weight</div></div>'
   +(trackOn('sleep')&&typeof d.sleep==='number'
-    ?'<div class="ml"><div class="l">Sleep</div><div class="v">'+d.sleep.toFixed(1)+' hours</div></div>':'')
-  +'<div class="ml"><div class="l">Steps</div><div class="v">'+d.steps.toLocaleString()
-   +(d.stepSrc?', from '+esc(String(d.stepSrc)):', source not recorded')+'</div></div>'
+    ?'<div class="dt"><div class="v">'+d.sleep.toFixed(1)+'<span class="u">h</span></div><div class="l">sleep</div></div>'
+    :'<div class="dt"><div class="v">'+d.steps.toLocaleString()+'</div><div class="l">steps</div></div>')
+  +'</div>'
+  +'<div class="dsrc">'+(d.stepSrc?'Steps from '+esc(String(d.stepSrc))+', entered by you.':'Nobody said which app the steps came from.')+'</div>'
   +'</div>';
  return h;
 }
-/* the weekly training target is DERIVED FROM THE PLAN ITSELF, not configured
-   separately, so the two can never disagree about what a full week is */
 function weeklyTarget(){return WEEK_PLAN.filter(x=>x!=='rest').length;}
 /* ── THE HEADLINE ────────────────────────────────────────────────────────
    Evidence, never praise, and never a claim of cause. Each clause is present
@@ -3385,6 +3455,56 @@ function consistency(){
  const met=keys.filter(k=>wk[k].filter(d=>d.session).length>=weeklyTarget()).length;
  return {planned:planned,done:done,cur:cur,best:best,restPlanned:restPlanned,restTaken:restTaken,
    weeksMet:met,weeksWhole:keys.length};
+}
+/* ── THE BAR CALL ────────────────────────────────────────────────────────
+   Every logged attempt at one movement, newest first. */
+function historyFor(name){
+ const out=[];
+ DB.get('days').forEach(d=>{
+  const w=dayWorkout(d);if(!w)return;
+  w.ex.forEach(e=>{if(e.n===name&&e.sets.length)out.push({date:d.date,sets:e.sets});});
+ });
+ return out.reverse();
+}
+/* the all-time best for one movement, from logged sets only */
+function bestFor(name){
+ let b=null;
+ historyFor(name).forEach(h=>h.sets.forEach(s=>{
+  const kg=+s.kg;if(!kg)return;
+  if(!b||kg>b.kg||(kg===b.kg&&(+s.reps||0)>b.reps))b={kg:kg,reps:+s.reps||0,date:h.date};
+ }));
+ /* today counts the moment a set is ticked, not when the session is finished */
+ const live=DB.get('exercises').find(e=>e.n===name);
+ if(live)live.sets.filter(s=>s.done).forEach(s=>{
+  const kg=+s.kg;if(!kg)return;
+  if(!b||kg>b.kg||(kg===b.kg&&(+s.reps||0)>b.reps))b={kg:kg,reps:+s.reps||0,date:todayISO()};
+ });
+ return b;
+}
+function weeksSince(iso){return Math.floor((new Date(todayISO())-new Date(iso))/(7*864e5));}
+/* THE CALL ITSELF. Deterministic, and it prints its own reasoning. */
+function barCall(e){
+ const hist=historyFor(e.n);
+ const hi=parseInt(String(e.reps).split('-')[1]||e.reps,10)||0;
+ const lo=parseInt(String(e.reps),10)||0;
+ if(!hist.length)return {kg:e.kg,why:'First time logged. Start at the prescribed '+e.kg+' kg and see how it moves.'};
+ const last=hist[0];
+ const kg=Math.max.apply(null,last.sets.map(s=>+s.kg||0));
+ const allTop=last.sets.length&&last.sets.every(s=>(+s.reps||0)>=hi);
+ const allIn=last.sets.length&&last.sets.every(s=>(+s.reps||0)>=lo);
+ /* real gyms load in 2.5kg on a bar and 1kg on dumbbells */
+ const step=kg>=40?2.5:1;
+ if(allTop)return {kg:Math.round((kg+step)*2)/2,up:true,
+   why:'Last time you hit '+hi+' reps on every set at '+kg+' kg. That is the top of the range, so go up '+step+' kg.'};
+ if(allIn)return {kg:kg,why:'Last time you finished every set inside the range at '+kg+' kg. Stay there and chase '+hi+' reps.'};
+ return {kg:kg,why:'Last time '+kg+' kg did not give you every set. Same weight again, no drop.'};
+}
+/* PRESCRIBED VERSUS PROVEN: the unflattering sentence nobody else shows. */
+function provenAt(e){
+ const hist=historyFor(e.n);
+ if(!hist.length)return null;
+ const full=hist.filter(h=>h.sets.length>=e.sets.length&&h.sets.every(s=>(+s.kg||0)>=e.kg));
+ return {done:full.length,of:hist.length};
 }
 /* ── ALL TIME BESTS, PER EXERCISE ────────────────────────────────────────
    From logged sets only. No targets, no estimates, no projections. */
@@ -4074,6 +4194,63 @@ async function runSelfTest(){
     ok('Cloud: only the demo stage-prop account is baked into the app',
       CLOUD_CFG.demo.email.indexOf('@demo.totaluplift.lk')>-1);
    })();
+   /* THE BAR CALL. A member loads this number and presses it over their chest. */
+   (function(){
+    go('plan');
+    const mk=(reps,kg,sets)=>({n:'ZZ Test Lift',reps:reps,kg:kg,
+      sets:Array.from({length:sets||3},()=>({kg:'',reps:'',done:false}))});
+    /* nothing logged: it must offer the prescribed weight, not a guess */
+    const fresh=barCall(mk('8-10',60,3));
+    ok('Bar call: with no history it offers the prescribed weight',
+      fresh.kg===60&&/first time/i.test(fresh.why),fresh.kg+' :: '+fresh.why);
+
+    /* now give it a history and check the three branches */
+    const days=DB.get('days');
+    const probe=days[days.length-3];
+    const held=probe.workout?JSON.parse(JSON.stringify(probe.workout)):null;
+    const set=(reps)=>{probe.workout={name:'T',no:0,ex:[{n:'ZZ Test Lift',g:'T',
+      target:'3 x 8-10 at 60 kg',sets:reps.map(r=>({kg:60,reps:r}))}]};};
+
+    set([10,10,10]);                       /* top of the range on every set */
+    const up=barCall(mk('8-10',60,3));
+    ok('Bar call: it goes up only when every set hit the top of the range',
+      up.kg===62.5&&up.up===true,up.kg+'');
+
+    set([9,8,9]);                          /* inside the range */
+    const hold=barCall(mk('8-10',60,3));
+    ok('Bar call: inside the range it holds the weight and chases reps',
+      hold.kg===60&&!hold.up&&/chase/i.test(hold.why),hold.kg+'');
+
+    set([6,5,7]);                          /* missed */
+    const miss=barCall(mk('8-10',60,3));
+    ok('Bar call: a missed session never cuts the weight',
+      miss.kg===60&&/no drop/i.test(miss.why),miss.kg+' :: '+miss.why);
+    /* AND IT MUST STAY IN REACH: never more than one increment above the last
+       weight actually lifted, whatever the branch. */
+    const reach=[up,hold,miss].every(c=>c.kg<=62.5&&c.kg>=60);
+    ok('Bar call: it never asks for more than one step above the last lift',reach);
+    /* it shows its working, with the real number in it */
+    ok('Bar call: the reason quotes the weight it was worked out from',
+      [up,hold,miss].every(c=>c.why.indexOf('60')>-1));
+
+    if(held)probe.workout=held;else delete probe.workout;
+    renderPlan();
+
+    /* THE BEST IS A LOGGED SET, and it carries its age. */
+    const b=bestFor(DB.get('exercises')[0].n);
+    if(b){
+     let top=0;
+     historyFor(DB.get('exercises')[0].n).forEach(h=>h.sets.forEach(s=>{if(+s.kg>top)top=+s.kg;}));
+     DB.get('exercises')[0].sets.filter(s=>s.done).forEach(s=>{if(+s.kg>top)top=+s.kg;});
+     ok('Best: it is a set that was actually logged, never the library figure',
+       b.kg<=top,b.kg+' vs heaviest logged '+top);
+     ok('Best: it carries the date it was set',!!b.date&&b.date<=todayISO());
+    }
+    const txt=document.getElementById('plEx').textContent||'';
+    ok('Best: the badge says how long ago it was set',
+      /set today|this week|weeks ago|No best yet/.test(txt));
+    go('today');
+   })();
    /* TAP A DATE, SEE THAT DAY. The strip was seven decorative divs. */
    (function(){
     go('plan');
@@ -4094,8 +4271,11 @@ async function runSelfTest(){
      const title=document.getElementById('daySheetT').textContent||'';
      ok('Plan: a date opens that date, not today',
        title.indexOf(fmtD(p.date))>-1&&body.indexOf(p.workout.ex[0].n)>-1,title);
+     /* sets are pills now, not a run-on line: weight, unit, reps, unit */
      ok('Plan: the sheet carries that day\'s actual sets',
-       body.indexOf('kg x')>-1,body.slice(0,60));
+       !!document.querySelector('#daySheetB .setp b')
+       &&!!document.querySelector('#daySheetB .setp em'),
+       (document.querySelector('#daySheetB .setp')||{}).textContent||'no set pill');
      closeDaySheet();
     }
     /* a day with nothing in it must say so rather than render an empty panel */
@@ -4913,8 +5093,29 @@ async function runSelfTest(){
    ok('Plan: an exercise can be renamed to anything',ex[0].n==='Hammer Strength Row');
    ok('Plan: a typed-in exercise claims NO personal best',!ex[0].pr);
    go('plan');
-   ok('Plan: and it says so on screen rather than showing a fake number',
-     (document.getElementById('plEx').textContent||'').indexOf('No PR yet')>-1);
+   /* the badge reads from LOGGED SETS now, so an invented exercise has no
+      history to draw on and has to say that rather than borrow a number */
+   /* THE ORIGINAL BUG was that renaming an exercise kept the LIBRARY's personal
+      best, so a movement you invented claimed 75kg you had never lifted. The
+      badge now computes from logged sets, so it cannot inherit anything. It
+      shows a real number when real sets exist under that name, and says there
+      is none when they do not. Both halves are checked. */
+   (function(){
+    const e0=DB.get('exercises')[0];
+    const libPr=EX_LIB[0].pr;
+    const held=e0.sets.map(x=>({kg:x.kg,reps:x.reps,done:x.done}));
+    e0.sets.forEach(x=>{x.done=false;});
+    renderPlan();
+    ok('Plan: and it says so on screen rather than showing a fake number',
+      (document.getElementById('plEx').textContent||'').indexOf('No best yet')>-1,
+      (document.getElementById('plEx').textContent||'').slice(0,70));
+    /* and it must never quote the library figure for an invented movement */
+    ok('Plan: an invented exercise never inherits the library personal best',
+      (document.getElementById('plEx').textContent||'').indexOf('Best '+libPr+' kg')<0,
+      'library pr '+libPr);
+    e0.sets.forEach((x,i)=>{Object.assign(x,held[i]);});
+    renderPlan();
+   })();
    planRename(0,EX_LIB[0].n.toLowerCase());
    ok('Plan: renaming back to a library exercise restores its real PR and cue',
      ex[0].n===EX_LIB[0].n&&ex[0].pr===EX_LIB[0].pr&&!!ex[0].cue);
