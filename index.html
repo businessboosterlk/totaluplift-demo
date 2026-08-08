@@ -87,7 +87,21 @@
 .ma-empty{font-size:var(--fs-sm);color:var(--muted);padding:var(--sp-3) 0}
 .ma-note{font-size:var(--fs-xs);color:var(--muted);line-height:1.6;margin-top:var(--sp-4);
  padding-top:var(--sp-3);border-top:1px solid var(--line2)}
-.ma-acts{display:flex;gap:var(--sp-2);flex-wrap:wrap}
+.ma-acts{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
+.ma-row.pick{width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line2);cursor:pointer}
+.ma-row.pick.on{background:var(--bg)}
+.ma-panel{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:2px solid var(--brand)}
+.ma-ph{font-size:var(--fs-md);font-weight:800;margin-bottom:var(--sp-3)}
+.ma-ph span{display:block;font-size:var(--fs-xs);color:var(--muted);font-weight:500;margin-top:3px}
+.ma-flag{font-size:var(--fs-xs);font-weight:700;color:var(--amber);background:var(--amber-soft);
+ border-radius:var(--r-sm);padding:9px 12px;margin-bottom:var(--sp-3)}
+.ma-gl{font-size:var(--fs-xs);font-weight:800;margin-bottom:8px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.ma-gl i{font-style:normal;font-weight:600;color:var(--faint)}
+.ma-act.live{color:var(--ink);border-color:var(--line)}
+.ma-act.live:hover{border-color:var(--brand);color:var(--brand)}
+.ma-sent{margin-bottom:var(--sp-3)}
+.ma-s1{display:flex;gap:10px;font-size:var(--fs-xs);padding:7px 0;border-top:1px solid var(--line2)}
+.ma-s1 span{margin-left:auto;color:var(--faint)}
 .ma-act{min-height:44px;padding:0 16px;border-radius:var(--r-sm);border:1px solid var(--line);
  background:var(--surface);color:var(--faint);font-size:var(--fs-sm);font-weight:700}
 .ma-act[disabled]{opacity:.55;cursor:not-allowed}
@@ -3446,7 +3460,11 @@ function openCustomer(id){
  const hist=(c.history||[]).map(h=>'<tr><td style="font-size:12.5px">'+h.item+'</td><td class="tm">'+fmtDate(h.date)+'</td><td class="tnum" style="font-size:12.5px">'+lkr(h.value)+'</td></tr>').join('');
  const panel=document.getElementById('panel');
  panel.innerHTML='<div class="pn-head"><button class="pn-close" onclick="closePanel()">✕</button><div class="pn-nm">'+c.name+'</div><div class="pn-co">'+(c.co||'')+'</div><div class="pn-badges"><span class="bdg '+(c.type==='B2B'?'bdg-blue':'bdg-amber')+'">'+(c.type||'')+'</span><span class="bdg '+(c.status==='alumni'?'bdg-blue':done?'bdg-green':due?'bdg-action':'bdg-grey')+'">'+(c.status==='alumni'?'Alumni':done?'Cadence complete':due?cadLabel(c.sent)+' due':'Next: '+cadLabel(c.sent))+'</span></div></div>'
-  +'<div class="pn-actions"><button class="pa primary" onclick="custSend('+id+')">'+I.phone+' WhatsApp</button>'+(due?'<button class="pa" onclick="custDone('+id+')">'+I.check+' Mark done</button>':'')
+  +'<div class="pn-actions"><button class="pa primary" onclick="custSend('+id+')">'+I.phone+' WhatsApp</button>'
+  /* the app is the other way to reach them, and it belongs beside the phone */
+  +'<button class="pa" onclick="maMsgMember('+id+')">Message app</button>'
+  +'<button class="pa" onclick="maPayNote('+id+')">Payment due</button>'
+  +(due?'<button class="pa" onclick="custDone('+id+')">'+I.check+' Mark done</button>':'')
   +(isMaster()?'<button class="pa" onclick="openMemberModal('+id+')">Edit</button>':'')+'</div>'
   +'<div class="pn-body">'
   +'<div class="sec"><div class="sec-t">Summary</div><div class="info-grid"><div class="info"><div class="il">Lifetime value</div><div class="iv" style="color:var(--green)">'+lkr(ltv)+'</div></div><div class="info"><div class="il">Orders</div><div class="iv">'+(c.history?c.history.length:0)+'</div></div><div class="info"><div class="il">First order</div><div class="iv">'+fmtDate(custFirst(c))+'</div></div><div class="info"><div class="il">Last contact</div><div class="iv">'+fmtDate(c.last)+'</div></div></div></div>'
@@ -5021,6 +5039,59 @@ function maAccounts(){
 const MA_STATE={none:['Eligible, no account','n'],invited:['Invitation pending','i'],
  expired:['Invitation expired','e'],active:['Active','a']};
 
+/* ── REACHING ONE MEMBER ────────────────────────────────────────────────
+   MESSAGES ARE REAL. Total Uplift Cloud carries tu_messages, so what is written
+   here is a row the member's own app reads, and their read receipt comes back
+   to the desk. In the demo it is held locally and published the same shape. */
+function maOutbox(){return DB.get('maOutbox')||DB.set('maOutbox',[]);}
+function maSend(id,kind,title,body){
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ maOutbox().unshift({id:Date.now(),to:id,name:c.name,kind:kind,title:title,body:body,
+   at:new Date().toISOString(),by:CURRENT.name,read:false});
+ logActivity('Message sent to '+c.name+' app','memberapp');
+ DB.commit();
+ toastUndo(I.check+' Sent to '+c.name.split(' ')[0]+'\'s app',
+   ()=>{const o=maOutbox();o.shift();DB.commit();renderMemberApp();});
+ if(document.getElementById('maBody'))renderMemberApp();
+}
+function maMsgMember(id){
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ const t=prompt('What should '+c.name.split(' ')[0]+' see in their app?','');
+ if(t===null||!t.trim())return;
+ maSend(id,'direct','A message from '+CFG.gym.name,t.trim());
+}
+function maPayNote(id){
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ /* NEUTRAL WORDING. A payment note is a reminder, never a public shaming, and
+    it never carries a figure the member has not already been told. */
+ maSend(id,'payment','Your membership is due',
+  'Your membership is due at the front desk. Pop in any time we are open and the desk will sort it.');
+}
+function maWa(id){
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ const ph=(c.phone||'').replace(/\D/g,'').replace(/^0/,'94');
+ if(!ph){toast('No phone number on this member');return;}
+ window.open('https://wa.me/'+ph+'?text='+encodeURIComponent('Hi '+c.name.split(' ')[0]+', '),'_blank');
+ logActivity('WhatsApp opened for '+c.name,'memberapp');
+}
+/* THE FOUR THAT STILL NEED THE AUTH BACKEND. They record the intent and show it
+   on the member's row, and the panel says so on its face. Recording an intent
+   is honest; claiming the lock is enforced would not be. */
+function maFlags(){return DB.get('maFlags')||DB.set('maFlags',{});}
+function maAccountAction(id,kind){
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return;
+ const labels={lock:'Locked',unlock:'Unlocked',signout:'Signed out everywhere',remove:'App access removed'};
+ if((kind==='remove'||kind==='lock')&&!confirm(labels[kind]+' for '+c.name+'. This is recorded now and enforced when the accounts backend lands. Continue?'))return;
+ const f=maFlags();const was=f[id];
+ f[id]=kind==='unlock'?null:{kind:kind,at:new Date().toISOString(),by:CURRENT.name};
+ logActivity(labels[kind]+': '+c.name,'memberapp');DB.commit();renderMemberApp();
+ toastUndo(labels[kind]+' · recorded, not yet enforced',
+   ()=>{maFlags()[id]=was;DB.commit();renderMemberApp();});
+}
+let MA_PICK=null,MA_Q='';
+function maPick(id){MA_PICK=(MA_PICK===id?null:id);renderMemberApp();}
+function maSearch(v){MA_Q=(v||'').toLowerCase();renderMemberApp();}
+
 function maTab(t){MA_TAB=t;
  document.querySelectorAll('#maTabs .ma-tab').forEach((b,i)=>
    b.classList.toggle('active',['access','experience','content'][i]===t));
@@ -5056,23 +5127,54 @@ function maAccess(el){
      :'<div class="ma-empty">Nobody has gone quiet. That is the number you want.</div>')
    +'<div class="ma-note">A member who stops opening the app usually stops coming a few weeks later. This is the list to ring, not the locked accounts.</div>'
   +'</div>'
-  +'<div class="ma-card"><div class="ma-h"><h3>Every member</h3>'
+  /* SEARCH, then act. A list capped at fourteen is useless past fourteen. */
+  +'<div class="ma-card"><div class="ma-h"><h3>Find a member</h3>'
    +'<span class="ma-hint">'+a.length+' on the roster</span></div>'
-   +'<div class="ma-list">'+mapSafe(a.slice(0,14),x=>
-     '<div class="ma-row"><div class="ma-n">'+maEsc(x.name)+'<span class="ma-sub">'+maEsc(x.pkg)+' · '+maEsc(x.trainer)+'</span></div>'
-     +'<div class="ma-tag s-'+MA_STATE[x.state][1]+'">'+MA_STATE[x.state][0]+'</div>'
-     +'<div class="ma-when">'+(x.lastSeen===null?'never signed in':(x.lastSeen===0?'today':x.lastSeen+'d ago'))+'</div></div>')
-   +'</div></div>'
-  /* THE FOUR CONTROLS THAT CANNOT BE HONEST WITHOUT A SERVER. They are shown
-     and DISABLED, with the reason on their face. Wiring these to localStorage
-     would teach an owner to trust a lock that does not lock. */
-  +'<div class="ma-card locked"><div class="ma-h"><h3>Account actions</h3>'
-   +'<span class="ma-hint">needs the backend before any of these can be true</span></div>'
-   +'<div class="ma-acts">'
-   +['Invite a member','Resend an invitation','Start a password reset','Lock an account','Sign out all devices']
-     .map(t=>'<button class="ma-act" disabled>'+t+'</button>').join('')
-   +'</div>'
-   +'<div class="ma-note">These are deliberately switched off rather than faked. An invitation has to expire on a server, a lock has to be enforced on a server, and a sign-out has to revoke a real session. Doing any of it in the browser would look identical and protect nobody. Total Uplift Cloud already carries the accounts, the roles and the audit trail, so this is the next build, not a rewrite.</div>'
+   +'<input class="ma-sel" id="maQ" placeholder="Search by name" value="'+maEsc(MA_Q)+'" oninput="maSearch(this.value)">'
+   +(function(){
+     const hits=a.filter(x=>!MA_Q||x.name.toLowerCase().indexOf(MA_Q)>-1);
+     if(!hits.length)return '<div class="ma-empty">Nobody by that name.</div>';
+     return '<div class="ma-list">'+mapSafe(hits.slice(0,MA_Q?20:12),x=>{
+      const f=maFlags()[x.id];
+      return '<button class="ma-row pick'+(MA_PICK===x.id?' on':'')+'" onclick="maPick('+x.id+')">'
+      +'<div class="ma-n">'+maEsc(x.name)+'<span class="ma-sub">'+maEsc(x.pkg)+' · '+maEsc(x.trainer)+'</span></div>'
+      +(f?'<div class="ma-tag s-e">'+({lock:'Locked',signout:'Signed out',remove:'Access removed'}[f.kind]||'')+'</div>':'')
+      +'<div class="ma-tag s-'+MA_STATE[x.state][1]+'">'+MA_STATE[x.state][0]+'</div>'
+      +'<div class="ma-when">'+(x.lastSeen===null?'never signed in':(x.lastSeen===0?'today':x.lastSeen+'d ago'))+'</div></button>';
+     })+'</div>';
+    })()
+   +(MA_PICK?maPanel(MA_PICK):'<div class="ma-note">Tap anyone to message their app, send a payment note, or change what their account can do.</div>')
+  +'</div>';
+}
+/* EVERYTHING ABOUT ONE MEMBER'S APP, in the two groups an owner thinks in,
+   each labelled with what is actually true today. */
+function maPanel(id){
+ const c=DB.get('customers').find(x=>x.id===id);if(!c)return '';
+ const acc=maAccounts().find(x=>x.id===id)||{};
+ const f=maFlags()[id];
+ const sent=maOutbox().filter(m=>m.to===id);
+ return '<div class="ma-panel">'
+  +'<div class="ma-ph">'+maEsc(c.name)+'<span>'+maEsc(acc.pkg||'')+' · '+MA_STATE[acc.state||'none'][0]
+   +(acc.lastSeen===null?' · never signed in':(acc.lastSeen===0?' · seen today':' · seen '+acc.lastSeen+'d ago'))+'</span></div>'
+  +(f?'<div class="ma-flag">'+({lock:'Locked',signout:'Signed out of all devices',remove:'App access removed'}[f.kind]||'')
+    +' by '+maEsc(f.by)+'. Recorded, not yet enforced.</div>':'')
+  +'<div class="ma-gl">Contact<i>works now</i></div>'
+  +'<div class="ma-acts">'
+   +'<button class="ma-act live" onclick="maMsgMember('+id+')">Message their app</button>'
+   +'<button class="ma-act live" onclick="maPayNote('+id+')">Send a payment note</button>'
+   +'<button class="ma-act live" onclick="maWa('+id+')">WhatsApp</button>'
+  +'</div>'
+  +(sent.length?'<div class="ma-sent">'+mapSafe(sent.slice(0,3),m=>
+    '<div class="ma-s1"><b>'+maEsc(m.title)+'</b><span>'+maEsc(m.by)+' · '+(m.read?'read':'unread')+'</span></div>')+'</div>':'')
+  +'<div class="ma-gl">Account<i>recorded now, enforced with the accounts backend</i></div>'
+  +'<div class="ma-acts">'
+   +(f&&f.kind==='lock'
+     ?'<button class="ma-act live" onclick="maAccountAction('+id+',\'unlock\')">Unlock</button>'
+     :'<button class="ma-act" onclick="maAccountAction('+id+',\'lock\')">Lock account</button>')
+   +'<button class="ma-act" onclick="maAccountAction('+id+',\'signout\')">Sign out all devices</button>'
+   +'<button class="ma-act" onclick="maAccountAction('+id+',\'remove\')">Remove app access</button>'
+  +'</div>'
+  +'<div class="ma-note">A message reaches the app now, because Total Uplift Cloud already carries messages and read receipts. Locking and signing out need the accounts backend: the decision is recorded and shown on their row, and it starts biting the day that lands. Nothing here ever shows or sets a password.</div>'
   +'</div>';
 }
 function maKpi(v,l){return '<div class="ma-kpi"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
@@ -5258,14 +5360,36 @@ async function runSelfTest(opts){
    ok('Inspector: it shows the same answer the evaluator gives',
      (direct.on?'Available':'Hidden')===shown.trim(),shown+' vs '+direct.on);
 
-   /* ── NOTHING FAKED. These four need a server and must stay off until there
-      is one, because a browser-side lock looks identical and locks nothing. ── */
+   /* ── REACHING ONE MEMBER. Search, pick, act. ── */
    maTab('access');
-   const acts=Array.from(document.querySelectorAll('.ma-act'));
-   ok('Member App: no backend action pretends to work',
-     acts.length>0&&acts.every(b=>b.disabled),acts.length+' actions, all disabled');
-   ok('Member App: and the screen says why',
-     (document.querySelector('.ma-card.locked .ma-note').textContent||'').indexOf('faked')>-1);
+   ok('Member App: you can search the roster by name',!!document.getElementById('maQ'));
+   const first=maAccounts()[0];
+   maPick(first.id);
+   ok('Member App: picking a member opens their panel',!!document.querySelector('.ma-panel'));
+   /* THE HONEST LINE IS PER ACTION, not a whole card switched off. Contact
+      works today because tu_messages exists; account actions do not yet. */
+   const groups=Array.from(document.querySelectorAll('.ma-gl')).map(g=>g.textContent);
+   ok('Member App: each group says what is actually true today',
+     groups.length===2&&/works now/i.test(groups[0])&&/backend/i.test(groups[1]),groups.join(' | '));
+   /* A MESSAGE REALLY GOES. It is a row, addressed to one member. */
+   const before=maOutbox().length;
+   maSend(first.id,'direct','Test','body');
+   const m=maOutbox()[0];
+   ok('Member App: a message is addressed to exactly one member',
+     maOutbox().length===before+1&&m.to===first.id&&!!m.by,'to '+m.to);
+   runUndo();
+   ok('Member App: and sending can be taken back',maOutbox().length===before);
+   /* NOTHING ANYWHERE SHOWS OR SETS A PASSWORD. */
+   const panelTxt=(document.querySelector('.ma-panel')||{}).textContent||'';
+   ok('Member App: no password is ever shown or set',
+     !/password\s*[:=]|current password|their password is/i.test(panelTxt));
+   /* AN ACCOUNT ACTION RECORDS WHO AND WHEN, and says it is not yet enforced. */
+   maFlags()[first.id]={kind:'lock',at:new Date().toISOString(),by:'Test'};
+   maTab('access');maPick(first.id);maPick(first.id);
+   const flag=(document.querySelector('.ma-flag')||{}).textContent||'';
+   ok('Member App: a lock names who did it and admits it is not enforced yet',
+     /Test/.test(flag)&&/not yet enforced/i.test(flag),flag.slice(0,60));
+   delete maFlags()[first.id];MA_PICK=null;MA_Q='';
 
    /* the at-risk list is the reason this screen earns its place */
    ok('Member App: the quiet-member list leads the screen',
