@@ -876,8 +876,15 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
     Losing it here is the same defect that already cost a rebuild at 390px. */
  .topbar{padding:calc(22px + var(--sat)) 0 18px}
  #pg-today.on{display:grid;grid-template-columns:1.04fr 1fr;column-gap:20px;align-items:start;
-  /* the hero spans both columns on desktop too: it is the point of the screen */
-  grid-template-areas:"ms ms" "g g" "p p" "sess sess" "score tiles" "score ask" "score look"}
+  /* the hero spans both columns on desktop too: it is the point of the screen.
+     THE DEMO LABEL GETS THE FIRST ROW. Unassigned, it auto-placed after every
+     named area and ended up under every number it exists to warn about. */
+  grid-template-areas:"dt dt" "ms ms" "g g" "p p" "sess sess" "score tiles" "score ask" "score look" "bs bs"}
+ #pg-today>.demotag{grid-area:dt}
+ #pg-today>#buildStamp{grid-area:bs}          /* a footer spans, it does not sit in a column */
+ /* the two columns start level: .tiles' 12px top margin is right for a single
+    stacked column and makes the right column look dropped beside the left */
+ #pg-today>#tdTiles{margin-top:0}
  #pg-today>.greet{grid-area:g}
  /* capped in CHARACTERS, because the real constraint is line length, not a
     share of whatever width the window happens to give it */
@@ -5050,16 +5057,14 @@ async function runSelfTest(){
    const tag=document.getElementById('demoTag');
    ok('Demo: the app says it is a demo, above the numbers',
      !!tag&&(tag.textContent||'').indexOf('Demo data')>-1,tag?tag.textContent:'missing');
-   /* at desktop a named-area grid deliberately re-places everything, so
-      "above" is a mobile claim and has to say so */
-   if(innerWidth<960){
-    ok('Demo: the label sits above the first figure on the screen',
-      !!tag&&tag.getBoundingClientRect().top
-        <=document.querySelector('.td-score').getBoundingClientRect().top);
-   }else{
-    ok('Demo: the label is present on the wide layout too',
-      !!tag&&tag.getBoundingClientRect().height>0);
-   }
+   /* A RULE ENFORCED AT ONE WIDTH IS NOT A RULE. This used to check the
+      position only below 960px, which is exactly the width where the named
+      grid dropped the label under every number it warns about. */
+   ok('Demo: the label sits above the first figure, at every width',
+     !!tag&&tag.getBoundingClientRect().top
+       <=document.querySelector('.td-score').getBoundingClientRect().top,
+     tag?Math.round(tag.getBoundingClientRect().top)+' vs score '
+       +Math.round(document.querySelector('.td-score').getBoundingClientRect().top):'missing');
    /* a live cast must lose the label rather than lie about being a demo */
    const was=CFG.demo.asOf;CFG.demo.asOf='';renderDemoTag();
    ok('Demo: a live build shows no demo label at all',
