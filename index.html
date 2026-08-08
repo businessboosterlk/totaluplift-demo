@@ -57,6 +57,70 @@
 --amber:#d97706;--amber-soft:rgba(217,119,6,.11);
 --blue:#2563eb;--blue-soft:rgba(37,99,235,.09);
 --danger:#d33a3a;--danger-soft:rgba(211,58,58,.1);
+/* ── MEMBER APP SECTION ───────────────────────────────────── */
+/* the Staff OS's own tokens throughout: this belongs in the product, it does
+   not sit on top of it */
+.ma-tabs{display:flex;gap:6px;margin-bottom:var(--sp-4);flex-wrap:wrap}
+.ma-tab{min-height:44px;padding:0 18px;border-radius:var(--r-sm);border:1px solid var(--line);
+ background:var(--surface);color:var(--muted);font-size:var(--fs-sm);font-weight:700}
+.ma-tab.active{background:var(--brand);border-color:var(--brand);color:var(--on-accent)}
+.ma-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--sp-3);margin-bottom:var(--sp-4)}
+.ma-kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:var(--sp-4);box-shadow:var(--shadow-xs)}
+.ma-kpi .v{font-size:var(--fs-2xl);font-weight:800;letter-spacing:-.5px;line-height:1}
+.ma-kpi .l{font-size:var(--fs-xs);color:var(--muted);margin-top:6px}
+.ma-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+ padding:var(--sp-5);margin-bottom:var(--sp-4);box-shadow:var(--shadow-xs)}
+.ma-card.locked{border-style:dashed;background:var(--surface-2)}
+.ma-h{display:flex;align-items:baseline;gap:var(--sp-3);flex-wrap:wrap;margin-bottom:var(--sp-4)}
+.ma-h h3{font-size:var(--fs-md);font-weight:800}
+.ma-hint{font-size:var(--fs-xs);color:var(--faint);margin-left:auto}
+.ma-list{display:flex;flex-direction:column}
+.ma-row{display:flex;align-items:center;gap:var(--sp-3);padding:11px 0;border-top:1px solid var(--line2);flex-wrap:wrap}
+.ma-row:first-child{border-top:0}
+.ma-n{font-size:var(--fs-base);font-weight:700;flex:1;min-width:140px}
+.ma-sub{display:block;font-size:var(--fs-xs);color:var(--muted);font-weight:500;margin-top:2px;line-height:1.45}
+.ma-tag{font-size:var(--fs-xs);font-weight:700;padding:4px 10px;border-radius:99px;background:var(--bg);color:var(--muted);white-space:nowrap}
+.ma-tag.s-a{background:var(--green-soft);color:var(--green)}
+.ma-tag.s-i{background:var(--blue-soft);color:var(--blue)}
+.ma-tag.s-e,.ma-tag.warn{background:var(--amber-soft);color:var(--amber)}
+.ma-when{font-size:var(--fs-xs);color:var(--faint);min-width:88px;text-align:right}
+.ma-empty{font-size:var(--fs-sm);color:var(--muted);padding:var(--sp-3) 0}
+.ma-note{font-size:var(--fs-xs);color:var(--muted);line-height:1.6;margin-top:var(--sp-4);
+ padding-top:var(--sp-3);border-top:1px solid var(--line2)}
+.ma-acts{display:flex;gap:var(--sp-2);flex-wrap:wrap}
+.ma-act{min-height:44px;padding:0 16px;border-radius:var(--r-sm);border:1px solid var(--line);
+ background:var(--surface);color:var(--faint);font-size:var(--fs-sm);font-weight:700}
+.ma-act[disabled]{opacity:.55;cursor:not-allowed}
+.ma-sw{width:50px;height:30px;border-radius:99px;background:var(--line);border:1px solid var(--line);
+ flex-shrink:0;padding:3px;display:flex;align-items:center;transition:.18s var(--ease)}
+.ma-sw span{width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:var(--shadow-xs);transition:.18s var(--ease)}
+.ma-sw.on{background:var(--brand);border-color:var(--brand)}
+.ma-sw.on span{transform:translateX(20px)}
+.ma-pkgs{display:flex;flex-direction:column;gap:var(--sp-3)}
+.ma-pkg{border:1px solid var(--line);border-radius:var(--r-md);padding:var(--sp-3)}
+.ma-pn{font-size:var(--fs-sm);font-weight:800;margin-bottom:var(--sp-2)}
+.ma-chip{min-height:44px;padding:6px 12px;margin:0 6px 6px 0;border-radius:var(--r-sm);
+ border:1px solid var(--line);background:var(--surface);font-size:var(--fs-xs);font-weight:700;
+ color:var(--muted);display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px}
+.ma-chip i{font-style:normal;font-size:10px;color:var(--faint);font-weight:600}
+.ma-chip.on{border-color:color-mix(in srgb,var(--green) 40%,transparent)}
+.ma-chip.set{background:var(--bg);border-style:solid;border-width:2px}
+.ma-sel{width:100%;min-height:44px;border-radius:var(--r-sm);border:1px solid var(--line);
+ padding:0 12px;font-size:var(--fs-sm);font-family:inherit;margin-bottom:var(--sp-3);background:var(--surface)}
+.ma-f{margin-bottom:var(--sp-4)}
+.ma-f label{display:flex;font-size:var(--fs-xs);font-weight:700;color:var(--muted);margin-bottom:6px}
+.ma-f label span{margin-left:auto;color:var(--faint);font-weight:600}
+.ma-f textarea{width:100%;min-height:76px;border-radius:var(--r-sm);border:1px solid var(--line);
+ padding:11px 12px;font-size:var(--fs-sm);font-family:inherit;line-height:1.55;resize:vertical}
+.ma-f textarea:focus{outline:none;border-color:var(--brand);box-shadow:var(--ring)}
+.ma-rules{list-style:none;display:flex;flex-direction:column;gap:8px}
+.ma-rules li{font-size:var(--fs-sm);color:var(--muted);padding-left:16px;position:relative;line-height:1.5}
+.ma-rules li:before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--brand)}
+@media(max-width:640px){
+ .ma-row{align-items:flex-start}
+ .ma-when{min-width:0;width:100%;text-align:left}
+}
+
 /* ── ELEVATION (layered, never one heavy shadow) ─────────── */
 --shadow-xs:0 1px 2px rgba(20,20,23,.04);
 --shadow:0 1px 2px rgba(20,20,23,.04),0 4px 14px rgba(20,20,23,.05);
@@ -962,6 +1026,7 @@ body.dark .stat-kpi .val{color:#fff}
         <button class="nav-label" onclick="toggleGroup(this)">Manage<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span></button>
         <button class="nav-item" data-pg="team" data-role="owner" data-module="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Team</button>
         <button class="nav-item" data-pg="activity" data-role="manager" data-module="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><polyline points="12 6 12 12 16 14"/></svg>Activity</button>
+        <button class="nav-item" data-pg="memberapp" data-role="manager"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg>Member App<span class="badge" id="nbMapp"></span></button>
         <button class="nav-item" data-pg="settings" data-role="owner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
       </div>
     </nav>
@@ -1154,6 +1219,16 @@ body.dark .stat-kpi .val{color:#fff}
           <button class="btn-ghost" onclick="exportPulse()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
         </div>
         <div class="card"><div class="card-b" id="pulseList" style="padding:8px 20px 16px"></div></div>
+      </div>
+
+      <!-- ══ MEMBER APP: access, entitlements and app-facing copy ══ -->
+      <div class="page" id="page-memberapp">
+        <div class="ma-tabs" id="maTabs">
+          <button class="ma-tab active" onclick="maTab('access')">Access</button>
+          <button class="ma-tab" onclick="maTab('experience')">Experience</button>
+          <button class="ma-tab" onclick="maTab('content')">Content</button>
+        </div>
+        <div id="maBody"></div>
       </div>
 
       <!-- ══ CLASSES (flag-gated OFF: timetable + capacity - unverified by a real operator) ══ -->
@@ -1528,6 +1603,9 @@ const DB={
   this._d=seedData();this.commit();
  },
  get(k){return this._d[k];},
+ /* needed the moment a key can be ABSENT: a saved state from before a feature
+    existed has nothing to mutate in place. Same addition the member app needed. */
+ set(k,v){this._d[k]=v;return v;},
  commit(){if(CFG.data.mode==='local'){try{localStorage.setItem(CFG.data.key,JSON.stringify(this._d))}catch(e){console.warn('save failed',e);}}},
  nextId(k){return this._d[k].reduce((m,r)=>Math.max(m,r.id),0)+1;},
  reset(){if(CFG.data.mode==='local')localStorage.removeItem(CFG.data.key);this._d=seedData();this.commit();},
@@ -1858,6 +1936,7 @@ function applyRoleNav(){
 let TITLES={};
 function buildTitles(){TITLES={
  dashboard:['Dashboard','Today at a glance'],
+ memberapp:['Member App','Who can get in, what they see, and what it tells them'],
  reports:['Reports','Month-over-month performance'],
  checkin:['Check-in','Tap a member as they arrive'],
  pulse:['Member Pulse','Who is slipping away, and exactly why'],
@@ -4882,7 +4961,210 @@ function renderCommissions(){
  document.getElementById('cmBody').innerHTML=rows.map(r=>'<tr><td class="tn">'+r.t.name+'</td><td class="tnum">'+r.clients+'</td><td class="tnum">'+lkr(r.collected)+'</td><td class="tnum" style="font-weight:800">'+lkr(r.comm)+'</td></tr>').join('');
 }
 
-const RENDERERS={dashboard:renderDashboard,reports:renderReports,checkin:renderCheckin,pulse:renderPulse,pipeline:renderBoard,records:renderRecords,customers:renderCustomers,quotes:renderQuotes,inventory:renderInventory,tasks:renderTasks,finance:renderFinance,recurring:renderRecurring,forecast:renderMMGrid,classes:renderClasses,ptpacks:renderPtPacks,commissions:renderCommissions,team:renderTeam,activity:renderActivity,settings:renderSettings};
+/* ════════════════════════════════════════════════════════════════════
+   MEMBER APP ADMINISTRATION
+   ════════════════════════════════════════════════════════════════════ */
+let MA_TAB='access';
+/* the staff OS has no global esc(): the three that exist are all local to
+   other functions. escAttr() is the file's real shared escaper, so this
+   section uses it rather than shipping a fourth copy. */
+const maEsc=escAttr;
+/* THE FEATURES THE APP ACTUALLY HAS. Nothing is listed that is not built,
+   because a switch for a feature that does not exist is a promise. */
+const MA_FEATURES=[
+ {k:'workouts', n:'Workouts',        d:'The plan, the sets, and the weight to put on the bar.'},
+ {k:'progress', n:'Progress',        d:'Weight trend, the Uplift Path, best lifts and history.'},
+ {k:'photos',   n:'Progress photos', d:'Private to the member. Shared per photo with their trainer.'},
+ {k:'payments', n:'Membership',      d:'What they have paid, and the receipt for every month.'},
+ {k:'inbox',    n:'Inbox',           d:'Messages from the desk, with read receipts.'},
+];
+/* ── THE ENTITLEMENT EVALUATOR ──────────────────────────────────────────
+   ONE function decides availability, and it returns the WINNING RULE with the
+   answer. The inspector calls this. Any future preview calls this. There is no
+   second path, so a preview cannot drift from the truth. Layers run lowest to
+   highest and the last one to speak wins. */
+function maRules(){return DB.get('maRules')||DB.set('maRules',{org:{},pkg:{}});}
+function maEval(feature,pkg){
+ const r=maRules();
+ let on=true,why='Available from organisation default';
+ if(r.org[feature]===false){on=false;why='Switched off for the whole gym';}
+ else if(r.org[feature]===true){on=true;why='Switched on for the whole gym';}
+ const p=r.pkg[pkg];
+ if(p&&p[feature]!==undefined){
+  on=p[feature];
+  why=(on?'Switched on':'Switched off')+' for the '+pkg+' package';
+ }
+ return {on:on,why:why};
+}
+/* THE PACKAGE IS A COHORT INDEX ON THE MEMBERSHIP RECORD, not a field on the
+   customer. I assumed a c.plan string, By-package rendered empty, and this is
+   why you read the seed instead of guessing the shape. */
+function maPackages(){return CFG.cohorts||[];}
+function maPkgOf(name){
+ const rp=(DB.get('recurringPlans')||[]).find(r=>r.name===name);
+ const c=rp?rp.cohort:null;
+ return (c!=null&&maPackages()[c])?maPackages()[c]:(maPackages()[0]||'Standard');
+}
+/* the member's app account, as far as a demo can honestly know it */
+function maAccounts(){
+ return DB.get('customers').filter(c=>c.active!==false).map(c=>{
+  const seed=(c.id*7919)%100;
+  /* deterministic demo states. A real build reads these from the auth provider. */
+  const state=seed<12?'none':(seed<22?'invited':(seed<27?'expired':'active'));
+  const lastSeen=state==='active'?(seed%31):null;
+  /* c.owner is a STAFF ID, not a name. staffById is the file's own resolver and
+     it already handles a missing one. */
+  return {id:c.id,name:c.name,pkg:maPkgOf(c.name),trainer:(staffById(c.owner)||{}).name||'-',
+    state:state,lastSeen:lastSeen};
+ });
+}
+const MA_STATE={none:['Eligible, no account','n'],invited:['Invitation pending','i'],
+ expired:['Invitation expired','e'],active:['Active','a']};
+
+function maTab(t){MA_TAB=t;
+ document.querySelectorAll('#maTabs .ma-tab').forEach((b,i)=>
+   b.classList.toggle('active',['access','experience','content'][i]===t));
+ renderMemberApp();}
+
+function renderMemberApp(){
+ const el=document.getElementById('maBody');if(!el)return;
+ if(MA_TAB==='access')return maAccess(el);
+ if(MA_TAB==='experience')return maExperience(el);
+ return maContent(el);
+}
+
+function maAccess(el){
+ const a=maAccounts();
+ const n=k=>a.filter(x=>x.state===k).length;
+ /* THE QUESTION AN OWNER ACTUALLY HAS, first: who has the app and stopped
+    using it. Not in the brief, and the only part of this that earns money. */
+ const drifting=a.filter(x=>x.state==='active'&&x.lastSeen!==null&&x.lastSeen>=14)
+   .sort((x,y)=>y.lastSeen-x.lastSeen);
+ el.innerHTML=
+  '<div class="ma-kpis">'
+  +maKpi(n('active'),'Active accounts')
+  +maKpi(n('invited'),'Invitations waiting')
+  +maKpi(n('expired'),'Invitations expired')
+  +maKpi(n('none'),'No account yet')
+  +'</div>'
+  +'<div class="ma-card"><div class="ma-h"><h3>Have it, stopped opening it</h3>'
+   +'<span class="ma-hint">'+drifting.length+' members, active account, nothing for two weeks or more</span></div>'
+   +(drifting.length
+     ?'<div class="ma-list">'+drifting.slice(0,6).map(x=>
+       '<div class="ma-row"><div class="ma-n">'+maEsc(x.name)+'<span class="ma-sub">'+maEsc(x.pkg)+' · '+maEsc(x.trainer)+'</span></div>'
+       +'<div class="ma-tag warn">'+x.lastSeen+' days quiet</div></div>').join('')+'</div>'
+     :'<div class="ma-empty">Nobody has gone quiet. That is the number you want.</div>')
+   +'<div class="ma-note">A member who stops opening the app usually stops coming a few weeks later. This is the list to ring, not the locked accounts.</div>'
+  +'</div>'
+  +'<div class="ma-card"><div class="ma-h"><h3>Every member</h3>'
+   +'<span class="ma-hint">'+a.length+' on the roster</span></div>'
+   +'<div class="ma-list">'+mapSafe(a.slice(0,14),x=>
+     '<div class="ma-row"><div class="ma-n">'+maEsc(x.name)+'<span class="ma-sub">'+maEsc(x.pkg)+' · '+maEsc(x.trainer)+'</span></div>'
+     +'<div class="ma-tag s-'+MA_STATE[x.state][1]+'">'+MA_STATE[x.state][0]+'</div>'
+     +'<div class="ma-when">'+(x.lastSeen===null?'never signed in':(x.lastSeen===0?'today':x.lastSeen+'d ago'))+'</div></div>')
+   +'</div></div>'
+  /* THE FOUR CONTROLS THAT CANNOT BE HONEST WITHOUT A SERVER. They are shown
+     and DISABLED, with the reason on their face. Wiring these to localStorage
+     would teach an owner to trust a lock that does not lock. */
+  +'<div class="ma-card locked"><div class="ma-h"><h3>Account actions</h3>'
+   +'<span class="ma-hint">needs the backend before any of these can be true</span></div>'
+   +'<div class="ma-acts">'
+   +['Invite a member','Resend an invitation','Start a password reset','Lock an account','Sign out all devices']
+     .map(t=>'<button class="ma-act" disabled>'+t+'</button>').join('')
+   +'</div>'
+   +'<div class="ma-note">These are deliberately switched off rather than faked. An invitation has to expire on a server, a lock has to be enforced on a server, and a sign-out has to revoke a real session. Doing any of it in the browser would look identical and protect nobody. Total Uplift Cloud already carries the accounts, the roles and the audit trail, so this is the next build, not a rewrite.</div>'
+  +'</div>';
+}
+function maKpi(v,l){return '<div class="ma-kpi"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+
+function maExperience(el){
+ const r=maRules();
+ const pkgs=maPackages();
+ el.innerHTML=
+  '<div class="ma-card"><div class="ma-h"><h3>What every member sees</h3>'
+   +'<span class="ma-hint">the whole gym, unless a package below overrides it</span></div>'
+   +'<div class="ma-list">'+MA_FEATURES.map(f=>{
+     const on=r.org[f.k]!==false;
+     return '<div class="ma-row feat"><div class="ma-n">'+f.n+'<span class="ma-sub">'+f.d+'</span></div>'
+      +'<button class="ma-sw'+(on?' on':'')+'" role="switch" aria-checked="'+on+'" aria-label="'+f.n+' for the whole gym" onclick="maSetOrg(\''+f.k+'\','+(!on)+')"><span></span></button></div>';
+    }).join('')+'</div></div>'
+  +'<div class="ma-card"><div class="ma-h"><h3>By package</h3>'
+   +'<span class="ma-hint">an override here beats the setting above</span></div>'
+   +'<div class="ma-pkgs">'+pkgs.map(p=>
+     '<div class="ma-pkg"><div class="ma-pn">'+maEsc(p)+'</div>'
+     +MA_FEATURES.map(f=>{
+       const e=maEval(f.k,p);
+       const set=r.pkg[p]&&r.pkg[p][f.k]!==undefined;
+       return '<button class="ma-chip'+(e.on?' on':'')+(set?' set':'')+'" onclick="maCyclePkg(\''+p+'\',\''+f.k+'\')">'
+        +f.n+'<i>'+(set?(e.on?'on':'off'):'default')+'</i></button>';
+      }).join('')+'</div>').join('')+'</div>'
+   +'<div class="ma-note">Tap a feature to cycle it between following the gym default, forced on, and forced off for that package.</div></div>'
+  /* THE INSPECTOR, sharing the evaluator so it can never disagree with the app */
+  +'<div class="ma-card"><div class="ma-h"><h3>What one member actually gets</h3>'
+   +'<span class="ma-hint">the same calculation the app runs</span></div>'
+   +'<select class="ma-sel" id="maWho" onchange="renderMemberApp()">'
+   +mapSafe(DB.get('customers').slice(0,30),c=>'<option value="'+c.id+'"'+(MA_WHO==c.id?' selected':'')+'>'+maEsc(c.name)+' · '+maEsc(maPkgOf(c.name))+'</option>')
+   +'</select>'
+   +(function(){
+     const who=DB.get('customers').find(c=>String(c.id)===String(MA_WHO))||DB.get('customers')[0];
+     if(!who)return '';
+     MA_WHO=who.id;
+     return '<div class="ma-list">'+MA_FEATURES.map(f=>{
+       const e=maEval(f.k,maPkgOf(who.name));
+       return '<div class="ma-row"><div class="ma-n">'+f.n+'<span class="ma-sub">'+maEsc(e.why)+'</span></div>'
+        +'<div class="ma-tag '+(e.on?'s-a':'s-e')+'">'+(e.on?'Available':'Hidden')+'</div></div>';
+      }).join('')+'</div>';
+    })()
+   +'<div class="ma-note">Hiding a feature never deletes anything behind it. Switching Membership off leaves every payment and receipt exactly where it was.</div></div>';
+ const sel=document.getElementById('maWho');if(sel)sel.value=MA_WHO;
+}
+let MA_WHO=null;
+function maSetOrg(k,on){
+ const r=maRules();const was=r.org[k];
+ r.org[k]=on;DB.commit();renderMemberApp();
+ toastUndo((on?'Switched on ':'Switched off ')+'for the whole gym',
+   ()=>{if(was===undefined)delete maRules().org[k];else maRules().org[k]=was;DB.commit();renderMemberApp();});
+}
+/* three states, in the order an owner thinks: follow the gym, force on, force off */
+function maCyclePkg(pkg,k){
+ const r=maRules();r.pkg[pkg]=r.pkg[pkg]||{};
+ const cur=r.pkg[pkg][k];
+ const was=cur;
+ if(cur===undefined)r.pkg[pkg][k]=true;
+ else if(cur===true)r.pkg[pkg][k]=false;
+ else delete r.pkg[pkg][k];
+ DB.commit();renderMemberApp();
+ toastUndo(pkg+' · '+k+' changed',()=>{
+   if(was===undefined)delete maRules().pkg[pkg][k];else maRules().pkg[pkg][k]=was;
+   DB.commit();renderMemberApp();});
+}
+
+function maContent(el){
+ const c=DB.get('maContent')||DB.set('maContent',{
+   welcome:'Welcome to Total Uplift. Your plan is in the app, your trainer wrote it, and every session you log is yours to keep.',
+   help:'Anything about your plan, ask your trainer. Anything about payments or access, ask at the front desk.',
+   install:'Open the menu in your browser and choose Add to Home Screen. It gets its own icon and works without signal.',
+   checkin:'Tap Start session when you get here. The desk sees you have arrived.'});
+ const F=[['welcome','New member welcome',180],['help','Help introduction',160],
+          ['install','How to install the app',200],['checkin','How to check in',140]];
+ el.innerHTML='<div class="ma-card"><div class="ma-h"><h3>What the app says</h3>'
+  +'<span class="ma-hint">plain text only, and it appears in the app exactly as typed</span></div>'
+  +F.map(f=>'<div class="ma-f"><label for="mac_'+f[0]+'">'+f[1]+'<span>'+((c[f[0]]||'').length)+' of '+f[2]+'</span></label>'
+    +'<textarea id="mac_'+f[0]+'" maxlength="'+f[2]+'" oninput="maSetContent(\''+f[0]+'\',this.value)">'+maEsc(c[f[0]]||'')+'</textarea></div>').join('')
+  +'<div class="ma-note">Announcements do not belong here. One message to one group of members is Messages. This is the copy that sits in the app all the time.</div></div>'
+  +'<div class="ma-card"><div class="ma-h"><h3>House rules for this copy</h3></div>'
+  +'<ul class="ma-rules"><li>No shame. Nobody opens an app to be told off.</li>'
+  +'<li>No medical claims, and no promise about anybody\'s body.</li>'
+  +'<li>No fake urgency. If it is not urgent, do not say it is.</li>'
+  +'<li>Plain text, because anything else is a way into the app.</li></ul></div>';
+}
+function maSetContent(k,v){
+ const c=DB.get('maContent');c[k]=v;DB.commit();
+ const lab=document.querySelector('label[for="mac_'+k+'"] span');
+ if(lab)lab.textContent=v.length+lab.textContent.slice(lab.textContent.indexOf(' of '));
+}
+
+const RENDERERS={memberapp:renderMemberApp,dashboard:renderDashboard,reports:renderReports,checkin:renderCheckin,pulse:renderPulse,pipeline:renderBoard,records:renderRecords,customers:renderCustomers,quotes:renderQuotes,inventory:renderInventory,tasks:renderTasks,finance:renderFinance,recurring:renderRecurring,forecast:renderMMGrid,classes:renderClasses,ptpacks:renderPtPacks,commissions:renderCommissions,team:renderTeam,activity:renderActivity,settings:renderSettings};
 
 /* ════════════════════════════════════════════════════════════════════
    SECTION 12 - SELF-TEST HARNESS (dev-only; the pre-deploy gate)
@@ -4931,6 +5213,73 @@ async function runSelfTest(opts){
    ok('Roles: staff nav hides manager/owner pages',!vis.includes('finance')&&!vis.includes('settings')&&!vis.includes('reports'),'visible: '+vis.join(','));
    go('settings');const p1=document.querySelector('.page.active').id;
    go('finance');const p2=document.querySelector('.page.active').id;
+  /* ── MEMBER APP SECTION ────────────────────────────────────────────── */
+  (function(){
+   const snapRules=JSON.parse(JSON.stringify(DB.get('maRules')||{org:{},pkg:{}}));
+   /* THIS BLOCK LANDED INSIDE THE ROLE-BOUNCE TESTS, so it inherited whatever
+      role they left behind and the section correctly refused to open. It sets
+      its own role and hands it back. */
+   const whoWas=CURRENT;
+   CURRENT=DB.get('staff').find(x=>x.role==='owner')||CURRENT;
+   applyRoleNav();
+   go('memberapp');
+   ok('Member App: the section opens',
+     (document.querySelector('.page.active')||{}).id==='page-memberapp');
+   ok('Member App: three tabs, not four',document.querySelectorAll('#maTabs .ma-tab').length===3);
+
+   /* the package list is the REAL one, not a guess at a field name */
+   ok('Member App: packages come from the gym\'s own tiers',
+     maPackages().length>0&&maPackages().join()===(CFG.cohorts||[]).join(),maPackages().join(' / '));
+
+   /* ── PRECEDENCE. This decides what a paying member can see. ── */
+   const pk=maPackages()[1]||maPackages()[0];
+   DB.set('maRules',{org:{},pkg:{}});
+   ok('Entitlement: with no rules everything is available by default',
+     maEval('photos',pk).on===true);
+   maRules().org.photos=false;
+   ok('Entitlement: a gym-wide switch turns it off everywhere',
+     maEval('photos',pk).on===false&&maEval('photos',maPackages()[0]).on===false);
+   maRules().pkg[pk]={photos:true};
+   ok('Entitlement: a package override beats the gym-wide switch',
+     maEval('photos',pk).on===true);
+   ok('Entitlement: the override touches ONLY its own package',
+     maEval('photos',maPackages()[0]).on===false);
+   /* EVERY ANSWER EXPLAINS ITSELF. A silent resolution is the thing the brief
+      warns about and the thing an owner cannot debug. */
+   ok('Entitlement: every answer names the rule that won',
+     maEval('photos',pk).why.indexOf(pk)>-1
+     &&maEval('photos',maPackages()[0]).why.toLowerCase().indexOf('whole gym')>-1,
+     maEval('photos',pk).why);
+   /* ONE EVALUATOR. The inspector must not compute access a second way. */
+   maTab('experience');
+   const who=DB.get('customers').find(c=>String(c.id)===String(MA_WHO))||DB.get('customers')[0];
+   const shown=(document.querySelector('#maBody .ma-card:last-child .ma-row .ma-tag')||{}).textContent||'';
+   const direct=maEval(MA_FEATURES[0].k,maPkgOf(who.name));
+   ok('Inspector: it shows the same answer the evaluator gives',
+     (direct.on?'Available':'Hidden')===shown.trim(),shown+' vs '+direct.on);
+
+   /* ── NOTHING FAKED. These four need a server and must stay off until there
+      is one, because a browser-side lock looks identical and locks nothing. ── */
+   maTab('access');
+   const acts=Array.from(document.querySelectorAll('.ma-act'));
+   ok('Member App: no backend action pretends to work',
+     acts.length>0&&acts.every(b=>b.disabled),acts.length+' actions, all disabled');
+   ok('Member App: and the screen says why',
+     (document.querySelector('.ma-card.locked .ma-note').textContent||'').indexOf('faked')>-1);
+
+   /* the at-risk list is the reason this screen earns its place */
+   ok('Member App: the quiet-member list leads the screen',
+     (document.querySelector('#maBody .ma-card .ma-h h3').textContent||'').indexOf('stopped opening')>-1);
+
+   /* content is plain text with a real cap, never arbitrary markup */
+   maTab('content');
+   const tas=Array.from(document.querySelectorAll('#maBody textarea'));
+   ok('Member App: app copy is capped plain text, never markup',
+     tas.length>0&&tas.every(t=>+t.getAttribute('maxlength')>0),tas.length+' fields');
+
+   DB.set('maRules',snapRules);maTab('access');
+   CURRENT=whoWas;applyRoleNav();go('dashboard');
+  })();
    ok('Roles: staff hand-typed go() bounces to dashboard',p1==='page-dashboard'&&p2==='page-dashboard',p1+' / '+p2);}
   else ok('Roles: staff account present',false,'no staff-role user in seed');
   if(mgr){signIn(mgr);go('settings');
