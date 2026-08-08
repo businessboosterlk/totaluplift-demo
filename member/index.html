@@ -146,11 +146,14 @@ input,textarea{font-family:inherit;color:var(--txt)}
  background:radial-gradient(closest-side,var(--brand-glow),transparent 70%);
  pointer-events:none;opacity:.8}
 .td-score>*{position:relative;z-index:1}
-/* the flame at three strengths: category by intensity, never by a status hue */
+/* the flame at three strengths: category by intensity, never by a status hue.
+   THE LIGHT LIVES INSIDE THE BAR. A box-shadow without `inset` paints OUTSIDE
+   the shape, so the glow was bleeding 14px onto the track and the card behind
+   it. Inset keeps it within the fill, which is where a fill's light belongs. */
 .bar .fi.move{background:linear-gradient(90deg,var(--brand-dark),var(--brand) 55%,#FF9A62);
- box-shadow:0 0 14px var(--brand-glow)}
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 2px rgba(0,0,0,.18)}
 .bar .fi.fuel{background:linear-gradient(90deg,color-mix(in srgb,var(--brand-dark) 66%,var(--surface-3)),color-mix(in srgb,var(--brand) 66%,var(--surface-3)));
- box-shadow:0 0 10px color-mix(in srgb,var(--brand) 14%,transparent)}
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
 .bar .fi.rest{background:linear-gradient(90deg,color-mix(in srgb,var(--brand-dark) 38%,var(--surface-3)),color-mix(in srgb,var(--brand) 38%,var(--surface-3)))}
 /* a hint, not a primary action: the hero above it is the primary action.
    Still a full 44px target. */
@@ -185,12 +188,20 @@ input,textarea{font-family:inherit;color:var(--txt)}
    rather than as a dark neutral, and ties the one loud button back to the
    canvas it sits on. The glow is a soft brand halo behind the glyphs, so the
    words lift off the button instead of being stamped into it. */
+/* THE HERO. It was carrying three separate glows: a 30px outer halo, a 14px
+   text glow that made the letters fuzzy, and a drop shadow on the icon. One
+   light source, contained. The lift now comes from an inset top highlight and
+   a real edge, not from spraying brand colour into the card behind it. */
 .sess .go{width:100%;min-height:52px;margin-top:18px;border-radius:14px;
- background:var(--accent-grad);color:#0A2A5E;display:flex;align-items:center;
+ background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 88%,#fff) 0%,var(--brand) 46%,var(--brand-dark) 100%);
+ color:#0A2A5E;display:flex;align-items:center;
  justify-content:center;gap:10px;font-size:15px;font-weight:800;letter-spacing:-.2px;
- text-shadow:0 0 14px rgba(255,220,190,.55),0 1px 0 rgba(255,255,255,.28);
- box-shadow:0 10px 30px var(--brand-glow),0 2px 8px rgba(0,0,0,.35)}
-.sess .go .ic,.sess .go svg{filter:drop-shadow(0 0 8px rgba(255,220,190,.5))}
+ border:1px solid color-mix(in srgb,var(--brand-dark) 70%,#000);
+ text-shadow:0 1px 0 rgba(255,255,255,.3);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.42),inset 0 -2px 6px rgba(0,0,0,.16),
+  0 4px 14px rgba(0,0,0,.34);
+ transition:transform .12s var(--ease),filter .12s var(--ease)}
+.sess .go:active{transform:translateY(1px);filter:brightness(.96)}
 .sess .rail{height:6px;border-radius:99px;background:var(--surface-3);margin-top:16px;overflow:hidden}
 .sess .rail i{display:block;height:100%;background:var(--brand);border-radius:99px;
  transition:width .5s var(--ease)}
@@ -3992,6 +4003,29 @@ async function runSelfTest(){
       if(dx>1||dy>1)off.push(pg+' dx'+dx.toFixed(1)+' dy'+dy.toFixed(1));});});
     ok('Ring: the number sits dead centre of its ring, on every ring in the app',
       off.length===0,off.join(', '));
+    go('today');
+   })();
+   /* A FILL'S LIGHT STAYS INSIDE THE FILL. box-shadow without `inset` paints
+      OUTSIDE the shape, so a glow on a progress bar bleeds onto the track and
+      the card behind it. Thulaib caught the Move bar doing exactly that. */
+   (function(){
+    go('today');
+    const bleeding=[];
+    document.querySelectorAll('.bar .fi, .rail i, .run-fi, .ph-fi').forEach(el=>{
+     const sh=getComputedStyle(el).boxShadow;
+     if(sh&&sh!=='none'&&sh.indexOf('inset')<0)
+      bleeding.push((el.className||el.tagName)+': '+sh.slice(0,40));
+    });
+    ok('Light: a progress fill never glows outside its own shape',
+      bleeding.length===0,bleeding.slice(0,3).join(', '));
+    /* and one control carries ONE light source, not three stacked */
+    const go2=document.querySelector('.sess .go');
+    if(go2){
+     const cs=getComputedStyle(go2);
+     const outer=(cs.boxShadow||'').split(/,(?![^()]*\))/).filter(x=>x.indexOf('inset')<0);
+     ok('Light: the hero carries one outer shadow, not a stack of glows',
+       outer.length<=1,outer.length+' outer shadows');
+    }
     go('today');
    })();
    /* NO DEAD COLUMN. An open card in a two-up grid used to leave 613px of
