@@ -324,9 +324,13 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .run-tr{height:6px;border-radius:99px;background:var(--surface-3);overflow:hidden;margin-top:12px}
 .run-fi{height:100%;border-radius:99px;background:var(--accent-grad);transition:width .5s var(--ease)}
 .run-p{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:8px;font-variant-numeric:tabular-nums}
-.ex{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+/* THE CARD OWNS ITS INSET, ONCE. Every child used to inset itself, so the two
+   that forgot sat on the border and the collapsed state disagreed by 16px. */
+.ex{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+ margin-bottom:12px;overflow:hidden;padding:12px 16px}
 .ex.done{border-color:var(--green)}
-.ex-h{display:flex;align-items:flex-start;gap:12px;padding:14px 16px}
+/* no padding of its own: the card sets the inset for everything inside it */
+.ex-h{display:flex;align-items:flex-start;gap:12px;padding:2px 0 0}
 .ex-no{width:30px;height:30px;border-radius:10px;background:var(--surface-3);display:grid;place-items:center;font-size:11.5px;font-weight:800;color:var(--muted);flex-shrink:0;font-variant-numeric:tabular-nums}
 .ex.done .ex-no{background:var(--green-soft);color:var(--green)}
 .ex-m{flex:1;min-width:0}
@@ -506,7 +510,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .ex[data-open="0"] .ex-body{display:none}
 .ex-sum{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
  background:none;border:none;padding:0;color:var(--txt);min-height:44px}
-.ex[data-open="0"]{padding:12px 16px}
+/* open and shut are inset identically now, so this state override is gone */
 .ex-sum .st{margin-left:auto;flex-shrink:0;font-size:11.5px;font-weight:700;
  padding:4px 9px;border-radius:99px;background:var(--surface-3);color:var(--muted)}
 .ex-sum .st.done{background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}
@@ -571,7 +575,9 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .upath .climb{filter:drop-shadow(0 0 5px var(--brand-glow))}
 .upath.cmp{height:38px}
 .upcap{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:10px}
-.upwrap{padding:4px 0}
+/* keeps the tighter vertical rhythm WITHOUT zeroing the horizontal inset it
+   inherits from .pad, which is what put the drawing on the border */
+.upwrap{padding-top:8px;padding-bottom:12px}
 .uplegend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--muted)}
 .uplegend span{display:inline-flex;align-items:center;gap:6px}
 .uplegend i{width:4px;border-radius:1px;display:inline-block}
@@ -852,7 +858,9 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
   /* the hero spans both columns on desktop too: it is the point of the screen */
   grid-template-areas:"ms ms" "g g" "p p" "sess sess" "score tiles" "score ask" "score look"}
  #pg-today>.greet{grid-area:g}
- #pg-today>.promise{grid-area:p;max-width:80%}
+ /* capped in CHARACTERS, because the real constraint is line length, not a
+    share of whatever width the window happens to give it */
+ #pg-today>.promise{grid-area:p;max-width:26ch}
  .td-score{grid-area:score}
  #tdMstat{grid-area:ms}
  #tdSess{grid-area:sess;margin-top:0}
@@ -877,6 +885,9 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
  .td-water{grid-area:water}
  #plEx{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
  #plEx .ex{margin-bottom:0}
+ /* THE ONE YOU ARE ON TAKES THE WHOLE WIDTH. In two columns an open card left
+    613px of dead space beside a collapsed one; the queue pairs up under it. */
+ #plEx .ex[data-open="1"]{grid-column:1/-1}
  #stTiles{grid-template-columns:repeat(4,1fr)!important}
  #stBody{max-width:760px}
  .shot{width:150px}
@@ -3981,6 +3992,50 @@ async function runSelfTest(){
       if(dx>1||dy>1)off.push(pg+' dx'+dx.toFixed(1)+' dy'+dy.toFixed(1));});});
     ok('Ring: the number sits dead centre of its ring, on every ring in the app',
       off.length===0,off.join(', '));
+    go('today');
+   })();
+   /* NO DEAD COLUMN. An open card in a two-up grid used to leave 613px of
+      nothing beside it at desktop width. */
+   (function(){
+    if(innerWidth<960)return;
+    go('plan');
+    const open=document.querySelector('#plEx .ex[data-open="1"]');
+    const grid=document.getElementById('plEx');
+    if(!open||!grid)return;
+    const gw=grid.getBoundingClientRect().width, ow=open.getBoundingClientRect().width;
+    ok('Plan: the open exercise uses the full width at desktop',
+      ow>gw-40,Math.round(ow)+' of '+Math.round(gw));
+    go('today');
+   })();
+   /* NOTHING TOUCHES THE EDGE OF THE CARD IT SITS IN.
+      Thulaib caught the 01 badge on the border and the Now tag in the corner.
+      The cause was ownership: the card had no padding and each child set its
+      own, so the ones that forgot sat on the line. This check knows nothing
+      about those two classes; it knows content does not touch an edge, which
+      is why it will catch the next one. */
+   (function(){
+    const hits=[];
+    const FULL_BLEED='rail tr fi grid90 water sil shotimg upath prog';  /* meant to span */
+    ['today','log','plan','membership','stats'].forEach(pg=>{go(pg);
+     document.querySelectorAll('#pg-'+pg+' .card, #pg-'+pg+' .ex, #pg-'+pg+' .tile, #pg-'+pg+' .best, #pg-'+pg+' .mile, #pg-'+pg+' .numf, #pg-'+pg+' .meal').forEach(card=>{
+      const cr=card.getBoundingClientRect();
+      if(cr.width<40)return;
+      card.querySelectorAll('*').forEach(el=>{
+       const cls=(el.className&&el.className.baseVal!==undefined?el.className.baseVal:el.className)||'';
+       if(String(cls).split(/\s+/).some(c=>c&&FULL_BLEED.indexOf(c)>-1))return;
+       /* INSIDE AN SVG IS PAINT, NOT LAYOUT. The svg itself is the element that
+          has to respect the inset; the marks it draws fill it by design. */
+       if(el.closest('svg'))return;
+       if(!onScreen(el))return;
+       const r=el.getBoundingClientRect();
+       if(r.width<4||r.height<4)return;
+       /* a nested card is its own container: only measure against the nearest one */
+       if(el.parentElement&&el.parentElement.closest('.card, .ex, .tile, .best, .mile, .numf, .meal')!==card)return;
+       const L=r.left-cr.left, R=cr.right-r.right;
+       if(L<8||R<8)hits.push(pg+':'+(String(cls).split(' ')[0]||el.tagName)+' L'+Math.round(L)+' R'+Math.round(R));
+      });});});
+    ok('Layout: nothing inside a card touches the card\'s edge',
+      hits.length===0,hits.slice(0,4).join(', '));
     go('today');
    })();
    /* OVERLAP. Growing a floating button to meet the 44px rule made it cover the
