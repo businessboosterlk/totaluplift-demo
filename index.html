@@ -5302,6 +5302,44 @@ async function runSelfTest(opts){
   const idSeen={};document.querySelectorAll('[id]').forEach(el=>idSeen[el.id]=(idSeen[el.id]||0)+1);
   const idDupes=Object.keys(idSeen).filter(k=>idSeen[k]>1);
   ok('Boot: no duplicate DOM ids',idDupes.length===0,idDupes.join(', '));
+
+  /* ── bb-alignment: nothing inside a card sits on the card's edge.
+     A container owns its inset once; children never set their own.
+     The rule is measured, never a list of class names, so it catches the
+     NEXT one instead of only the one it was written for. ── */
+  (function(){
+   const hits=[];
+   const seen=el=>!!(el.offsetParent||el.getClientRects().length);
+   /* A full-width wrapper that carries its OWN horizontal inset is doing the
+      container's job for its children and is fine: a card header needs a
+      border that spans the card. The bug is a child with NO inset on the border. */
+   const ownsInset=el=>{const cs=getComputedStyle(el);
+    return (parseFloat(cs.paddingLeft)||0)>=8&&(parseFloat(cs.paddingRight)||0)>=8;};
+   /* table plumbing is structure, not content: the table spans its card and
+      the inset lives on the cells, which are measured on their own */
+   const PLUMBING={TABLE:1,THEAD:1,TBODY:1,TFOOT:1,TR:1,COLGROUP:1,COL:1};
+   /* a zero-padding wrapper is safe only if EVERY child owns its inset; one
+      child that forgets breaks `every` and is caught on its own measurement */
+   const delegates=el=>{const k=[...el.children];
+    return k.length>0&&k.every(c=>PLUMBING[c.tagName]||ownsInset(c)||delegates(c));};
+   Object.keys(RENDERERS).forEach(k=>{
+    if(CFG.modules[k]===false)return;
+    try{go(k);}catch(e){return;}
+    document.querySelectorAll('#page-'+k+' .card, #page-'+k+' .tile').forEach(card=>{
+     const cr=card.getBoundingClientRect(); if(cr.width<40)return;
+     card.querySelectorAll('*').forEach(el=>{
+      const cls=(el.className&&el.className.baseVal!==undefined?el.className.baseVal:el.className)||'';
+      if(PLUMBING[el.tagName])return;
+      if(ownsInset(el)||delegates(el))return;
+      if(el.closest('svg'))return;                 /* svg marks fill by design */
+      if(!seen(el))return;                         /* hidden rects are stale */
+      const r=el.getBoundingClientRect(); if(r.width<4||r.height<4)return;
+      if(el.parentElement&&el.parentElement.closest('.card, .tile')!==card)return;
+      const L=r.left-cr.left,R=cr.right-r.right;
+      if(L<8||R<8)hits.push(k+':'+(String(cls).split(' ')[0]||el.tagName)+' L'+Math.round(L)+' R'+Math.round(R));
+     });});});
+   ok('Layout: nothing inside a card touches its edge',hits.length===0,hits.slice(0,4).join(', ')||'clean');
+  })();
   /* ── test context: all modules on (mold gate) or as configured ── */
   /* gym mold: the harness runs against the ACTUAL module posture - flag-gated
      modules stay OFF and must SKIP cleanly; their ON branches are exercised by

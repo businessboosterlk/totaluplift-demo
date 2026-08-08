@@ -139,13 +139,12 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .bar .bn{font-size:11.5px;color:var(--faint);margin-top:5px;line-height:1.45}
 /* the ring is gone, so the indicators take the whole card */
 .score-wrap{display:block;position:relative;z-index:1}
-/* THE EMBER AURA. One breath of brand light, from the corner, behind everything
-   on the card. Decoration lives on the card, never on the data. */
-.td-score{position:relative;overflow:hidden}
-.td-score::before{content:'';position:absolute;top:-70px;left:-40px;width:260px;height:220px;
- background:radial-gradient(closest-side,var(--brand-glow),transparent 70%);
- pointer-events:none;opacity:.8}
-.td-score>*{position:relative;z-index:1}
+/* THE EMBER AURA IS GONE. It was a 260x220 cloud of brand colour parked
+   exactly over the Move bar, which is the haze that survived fixing the bar's
+   own shadow. I wrote it claiming decoration lives on the card and never on
+   the data, and then put it on the data. The card lifts by tone now, like
+   every other card in the app. */
+.td-score{position:relative}
 /* the flame at three strengths: category by intensity, never by a status hue.
    THE LIGHT LIVES INSIDE THE BAR. A box-shadow without `inset` paints OUTSIDE
    the shape, so the glow was bleeding 14px onto the track and the card behind
@@ -241,7 +240,11 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .build-top{display:flex;gap:12px}
 .shot{position:relative;width:118px;flex-shrink:0;aspect-ratio:3/4;border-radius:var(--r-md);overflow:hidden;background:var(--surface-3);border:1px solid var(--line)}
 .shot svg{width:100%;height:100%;display:block}
-.shot .tag{position:absolute;bottom:7px;left:7px;font-size:11px;font-weight:700;letter-spacing:.2px;background:rgba(11,17,23,.82);padding:3px 8px;border-radius:10px}
+/* pinned on BOTH sides so a long caption truncates instead of growing into
+   the opposite edge of a 118px frame */
+.shot .tag{position:absolute;bottom:7px;left:7px;right:7px;font-size:11px;font-weight:700;
+ letter-spacing:.2px;background:rgba(11,17,23,.82);padding:3px 8px;border-radius:10px;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* text ON the accent is near-black now. White on lime measures 1.48:1. */
 .shot .cmp{position:absolute;top:7px;right:7px;font-size:11px;font-weight:800;background:var(--brand);color:var(--on-accent);padding:3px 8px;border-radius:10px}
 .build-r{flex:1;min-width:0}
@@ -313,8 +316,12 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .numf .l{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700;display:flex;align-items:center;justify-content:space-between}
 .numf input{width:100%;min-height:44px;background:transparent;border:none;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Segoe UI',Roboto,Inter,system-ui,sans-serif;font-size:23px;font-weight:800;padding:7px 0 0;outline:none;font-variant-numeric:tabular-nums}
 .numf .u{font-size:11px;color:var(--muted);font-weight:600}
+/* AT 320px THE ROW OVERFLOWED ITS OWN CARD. min-height plus aspect-ratio fed
+   back into WIDTH, so eight glasses demanded more than the card had and the
+   last one pushed 12px into the padding. The height is now set directly, the
+   width flexes freely, and the tap target is still well over 44px. */
 .water{display:flex;gap:8px;margin-top:12px}
-.wg{flex:1;min-height:44px;aspect-ratio:1/1.7;border-radius:10px;background:var(--surface-3);border:1px solid var(--line);padding:0}
+.wg{flex:1 1 0;min-width:0;height:52px;border-radius:10px;background:var(--surface-3);border:1px solid var(--line);padding:0}
 .wg.on{background:var(--brand);border-color:var(--brand-txt)}
 
 /* ── PLAN TAB (the runner) ────────────────────────────────── */
@@ -362,7 +369,8 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .set.done input{border-color:var(--green-soft);color:var(--muted)}
 
 /* ── STATS TAB ────────────────────────────────────────────── */
-.wknav{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:5px}
+/* 5px put the arrows 6px off the edge while every other box in the app uses 8 */
+.wknav{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:8px}
 .wknav button{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;color:var(--muted)}
 .wknav button:hover:not([disabled]){background:var(--surface-2);color:var(--txt)}
 .wknav button[disabled]{opacity:.3;cursor:default}
@@ -822,7 +830,9 @@ body.is-offline .topbar{top:30px}
 button.st{display:block;width:100%;text-align:left;border:none;font:inherit;min-height:44px;cursor:pointer;transition:background .15s}
 button.st:hover{background:var(--surface-3)}
 button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
-.st .edit-b{position:absolute;top:7px;right:7px;padding:5px 6px;font-size:10px;pointer-events:none}
+/* 7px put it ON the corner. Same inset as every other child of a box. */
+/* 7px put it ON the corner. It now matches the 12px inset .st already owns. */
+.st .edit-b{position:absolute;top:12px;right:12px;padding:5px 6px;font-size:10px;pointer-events:none}
 .sheet-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:80;display:none;align-items:flex-end;justify-content:center}
 .sheet-ov.on{display:flex}
 @media(min-width:720px){.sheet-ov.on{align-items:center}}
@@ -3748,6 +3758,38 @@ async function runSelfTest(){
   ok('Boot: no duplicate global identifiers',dup.length===0,dup.join(', '));
   const ids={};document.querySelectorAll('[id]').forEach(e=>ids[e.id]=(ids[e.id]||0)+1);
   ok('Boot: no duplicate DOM ids',Object.keys(ids).filter(k=>ids[k]>1).length===0,Object.keys(ids).filter(k=>ids[k]>1).join(','));
+
+  /* ── bb-alignment: nothing inside a card sits on the card's edge.
+     A container owns its inset once; children never set their own.
+     The rule is MEASURED, never a list of class names, so it catches the
+     next one instead of only the one it was written for. ── */
+  (function(){
+   const hits=[];const back=PAGE;
+   const SEL='.card, .ex, .tile, .best, .mile, .numf, .meal';
+   const seen=el=>!!(el.offsetParent||el.getClientRects().length);
+   const ownsInset=el=>{const cs=getComputedStyle(el);
+    return (parseFloat(cs.paddingLeft)||0)>=8&&(parseFloat(cs.paddingRight)||0)>=8;};
+   const PLUMBING={TABLE:1,THEAD:1,TBODY:1,TFOOT:1,TR:1,COLGROUP:1,COL:1};
+   const delegates=el=>{const k=[...el.children];
+    return k.length>0&&k.every(c=>PLUMBING[c.tagName]||ownsInset(c)||delegates(c));};
+   Object.keys(RENDERERS).forEach(pg=>{
+    try{go(pg);}catch(e){return;}
+    document.querySelectorAll(SEL.split(', ').map(s=>'#pg-'+pg+' '+s).join(', ')).forEach(card=>{
+     const cr=card.getBoundingClientRect(); if(cr.width<40)return;
+     card.querySelectorAll('*').forEach(el=>{
+      const cls=(el.className&&el.className.baseVal!==undefined?el.className.baseVal:el.className)||'';
+      if(PLUMBING[el.tagName])return;
+      if(ownsInset(el)||delegates(el))return;
+      if(el.closest('svg'))return;                 /* svg marks fill by design */
+      if(!seen(el))return;                         /* hidden rects are stale */
+      const r=el.getBoundingClientRect(); if(r.width<4||r.height<4)return;
+      if(el.parentElement&&el.parentElement.closest(SEL)!==card)return;
+      const L=r.left-cr.left,R=cr.right-r.right;
+      if(L<8||R<8)hits.push(pg+':'+(String(cls).split(' ')[0]||el.tagName)+' L'+Math.round(L)+' R'+Math.round(R));
+     });});});
+   go(back);
+   ok('Layout: nothing inside a card touches its edge',hits.length===0,hits.slice(0,4).join(', ')||'clean');
+  })();
   /* score math */
   const d=todayRow();
   ok('Score: total is 0-100',scoreTotal(d)>=0&&scoreTotal(d)<=100,String(scoreTotal(d)));
@@ -4041,34 +4083,58 @@ async function runSelfTest(){
       ow>gw-40,Math.round(ow)+' of '+Math.round(gw));
     go('today');
    })();
-   /* NOTHING TOUCHES THE EDGE OF THE CARD IT SITS IN.
-      Thulaib caught the 01 badge on the border and the Now tag in the corner.
-      The cause was ownership: the card had no padding and each child set its
-      own, so the ones that forgot sat on the line. This check knows nothing
-      about those two classes; it knows content does not touch an edge, which
-      is why it will catch the next one. */
+   /* NOTHING TOUCHES THE EDGE OF THE BOX IT SITS IN.
+      Thulaib caught the 01 badge on a border, then a pencil in a corner. THREE
+      versions of this check came before this one and each was wrong in a way
+      worth writing down, because the wrongness is the lesson:
+
+        v1  carried a hand-written list of container classes, and missed .st
+            entirely, so it reported a clean screen while a pencil sat 7px into
+            a corner. A check with a list is a check that goes stale.
+        v2  found boxes itself but used a flat 8px, and started failing week
+            strip chips where 3px is correct. An absolute number cannot serve a
+            350px card and a 48px chip.
+        v3  measured against the container's padding, and flagged list
+            containers whose rows legitimately carry their own inset.
+
+      What survives is one rule with two exemptions that are both real UI
+      patterns rather than excuses:
+
+        every child that does NOT span its box must sit at least 8px inside it,
+        or 3px when the box is too small for 8px to leave room for anything.
+
+      A row spanning the full width is a row. Anything narrower sitting on an
+      edge is the bug.                                                       */
    (function(){
     const hits=[];
-    const FULL_BLEED='rail tr fi grid90 water sil shotimg upath prog';  /* meant to span */
+    const isBox=el=>{
+     const cs=getComputedStyle(el);
+     if(parseFloat(cs.borderTopLeftRadius)<8)return false;
+     const bg=cs.backgroundColor;
+     if(!bg||/rgba\(0,\s*0,\s*0,\s*0\)/.test(bg)||bg==='transparent')return false;
+     const r=el.getBoundingClientRect();
+     return r.width>=44&&r.height>=24;
+    };
     ['today','log','plan','membership','stats'].forEach(pg=>{go(pg);
-     document.querySelectorAll('#pg-'+pg+' .card, #pg-'+pg+' .ex, #pg-'+pg+' .tile, #pg-'+pg+' .best, #pg-'+pg+' .mile, #pg-'+pg+' .numf, #pg-'+pg+' .meal').forEach(card=>{
-      const cr=card.getBoundingClientRect();
-      if(cr.width<40)return;
-      card.querySelectorAll('*').forEach(el=>{
-       const cls=(el.className&&el.className.baseVal!==undefined?el.className.baseVal:el.className)||'';
-       if(String(cls).split(/\s+/).some(c=>c&&FULL_BLEED.indexOf(c)>-1))return;
-       /* INSIDE AN SVG IS PAINT, NOT LAYOUT. The svg itself is the element that
-          has to respect the inset; the marks it draws fill it by design. */
-       if(el.closest('svg'))return;
-       if(!onScreen(el))return;
+     Array.from(document.querySelectorAll('#pg-'+pg+' *')).filter(isBox).forEach(box=>{
+      const br=box.getBoundingClientRect();
+      /* 8px in a card, 3px in a chip too small for 8 to leave room */
+      const need=br.width>=120?8:3;
+      box.querySelectorAll('*').forEach(el=>{
+       if(el.closest('svg'))return;              /* inside an svg is paint, not layout */
+       if(!onScreen(el))return;                  /* hidden things keep stale rects */
+       let near=el.parentElement;                /* nearest box, or nesting double-counts */
+       while(near&&near!==box&&!isBox(near))near=near.parentElement;
+       if(near!==box)return;
        const r=el.getBoundingClientRect();
        if(r.width<4||r.height<4)return;
-       /* a nested card is its own container: only measure against the nearest one */
-       if(el.parentElement&&el.parentElement.closest('.card, .ex, .tile, .best, .mile, .numf, .meal')!==card)return;
-       const L=r.left-cr.left, R=cr.right-r.right;
-       if(L<8||R<8)hits.push(pg+':'+(String(cls).split(' ')[0]||el.tagName)+' L'+Math.round(L)+' R'+Math.round(R));
+       if(r.width>=br.width*0.96)return;         /* a row that spans IS a row */
+       const L=r.left-br.left, R=br.right-r.right;
+       if(L<need||R<need)
+        hits.push(pg+':'+(String(el.className).split(' ')[0]||el.tagName)
+         +' L'+Math.round(L)+' R'+Math.round(R)+' need'+need);
       });});});
-    ok('Layout: nothing inside a card touches the card\'s edge',
+    ok('Layout: nothing sits on the edge of the box it is in',
       hits.length===0,hits.slice(0,4).join(', '));
     go('today');
    })();
