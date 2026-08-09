@@ -109,6 +109,47 @@
 .page > .greet{margin-top:var(--gap-sec)}      /* the greeting opens a screen */
 .page > .greet + .promise{margin-top:4px}      /* the promise belongs to it */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* ══ BB APP FOUNDATIONS ══════════════════════════════════════════════════
+   Portable. No app specific selectors. Lift this block whole into any BB app.
+   Every rule here exists because a phone does something a desktop does not. */
+
+/* 1. DOUBLE TAP NO LONGER ZOOMS, and the 300ms tap delay goes with it.
+      `manipulation` keeps panning and keeps PINCH zoom, which is an
+      accessibility tool a real person uses. It only removes the double tap
+      gesture, which in an app is never what the person meant. */
+html{touch-action:manipulation}
+
+/* 2. NO BLUE FLASH on tap, and no long press menu offering to copy a button. */
+*{-webkit-tap-highlight-color:transparent}
+button,label,.nav,.seg,.topbar,[role="button"]{
+ -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+/* values and notes stay selectable: a member copying their own numbers is fine */
+input,textarea,p,.sub,.prov,.bc-w{-webkit-user-select:auto;user-select:auto}
+
+/* 3. THE FIELD ZOOM. iOS zooms the entire viewport when a focused input has
+      text under 16px, and it does not zoom back out. That is the "it zooms in
+      and looks weird" Thulaib described. 16px is the threshold, not a
+      preference. Coarse pointers only, so desktop keeps its own scale. */
+@media (pointer:coarse){
+ input,select,textarea{font-size:16px!important}
+}
+
+/* 4. SCROLL STAYS WHERE IT WAS PUT. `contain` stops a scroll that reaches the
+      end of a sheet from continuing into the page behind it. On the page
+      itself `none` also removes pull to refresh, which in an installed app
+      reloads the whole thing for no reason a member would expect. */
+html,body{overscroll-behavior-y:none}
+.sheet,.isheet,[data-scroll]{overscroll-behavior:contain}
+
+/* 5. THE PAGE BEHIND A SHEET IS FROZEN, not merely covered. */
+body.sheet-open{position:fixed;left:0;right:0;width:100%;overflow:hidden}
+[inert]{pointer-events:none}
+
+/* 6. dvh, NOT vh. On a phone `vh` is measured against the tallest the viewport
+      ever gets, so a sheet sized in vh is taller than the screen the moment the
+      address bar is showing and its own close button falls off the bottom. */
+.sheet{max-height:88dvh}
+
 html,body{overflow-x:clip;max-width:100%;width:100%}
 [hidden]{display:none!important}
 svg{flex-shrink:0}
@@ -4013,6 +4054,55 @@ async function runSelfTest(){
    ok('Layout: a card interior uses at most two vertical gaps',rough.length===0,
       rough.slice(0,3).join(' | ')||'level');
   })();
+  /* ── BB APP FOUNDATIONS: the things that make it a product, not a page ── */
+  (function(){
+   const cs=getComputedStyle;
+   ok('App: double tap does not zoom',
+      cs(document.documentElement).touchAction==='manipulation',
+      cs(document.documentElement).touchAction);
+   ok('App: the page does not pull to refresh',
+      cs(document.body).overscrollBehaviorY==='none',
+      cs(document.body).overscrollBehaviorY);
+   const b=document.querySelector('.nav button');
+   ok('App: no blue flash on tap',
+      !b||/rgba\(0, 0, 0, 0\)|transparent/.test(cs(b).webkitTapHighlightColor),'');
+   ok('App: chrome does not select on drag',!b||cs(b).userSelect==='none',
+      b?cs(b).userSelect:'');
+   /* THE FIELD ZOOM. iOS zooms the whole viewport when a focused input has
+      text under 16px and never zooms back. The threshold is the spec, not a
+      taste. Only enforced where a touch keyboard actually exists. */
+   if(matchMedia('(pointer:coarse)').matches){
+    const small=[];
+    document.querySelectorAll('input,select,textarea').forEach(el=>{
+     if(parseFloat(cs(el).fontSize)<16)small.push((el.id||el.type||el.tagName)+' '+cs(el).fontSize);});
+    ok('App: no field under 16px, so focusing one cannot zoom the screen',
+       small.length===0,small.slice(0,3).join(', ')||'all 16px+');
+   }else ok('App: no field under 16px, so focusing one cannot zoom the screen',
+            true,'fine pointer, rule is coarse only');
+   const sh=document.querySelector('.sheet');
+   ok('App: a sheet does not chain its scroll to the page',
+      !sh||cs(sh).overscrollBehaviorY==='contain',sh?cs(sh).overscrollBehaviorY:'');
+   ok('App: the foundation layer is present',typeof BBF==='object'&&!!BBF.start,'');
+  })();
+  /* THE FREEZE, proven by doing it rather than by reading a class name. */
+  (function(){
+   const ov=document.querySelector('.sheet-ov');
+   if(!ov){ok('App: the page behind an open sheet is frozen',true,'no sheets');return;}
+   /* the class that opens an overlay is the app's own word: sheets say `on`,
+      modals say `open`. Add both, restore exactly what was there. */
+   const had={on:ov.classList.contains('on'),open:ov.classList.contains('open')};
+   ov.classList.add('on');ov.classList.add('open');
+   BBF.sync();                 /* the observer runs a tick later; drive it now */
+   const frozen=cs2(document.body).position==='fixed';
+   const shielded=!!document.querySelector('.app[inert]');
+   if(!had.on)ov.classList.remove('on');
+   if(!had.open)ov.classList.remove('open');
+   BBF.sync();
+   ok('App: the page behind an open sheet is frozen',frozen,frozen?'pinned':'STILL SCROLLS');
+   ok('App: the page behind an open sheet is out of reach',shielded,
+      shielded?'inert':'still tappable and tabbable');
+   function cs2(e){return getComputedStyle(e);}
+  })();
   /* score math */
   const d=todayRow();
   ok('Score: total is 0-100',scoreTotal(d)>=0&&scoreTotal(d)<=100,String(scoreTotal(d)));
@@ -5923,6 +6013,166 @@ go('today');
    actually passed taken off it, and a paused one comes back paused */
 restLoad();
 bootDoor();
+
+/* ══ BB APP FOUNDATIONS, the behaviour half ══════════════════════════════
+   Identical in every BB app. The only line that differs is the overlay
+   selector on the first line of the module. */
+var BBF=(function(){
+ var OVS='.sheet-ov, .isheet';
+ var lockedY=0, locked=false, lastFocus=null, histDepth=0, closing=false;
+ try{if('scrollRestoration' in history)history.scrollRestoration='manual';}catch(e){}
+
+ /* AN OVERLAY IS OPEN WHEN IT IS VISIBLE, not when it carries a particular
+    class. Sheets use `on`, modals use `open`, panels flip visibility, and the
+    next app will invent a fourth. Visibility is true of all of them. */
+ function isOpen(el){
+  var cs=getComputedStyle(el);
+  if(cs.display==='none'||cs.visibility==='hidden')return false;
+  if(parseFloat(cs.opacity||'1')<0.05)return false;
+  var r=el.getBoundingClientRect();
+  return r.width>0&&r.height>0;
+ }
+ function anyOpen(){
+  var n=document.querySelectorAll(OVS), i;
+  for(i=0;i<n.length;i++)if(isOpen(n[i]))return n[i];
+  return null;
+ }
+
+ /* THE FREEZE. `overflow:hidden` alone does not hold on iOS: the page keeps
+    its rubber band and silently forgets where it was. Pinning the body at a
+    negative top holds the position exactly, and putting it back is the only
+    reason the scroll survives the sheet at all. */
+ function lock(){
+  if(locked)return;
+  lockedY=window.scrollY||window.pageYOffset||0;
+  document.body.style.top=(-lockedY)+'px';
+  document.body.classList.add('sheet-open');
+  locked=true;
+ }
+ function unlock(){
+  if(!locked)return;
+  document.body.classList.remove('sheet-open');
+  document.body.style.top='';
+  window.scrollTo(0,lockedY);
+  locked=false;
+ }
+
+ /* THE PAGE BEHIND IS OUT OF REACH, not merely covered. Without this a thumb
+    still hits a button through the gap beside a sheet, and a keyboard or a
+    screen reader walks into content the person cannot see. Generic on
+    purpose: no app specific selector, so this holds in any cast. */
+ var shielded=[];
+ function shield(ov){
+  release();
+  if(!ov)return;
+  [].slice.call(document.body.children).forEach(function(el){
+   if(el===ov||el.contains(ov))return;
+   if(/^(SCRIPT|STYLE|TEMPLATE|LINK)$/.test(el.tagName))return;
+   if(el.hasAttribute('inert'))return;
+   el.setAttribute('inert','');el.setAttribute('aria-hidden','true');
+   shielded.push(el);
+  });
+ }
+ function release(){
+  shielded.forEach(function(el){el.removeAttribute('inert');el.removeAttribute('aria-hidden');});
+  shielded=[];
+ }
+
+ function takeFocus(ov){
+  lastFocus=document.activeElement;
+  var f=ov.querySelector('button,[href],[tabindex]:not([tabindex="-1"])');
+  if(f){try{f.focus({preventScroll:true});}catch(e){}}
+ }
+ function giveBackFocus(){
+  if(lastFocus&&lastFocus.focus){try{lastFocus.focus({preventScroll:true});}catch(e){}}
+  lastFocus=null;
+ }
+
+ /* THE BACK BUTTON CLOSES THE SHEET, it does not leave the app. On Android
+    this is the loudest tell that something is a web page: Back on an open
+    sheet throws the person out of the product entirely. */
+ function closeTop(){
+  var ov=anyOpen();
+  if(!ov)return false;
+  var btn=ov.querySelector('[onclick*="close"],[onclick*="Close"],[data-close]');
+  if(btn){btn.click();return true;}
+  ov.classList.remove('on');ov.classList.remove('open');
+  return true;
+ }
+ window.addEventListener('popstate',function(){
+  if(closing)return;              /* this pop is the one our own close asked for */
+  if(histDepth>0){histDepth--;closeTop();}
+ });
+ window.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&anyOpen()){e.preventDefault();history.back();}
+ });
+
+ function sync(){
+  var ov=anyOpen();
+  if(ov&&!locked){
+   lock();shield(ov);takeFocus(ov);
+   histDepth++;try{history.pushState({bbSheet:1},'');}catch(e){}
+  }else if(!ov&&locked){
+   release();giveBackFocus();
+   /* UNLOCK SYNCHRONOUSLY, ALWAYS. Deferring it behind a timer left the body
+      pinned for whatever ran next, and what ran next could not scroll. With
+      scrollRestoration on manual the browser no longer moves the scroll on a
+      pop, so there is nothing to wait for. */
+   unlock();
+   if(histDepth>0){
+    histDepth--;closing=true;
+    try{history.back();}catch(e){}
+    setTimeout(function(){closing=false;},0);
+   }
+  }
+ }
+
+ /* ONE OBSERVER, NOT N EDITED FUNCTIONS. Overlays are opened by different
+    functions in different parts of the file. Editing them fixes the ones that
+    exist and ships the next one broken. Watching the attribute fixes every
+    overlay that exists and every one anyone adds after today, including in a
+    cast of this mold into another client's app. */
+ function start(){
+  var mo=new MutationObserver(sync);
+  var watch=function(el){mo.observe(el,{attributes:true,attributeFilter:['class','style','hidden']});};
+  document.querySelectorAll(OVS).forEach(watch);
+  new MutationObserver(function(muts){
+   muts.forEach(function(m){
+    [].slice.call(m.addedNodes).forEach(function(n){
+     if(n.nodeType===1&&n.matches&&n.matches(OVS))watch(n);
+    });
+   });
+   sync();
+  }).observe(document.body,{childList:true,subtree:true});
+  sync();
+ }
+
+ /* THE KEYBOARD SAYS WHAT THE BUTTON SAYS. A form whose last field offers
+    "return" instead of "Go" makes a person hunt for the button they are
+    already standing on. Applied at focus, which is the only moment the hint
+    is read, because most fields do not exist until their page renders. */
+ function hint(el){
+  if(!el||!/^(INPUT|TEXTAREA)$/.test(el.tagName))return;
+  if(el.getAttribute('enterkeyhint'))return;
+  var form=el.closest('.sheet,.modal,.panel,.login-in,form');
+  var peers=form?form.querySelectorAll('input,textarea'):[el];
+  el.setAttribute('enterkeyhint',peers[peers.length-1]===el?'go':'next');
+  if(el.type==='email'||el.inputMode==='email'||el.inputMode==='numeric'||el.inputMode==='decimal'){
+   el.setAttribute('autocapitalize','off');
+   el.setAttribute('autocorrect','off');
+   el.setAttribute('spellcheck','false');
+  }
+ }
+ function hintKeyboards(){
+  document.addEventListener('focusin',function(e){hint(e.target);});
+  document.querySelectorAll('input,textarea').forEach(hint);
+ }
+
+ return {start:start,hintKeyboards:hintKeyboards,anyOpen:anyOpen,sync:sync,
+         isLocked:function(){return locked;}};
+})();
+
+BBF.start();BBF.hintKeyboards();
 
 /* ── KEEPING THE FIELD YOU ARE TYPING IN VISIBLE ──────────────────────────
    The browser scrolls a focused field into the LAYOUT viewport, which does not
