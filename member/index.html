@@ -614,8 +614,9 @@ input,textarea{font-family:inherit;color:var(--txt)}
  align-items:center;justify-content:center;padding:calc(24px + var(--sat)) 20px calc(24px + var(--sab));
  overflow-y:auto}
 .login[hidden]{display:none}
-.login-in{width:100%;max-width:400px}
-.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:34px}
+/* ONE AXIS. The column was centred in the viewport, its contents were not. */
+.login-in{width:100%;max-width:400px;text-align:center}
+.login-brand{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:34px;text-align:left}
 .lb-badge{width:44px;height:44px;border-radius:12px;
  background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 78%,#fff) 0%,var(--brand) 100%);
  color:#1A0A03;display:grid;place-items:center;font-weight:800;font-size:15px;
@@ -625,9 +626,11 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .login h2{font-size:27px;font-weight:800;letter-spacing:-.6px}
 .login-sub{font-size:12.5px;color:var(--muted);line-height:1.55;margin:8px 0 22px}
 .login-f{margin-bottom:14px}
-.login-f label{display:block;font-size:11.5px;font-weight:700;color:var(--faint);margin-bottom:7px}
+.login-f label{display:block;font-size:11.5px;font-weight:700;color:var(--faint);margin-bottom:7px;text-align:center}
 .login-f input{width:100%;min-height:50px;background:var(--surface-2);border:1px solid var(--line);
  border-radius:12px;padding:13px 14px;font-size:15px;color:var(--txt);font-family:inherit;outline:none}
+/* a centred label above a left-ragged value is the same mistake, smaller */
+.login-f input{text-align:center}
 .login-f input:focus{border-color:var(--brand-txt)}
 .login-err{font-size:12px;color:var(--danger-txt);font-weight:600;min-height:18px;line-height:1.4}
 .login-go{width:100%;min-height:52px;border-radius:14px;margin-top:6px;
@@ -639,8 +642,8 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .login-go:active{transform:translateY(1px)}
 .login-go[disabled]{opacity:.7}
 .login-demo{margin-top:28px;padding-top:18px;border-top:1px solid var(--line2)}
-.ld-h{font-size:11px;font-weight:800;color:var(--faint);margin-bottom:10px}
-.ld-b{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;text-align:left;
+.ld-h{font-size:11px;font-weight:800;color:var(--faint);margin-bottom:10px;text-align:center}
+.ld-b{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:60px;text-align:left;
  background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 14px;color:var(--txt)}
 .ld-b:hover{border-color:var(--brand-txt)}
 .ld-av{width:36px;height:36px;border-radius:50%;background:var(--surface-3);display:grid;
