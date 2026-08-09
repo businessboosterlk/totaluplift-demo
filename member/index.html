@@ -3987,6 +3987,29 @@ async function runSelfTest(){
    go(back);
    ok('Layout: nothing inside a card touches its edge',hits.length===0,hits.slice(0,4).join(', ')||'clean');
   })();
+  /* THE VERTICAL HALF. The check above only ever measured left and right, so
+     every vertical defect was invisible to it and had to be caught by eye. */
+  (function(){
+   const back=PAGE, rough=[];
+   Object.keys(RENDERERS).forEach(pg=>{
+    try{go(pg);}catch(e){return;}
+    document.querySelectorAll('.card,.ex-body,.sets,.panel').forEach(card=>{
+     const kids=[].slice.call(card.children).filter(k=>{
+      const r=k.getBoundingClientRect(); return r.width>0&&r.height>0;});
+     if(kids.length<3)return;
+     const gaps=[];
+     for(let i=1;i<kids.length;i++){
+      const a=kids[i-1].getBoundingClientRect(),c=kids[i].getBoundingClientRect();
+      if(Math.abs(c.top-a.top)<4)continue;      /* side by side is not a stack */
+      gaps.push(Math.round(c.top-a.bottom));}
+     const distinct=[];
+     gaps.forEach(g=>{if(distinct.indexOf(g)<0)distinct.push(g);});
+     if(distinct.length>2)rough.push(pg+':'+(String(card.className).split(' ')[0]||'card')+' ['+gaps.join(',')+']');
+    });});
+   go(back);
+   ok('Layout: a card interior uses at most two vertical gaps',rough.length===0,
+      rough.slice(0,3).join(' | ')||'level');
+  })();
   /* score math */
   const d=todayRow();
   ok('Score: total is 0-100',scoreTotal(d)>=0&&scoreTotal(d)<=100,String(scoreTotal(d)));
