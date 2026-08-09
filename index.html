@@ -5305,25 +5305,25 @@ async function runSelfTest(opts){
 
   /* ── bb-alignment: nothing inside a card sits on the card's edge.
      A container owns its inset once; children never set their own.
-     The rule is measured, never a list of class names, so it catches the
-     NEXT one instead of only the one it was written for. ── */
+     The rule is MEASURED, never a list of class names, so it catches the
+     next one instead of only the one it was written for. ── */
   (function(){
    const hits=[];
    const seen=el=>!!(el.offsetParent||el.getClientRects().length);
-   /* A full-width wrapper that carries its OWN horizontal inset is doing the
+   /* A full-width wrapper carrying its OWN horizontal inset is doing the
       container's job for its children and is fine: a card header needs a
-      border that spans the card. The bug is a child with NO inset on the border. */
+      border that spans the card. The bug is a child with NO inset on that border. */
    const ownsInset=el=>{const cs=getComputedStyle(el);
     return (parseFloat(cs.paddingLeft)||0)>=8&&(parseFloat(cs.paddingRight)||0)>=8;};
    /* table plumbing is structure, not content: the table spans its card and
-      the inset lives on the cells, which are measured on their own */
+      the inset lives on the cells, which get measured on their own */
    const PLUMBING={TABLE:1,THEAD:1,TBODY:1,TFOOT:1,TR:1,COLGROUP:1,COL:1};
-   /* a zero-padding wrapper is safe only if EVERY child owns its inset; one
-      child that forgets breaks `every` and is caught on its own measurement */
+   /* a zero-padding wrapper is safe only when it hands the inset to EVERY
+      child; one child that forgets breaks `every` and is caught on its own */
    const delegates=el=>{const k=[...el.children];
     return k.length>0&&k.every(c=>PLUMBING[c.tagName]||ownsInset(c)||delegates(c));};
    Object.keys(RENDERERS).forEach(k=>{
-    if(CFG.modules[k]===false)return;
+    if(CFG.modules&&CFG.modules[k]===false)return;
     try{go(k);}catch(e){return;}
     document.querySelectorAll('#page-'+k+' .card, #page-'+k+' .tile').forEach(card=>{
      const cr=card.getBoundingClientRect(); if(cr.width<40)return;
@@ -5339,6 +5339,32 @@ async function runSelfTest(opts){
       if(L<8||R<8)hits.push(k+':'+(String(cls).split(' ')[0]||el.tagName)+' L'+Math.round(L)+' R'+Math.round(R));
      });});});
    ok('Layout: nothing inside a card touches its edge',hits.length===0,hits.slice(0,4).join(', ')||'clean');
+  })();
+  /* THE VERTICAL HALF. The check above measures left and right only, so a
+     block could sit flush to the top of its box and float off the bottom and
+     stay green. This is how that gets caught by a machine instead of by eye. */
+  (function(){
+   const back=document.querySelector('.nav-item.active');
+   const rough=[];
+   Object.keys(RENDERERS).forEach(k=>{
+    if(CFG.modules&&CFG.modules[k]===false)return;
+    try{go(k);}catch(e){return;}
+    document.querySelectorAll('#page-'+k+' .card, #page-'+k+' .tile, #page-'+k+' .panel').forEach(card=>{
+     const kids=[].slice.call(card.children).filter(c=>{
+      const r=c.getBoundingClientRect(); return r.width>0&&r.height>0;});
+     if(kids.length<3)return;
+     const gaps=[];
+     for(let i=1;i<kids.length;i++){
+      const a=kids[i-1].getBoundingClientRect(),c=kids[i].getBoundingClientRect();
+      if(Math.abs(c.top-a.top)<4)continue;      /* side by side is not a stack */
+      gaps.push(Math.round(c.top-a.bottom));}
+     const distinct=[];
+     gaps.forEach(g=>{if(distinct.indexOf(g)<0)distinct.push(g);});
+     if(distinct.length>2)rough.push(k+':'+(String(card.className).split(' ')[0]||'card')+' ['+gaps.join(',')+']');
+    });});
+   if(back)go(back.dataset.pg);
+   ok('Layout: a card interior uses at most two vertical gaps',rough.length===0,
+      rough.slice(0,3).join(' | ')||'level');
   })();
   /* ── test context: all modules on (mold gate) or as configured ── */
   /* gym mold: the harness runs against the ACTUAL module posture - flag-gated
