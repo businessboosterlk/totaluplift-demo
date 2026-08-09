@@ -167,7 +167,10 @@ input,textarea{font-family:inherit;color:var(--txt)}
    own shadow. I wrote it claiming decoration lives on the card and never on
    the data, and then put it on the data. The card lifts by tone now, like
    every other card in the app. */
-.td-score{position:relative}
+.td-score{position:relative;display:flex;flex-direction:column;gap:var(--gap)}
+.td-score > *{margin-top:0!important;margin-bottom:0!important}
+/* the provenance line explains the line above it, so it sits tight to it */
+.td-score > .prov{margin-top:calc(var(--gap-tight) - var(--gap))!important}
 /* the flame at three strengths: category by intensity, never by a status hue.
    THE LIGHT LIVES INSIDE THE BAR. A box-shadow without `inset` paints OUTSIDE
    the shape, so the glow was bleeding 14px onto the track and the card behind
@@ -214,13 +217,18 @@ input,textarea{font-family:inherit;color:var(--txt)}
    text glow that made the letters fuzzy, and a drop shadow on the icon. One
    light source, contained. The lift now comes from an inset top highlight and
    a real edge, not from spraying brand colour into the card behind it. */
+/* NO DARK BOTTOM STOP. Measured against it, no text colour passed contrast:
+   white 2.58, the blue 2.85, near black 3.94, all under the 4.5 needed at
+   15px. The gradient was the problem, not the colour choice. The pressed-in
+   feel now comes from the inset shadow and the border, not from darkening the
+   surface the words sit on. */
 .sess .go{width:100%;min-height:52px;margin-top:18px;border-radius:14px;
- background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 88%,#fff) 0%,var(--brand) 46%,var(--brand-dark) 100%);
- color:#0A2A5E;display:flex;align-items:center;
+ background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 78%,#fff) 0%,var(--brand) 100%);
+ color:#1A0A03;display:flex;align-items:center;
  justify-content:center;gap:10px;font-size:15px;font-weight:800;letter-spacing:-.2px;
- border:1px solid color-mix(in srgb,var(--brand-dark) 70%,#000);
- text-shadow:0 1px 0 rgba(255,255,255,.3);
- box-shadow:inset 0 1px 0 rgba(255,255,255,.42),inset 0 -2px 6px rgba(0,0,0,.16),
+ border:1px solid color-mix(in srgb,var(--brand-dark) 62%,#000);
+ text-shadow:0 1px 0 rgba(255,255,255,.34);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -3px 8px rgba(214,48,8,.4),
   0 4px 14px rgba(0,0,0,.34);
  transition:transform .12s var(--ease),filter .12s var(--ease)}
 .sess .go:active{transform:translateY(1px);filter:brightness(.96)}
@@ -260,6 +268,9 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .ask .go{margin-left:auto;color:var(--green);flex-shrink:0}
 
 /* ── THE BUILD (progress photos: SILHOUETTES in demo, never a real person) ── */
+/* the build card owns its rhythm, the same way the exercise card does */
+.td-build{display:flex;flex-direction:column;gap:var(--gap)}
+.td-build > *{margin-top:0!important;margin-bottom:0!important}
 .build-top{display:flex;gap:12px}
 .shot{position:relative;width:118px;flex-shrink:0;aspect-ratio:3/4;border-radius:var(--r-md);overflow:hidden;background:var(--surface-3);border:1px solid var(--line)}
 .shot svg{width:100%;height:100%;display:block}
@@ -381,8 +392,11 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .ex-t{font-size:11.5px;color:var(--muted);margin-top:3px}
 .spark{width:56px;height:26px;flex-shrink:0;opacity:.9}
 .cue{margin:0 16px 12px;background:var(--surface-2);border-left:2px solid var(--brand);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:9px 12px;font-size:11.5px;color:var(--muted);font-style:italic;line-height:1.5}
-.sets{padding:0 16px 14px}
-.set{display:grid;grid-template-columns:46px 1fr 14px 1fr 44px;gap:8px;align-items:center;margin-bottom:8px}
+/* the CONTAINER owns the gap between rows. When each row owned its own
+   bottom margin, the last row's margin stacked on the container's bottom
+   padding and the block sat 0 from its top edge and 22 from its bottom. */
+.sets{padding:0 16px;display:flex;flex-direction:column;gap:8px}
+.set{display:grid;grid-template-columns:46px 1fr 14px 1fr 44px;gap:8px;align-items:center}
 .set .sl{font-size:11px;letter-spacing:.2px;color:var(--faint);font-weight:700}
 .set .x{text-align:center;color:var(--faint);font-size:11px}
 .set input{width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line2);border-radius:10px;padding:11px 8px;font-size:14px;text-align:center;outline:none;font-variant-numeric:tabular-nums;transition:border-color .15s}
@@ -550,6 +564,13 @@ input,textarea{font-family:inherit;color:var(--txt)}
 /* collapse is PRESENTATIONAL. Everything still renders, so every action and
    every check still reaches its element; only the noise is hidden. */
 .ex[data-open="0"] .ex-body{display:none}
+/* THE CARD OWNS ITS RHYTHM TOO. The page level rhythm stopped at the card
+   wall, so inside here the gaps were 12, 12, 14, 4, 10, 12, 12 and the set
+   block ended up tight to the bar call and loose to the rest line. One gap,
+   from the same scale, and nothing inside can be closer to one neighbour than
+   the other. */
+.ex[data-open="1"] .ex-body{display:flex;flex-direction:column;gap:var(--gap)}
+.ex-body > *{margin-top:0!important;margin-bottom:0!important}
 .ex-sum{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
  background:none;border:none;padding:0;color:var(--txt);min-height:44px}
 /* open and shut are inset identically now, so this state override is gone */
@@ -595,8 +616,9 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .login[hidden]{display:none}
 .login-in{width:100%;max-width:400px}
 .login-brand{display:flex;align-items:center;gap:12px;margin-bottom:34px}
-.lb-badge{width:44px;height:44px;border-radius:12px;background:var(--accent-grad);
- color:#0A2A5E;display:grid;place-items:center;font-weight:800;font-size:15px;
+.lb-badge{width:44px;height:44px;border-radius:12px;
+ background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 78%,#fff) 0%,var(--brand) 100%);
+ color:#1A0A03;display:grid;place-items:center;font-weight:800;font-size:15px;
  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 14px rgba(0,0,0,.34)}
 .lb-n{font-size:15px;font-weight:800}
 .lb-s{font-size:11.5px;color:var(--faint);margin-top:2px}
@@ -609,11 +631,11 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .login-f input:focus{border-color:var(--brand-txt)}
 .login-err{font-size:12px;color:var(--danger-txt);font-weight:600;min-height:18px;line-height:1.4}
 .login-go{width:100%;min-height:52px;border-radius:14px;margin-top:6px;
- background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 88%,#fff) 0%,var(--brand) 46%,var(--brand-dark) 100%);
- color:#0A2A5E;font-size:15px;font-weight:800;
- border:1px solid color-mix(in srgb,var(--brand-dark) 70%,#000);
- text-shadow:0 1px 0 rgba(255,255,255,.3);
- box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 4px 14px rgba(0,0,0,.34)}
+ background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 78%,#fff) 0%,var(--brand) 100%);
+ color:#1A0A03;font-size:15px;font-weight:800;
+ border:1px solid color-mix(in srgb,var(--brand-dark) 62%,#000);
+ text-shadow:0 1px 0 rgba(255,255,255,.34);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -3px 8px rgba(214,48,8,.4),0 4px 14px rgba(0,0,0,.34)}
 .login-go:active{transform:translateY(1px)}
 .login-go[disabled]{opacity:.7}
 .login-demo{margin-top:28px;padding-top:18px;border-top:1px solid var(--line2)}
