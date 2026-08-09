@@ -564,6 +564,45 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .cmsg .cd{font-size:11px;color:var(--faint);margin-top:7px}
 .cok{color:var(--green);flex-shrink:0}
 
+/* ── THE DOOR ─────────────────────────────────────────────── */
+/* full screen, above everything, and it respects the notch like the app does */
+.login{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;
+ align-items:center;justify-content:center;padding:calc(24px + var(--sat)) 20px calc(24px + var(--sab));
+ overflow-y:auto}
+.login[hidden]{display:none}
+.login-in{width:100%;max-width:400px}
+.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:34px}
+.lb-badge{width:44px;height:44px;border-radius:12px;background:var(--accent-grad);
+ color:#0A2A5E;display:grid;place-items:center;font-weight:800;font-size:15px;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 14px rgba(0,0,0,.34)}
+.lb-n{font-size:15px;font-weight:800}
+.lb-s{font-size:11.5px;color:var(--faint);margin-top:2px}
+.login h2{font-size:27px;font-weight:800;letter-spacing:-.6px}
+.login-sub{font-size:12.5px;color:var(--muted);line-height:1.55;margin:8px 0 22px}
+.login-f{margin-bottom:14px}
+.login-f label{display:block;font-size:11.5px;font-weight:700;color:var(--faint);margin-bottom:7px}
+.login-f input{width:100%;min-height:50px;background:var(--surface-2);border:1px solid var(--line);
+ border-radius:12px;padding:13px 14px;font-size:15px;color:var(--txt);font-family:inherit;outline:none}
+.login-f input:focus{border-color:var(--brand-txt)}
+.login-err{font-size:12px;color:var(--danger-txt);font-weight:600;min-height:18px;line-height:1.4}
+.login-go{width:100%;min-height:52px;border-radius:14px;margin-top:6px;
+ background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 88%,#fff) 0%,var(--brand) 46%,var(--brand-dark) 100%);
+ color:#0A2A5E;font-size:15px;font-weight:800;
+ border:1px solid color-mix(in srgb,var(--brand-dark) 70%,#000);
+ text-shadow:0 1px 0 rgba(255,255,255,.3);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 4px 14px rgba(0,0,0,.34)}
+.login-go:active{transform:translateY(1px)}
+.login-go[disabled]{opacity:.7}
+.login-demo{margin-top:28px;padding-top:18px;border-top:1px solid var(--line2)}
+.ld-h{font-size:11px;font-weight:800;color:var(--faint);margin-bottom:10px}
+.ld-b{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;text-align:left;
+ background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 14px;color:var(--txt)}
+.ld-b:hover{border-color:var(--brand-txt)}
+.ld-av{width:36px;height:36px;border-radius:50%;background:var(--surface-3);display:grid;
+ place-items:center;font-weight:800;font-size:14px;flex-shrink:0}
+.ld-b b{display:block;font-size:14px;font-weight:750}
+.ld-b i{display:block;font-size:11.5px;color:var(--faint);font-style:normal;margin-top:2px}
+
 /* ── THE INSTALL SHEET ────────────────────────────────────── */
 /* fixed, above the navigation, and never part of Today's height */
 .isheet{position:fixed;left:10px;right:10px;bottom:calc(var(--navh) + 10px);
@@ -960,7 +999,8 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
     <div class="tb-badge" id="tbBadge"></div>
     <div class="tb-prog"><div class="l" id="tbProgL"></div><div class="d" id="tbProgD"></div></div>
     <div class="tb-sp"></div>
-    <a class="tb-btn" id="tbStaff" hidden title="Open the gym's staff view" aria-label="Staff view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="18" x2="12" y2="21"/></svg></a>
+    <!-- the staff-view jump lived here. Nothing in a member's app should lead
+         to the place their gym's takings are kept, demo or not. -->
     <button class="tb-btn" id="tbBell" aria-label="Notifications" onclick="showNudge()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot" id="tbDot"></span></button>
     <button class="tb-av" id="tbAv" aria-label="What you track" onclick="openTrack()"></button>
   </div>
@@ -1099,6 +1139,23 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
   <button data-pg="stats" onclick="go('stats')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Stats</button>
 </nav>
 
+<!-- THE DOOR. A real Supabase password grant, not a prop. -->
+<div class="login" id="loginScreen" hidden>
+  <div class="login-in">
+    <div class="login-brand"><span class="lb-badge">TU</span><div><div class="lb-n" id="lgGym"></div>
+      <div class="lb-s">Your training, your record</div></div></div>
+    <h2>Sign in</h2>
+    <div class="login-sub">Your gym set this up for you. If you have not been given a login, ask at the front desk.</div>
+    <div class="login-f"><label for="liEmail">Email</label>
+      <input id="liEmail" type="email" autocomplete="username" inputmode="email" placeholder="you@example.com"></div>
+    <div class="login-f"><label for="liPass">Password</label>
+      <input id="liPass" type="password" autocomplete="current-password" placeholder="Your password"></div>
+    <div class="login-err" id="liErr"></div>
+    <button class="login-go" id="liGo" onclick="doLogin()">Sign in</button>
+    <div class="login-demo" id="liDemo"></div>
+  </div>
+</div>
+
 <div class="splash" id="splash" role="status" aria-live="polite" onclick="hideSplash()">
   <div class="sp-in">
     <div class="sp-logo">Total <span>Uplift</span></div>
@@ -1210,7 +1267,9 @@ const CFG={
  /* DEMO FURNITURE - the staff-view jump exists only while mode is 'demo' */
  /* ONE CLOCK across both surfaces: they are two views of one gym, so a
     different demo date on each would silently drop every synced event. */
- demo:{asOf:'2026-07-29',staffAppUrl:'../'},
+ /* staffAppUrl removed with the staff-view jump: nothing in a member's app
+    should know where their gym's back office lives. */
+ demo:{asOf:'2026-07-29'},
 };
 
 /* ════════════════════════════════════════════════════════════════════
@@ -1535,6 +1594,10 @@ function scoreWeights(){
  const t=s.moveWeight+s.fuelWeight;
  return {move:s.moveWeight/t,fuel:s.fuelWeight/t,rest:0};
 }
+function maSessEmail(){
+ const s=sessionLoad();
+ return s&&s.email?esc(s.email):'this device';
+}
 function openTrack(){document.getElementById('trackSheet').classList.add('on');renderTrackSheet();}
 function closeTrack(){document.getElementById('trackSheet').classList.remove('on');}
 function renderTrackSheet(){
@@ -1560,6 +1623,10 @@ function renderTrackSheet(){
     ?'<span class="cok">'+I.check+'</span>'
     :'<button class="pbtn" style="flex:0 0 auto;min-width:96px" onclick="cloudSignIn()">'
      +(CLOUD.state==='connecting'?'Connecting':'Connect')+'</button>')+'</div>'
+ +'<div class="trk-sub">Your account</div>'
+ +'<div class="trk"><div style="min-width:0"><div class="n">Signed in</div>'
+  +'<div class="d">'+maSessEmail()+'</div></div>'
+  +'<button class="pbtn" style="flex:0 0 auto;min-width:96px" onclick="signOut()">Sign out</button></div>'
  +'<div class="trk-sub">Rest timer</div>'
  +'<div class="trk"><div style="min-width:0"><div class="n">Start the timer for me</div>'
   +'<div class="d">It begins the moment you tick a set. Switch this off if you would rather start it yourself.</div></div>'
@@ -1923,9 +1990,6 @@ function renderChrome(){
  document.getElementById('tbProgL').textContent=CFG.programme.name;
  document.getElementById('tbProgD').textContent='Day '+m.day+' of '+CFG.programme.days+' · Week '+Math.ceil(m.day/7);
  document.getElementById('tbAv').textContent=m.initial;
- const st=document.getElementById('tbStaff');
- if(st){const url=CFG.data.mode==='demo'&&CFG.demo.staffAppUrl;
-  st.hidden=!url;if(url)st.href=url;}
  document.getElementById('tbDot').style.display=DB.get('nudges').length?'':'none';
 }
 function todayHeadline(){
@@ -2125,6 +2189,80 @@ function renderToday(){
   document.getElementById('pg-today').appendChild(bs);}
  bs.textContent=CFG.gym.name+' · build '+CFG.app.build;
 }
+/* ── THE DOOR ────────────────────────────────────────────────────────────
+   A real password grant. The token is kept with its expiry so a refresh does
+   not throw somebody back to the login screen mid workout, and NO PASSWORD is
+   ever stored. */
+const SESS_KEY='tu_session_v1';
+function sessionLoad(){
+ try{const s=JSON.parse(localStorage.getItem(SESS_KEY)||'null');
+  if(s&&s.token&&s.exp>Date.now())return s;}catch(e){}
+ return null;
+}
+function sessionSave(tok,secs,email){
+ try{localStorage.setItem(SESS_KEY,JSON.stringify(
+   {token:tok,exp:Date.now()+(secs||3600)*1000,email:email}));}catch(e){}
+}
+function sessionClear(){try{localStorage.removeItem(SESS_KEY);}catch(e){}}
+
+function showLogin(){
+ const el=document.getElementById('loginScreen');if(!el)return;
+ document.getElementById('lgGym').textContent=CFG.gym.name;
+ /* the demo member is offered the way the staff system offers the team. The
+    tap performs a REAL sign in, so a prospect sees the door, not a bypass. */
+ document.getElementById('liDemo').innerHTML=CFG.data.mode==='demo'
+  ?'<div class="ld-h">Demo</div><button class="ld-b" onclick="loginAs(\''+CLOUD_CFG.demo.email+'\',\''+CLOUD_CFG.demo.pass+'\')">'
+   +'<span class="ld-av">R</span><span><b>Ravindu Dissanayake</b><i>Member, day 34 of 90</i></span></button>'
+  :'';
+ el.hidden=false;
+}
+function hideLogin(){const el=document.getElementById('loginScreen');if(el)el.hidden=true;}
+function loginAs(em,pw){
+ document.getElementById('liEmail').value=em;
+ document.getElementById('liPass').value=pw;
+ doLogin();
+}
+async function doLogin(){
+ const em=(document.getElementById('liEmail').value||'').trim();
+ const pw=document.getElementById('liPass').value||'';
+ const err=document.getElementById('liErr'),btn=document.getElementById('liGo');
+ err.textContent='';
+ if(!em||!pw){err.textContent='Enter your email and password.';return;}
+ if(navigator.onLine===false){err.textContent='No signal. Signing in for the first time needs a connection.';return;}
+ btn.disabled=true;btn.textContent='Signing in';
+ try{
+  const r=await fetch(CLOUD_CFG.url+'/auth/v1/token?grant_type=password',{
+   method:'POST',headers:{apikey:CLOUD_CFG.key,'Content-Type':'application/json'},
+   body:JSON.stringify({email:em,password:pw})});
+  if(!r.ok)throw new Error(r.status===400?'That email and password do not match.':'Could not sign in ('+r.status+').');
+  const j=await r.json();
+  CLOUD.token=j.access_token;CLOUD.state='connected';
+  sessionSave(j.access_token,j.expires_in,em);
+  try{await cloudFetchInbox();}catch(e){}
+  hideLogin();renderDemoTag();rerender();
+  toast(I.check+' Signed in');
+ }catch(e){
+  err.textContent=e.message;
+ }finally{btn.disabled=false;btn.textContent='Sign in';}
+}
+function signOut(){
+ if(!confirm('Sign out of Total Uplift on this device?'))return;
+ sessionClear();CLOUD.token=null;CLOUD.state='demo';CLOUD.inbox=[];
+ closeTrack();renderDemoTag();showLogin();
+}
+/* AT BOOT: a stored session gets straight in, even with no signal, because the
+   training data is local and only the inbox needs the network. Blocking the
+   whole app behind a network call would make it useless on a gym floor. */
+function bootDoor(){
+ const s=sessionLoad();
+ if(s){
+  CLOUD.token=s.token;CLOUD.state='connected';hideLogin();
+  cloudFetchInbox().then(()=>{renderDemoTag();rerender();}).catch(()=>{});
+  return;
+ }
+ showLogin();
+}
+
 /* ── TOTAL UPLIFT CLOUD ──────────────────────────────────────────────────
    Plain fetch against Supabase auth + REST. The publishable key is public by
    design; every read is decided by row level security on the server, which is
@@ -4345,6 +4483,50 @@ async function runSelfTest(){
       !document.getElementById('stHist').open);
     go('today');
    })();
+   /* THE DOOR. A login is the one screen where a bug is a security bug. */
+   (function(){
+    const keepTok=CLOUD.token,keepState=CLOUD.state;
+    let keepSess=null;try{keepSess=localStorage.getItem(SESS_KEY);}catch(e){}
+
+    ok('Door: the app has a real sign in screen',
+      !!document.getElementById('loginScreen')&&typeof doLogin==='function');
+
+    /* NO PASSWORD IS EVER STORED. Only the short lived token. */
+    sessionSave('tok-test',3600,'someone@example.com');
+    const raw=localStorage.getItem(SESS_KEY)||'';
+    ok('Door: no password is ever written to storage',
+      raw.indexOf('uplift-demo')<0&&raw.indexOf('password')<0&&raw.indexOf('tok-test')>-1);
+    ok('Door: the stored session carries an expiry',
+      (JSON.parse(raw).exp||0)>Date.now());
+
+    /* AN EXPIRED SESSION IS NOT A SESSION. */
+    const s=JSON.parse(raw);s.exp=Date.now()-1;
+    localStorage.setItem(SESS_KEY,JSON.stringify(s));
+    ok('Door: an expired session does not open the app',!sessionLoad());
+    s.exp=Date.now()+3600000;localStorage.setItem(SESS_KEY,JSON.stringify(s));
+    ok('Door: a valid session survives a refresh',!!sessionLoad());
+
+    /* SIGNING OUT LEAVES NOTHING BEHIND. */
+    sessionClear();
+    ok('Door: signing out clears the token',!sessionLoad());
+
+    /* IT MUST NOT BLOCK A GYM FLOOR WITH NO SIGNAL. The training data is
+       local; only the inbox needs a network. */
+    sessionSave('tok-test',3600,'someone@example.com');
+    bootDoor();
+    ok('Door: a member who signed in before gets in without a network',
+      document.getElementById('loginScreen').hidden);
+
+    /* the demo persona is offered, and it is the stage prop account only */
+    showLogin();
+    const demo=document.getElementById('liDemo').innerHTML;
+    ok('Door: the demo sign in is offered, and only the demo account',
+      CFG.data.mode!=='demo'||(demo.indexOf('@demo.totaluplift.lk')>-1&&demo.indexOf('ld-b')>-1));
+    hideLogin();
+
+    try{if(keepSess)localStorage.setItem(SESS_KEY,keepSess);else localStorage.removeItem(SESS_KEY);}catch(e){}
+    CLOUD.token=keepTok;CLOUD.state=keepState;
+   })();
    /* THE CLOUD LAYER, checked without touching the network: the harness must
       be green on a plane. Connection itself is proven by hand against the
       real database, and the server's own isolation test is the real gate. */
@@ -5405,12 +5587,24 @@ async function runSelfTest(){
    setOffline(false);
    ok('Offline: the banner clears when signal returns',!document.getElementById('offlineBar').classList.contains('on'));
   })();
-  /* demo furniture must disappear for a live cast */
+  /* THE STAFF DOOR IS CLOSED, not hidden. The old check only ever asserted
+     that a link to the gym's own back office hid itself on a live cast, which
+     is a weaker promise than not shipping it at all. */
+  /* SEARCHING innerHTML SEARCHES THIS SCRIPT TOO, which is how the dead-hex
+     scan once matched its own array. The promise is that no CONTROL leads to
+     the staff system, so check controls. */
   (function(){
-   const was=CFG.data.mode;CFG.data.mode='local';renderChrome();
-   const gone=document.getElementById('tbStaff').hidden;
-   CFG.data.mode=was;renderChrome();
-   ok('Demo: the staff-view jump is demo-only, hidden on a live cast',gone&&!document.getElementById('tbStaff').hidden);
+   const links=Array.from(document.querySelectorAll('a[href]'))
+     .map(a=>a.getAttribute('href')||'')
+     .filter(h=>h&&h!=='#'&&!/^(mailto:|tel:|https:\/\/wa\.me)/.test(h));
+   const jumps=Array.from(document.querySelectorAll('[onclick]'))
+     .map(el=>el.getAttribute('onclick')||'')
+     .filter(o=>/location\s*=|location\.href|window\.open\(\s*['"]\.\./.test(o));
+   ok('Member app: nothing leads to the gym\'s staff system',
+     !document.getElementById('tbStaff')&&links.length===0&&jumps.length===0,
+     links.concat(jumps).slice(0,3).join(', '));
+   ok('Member app: it does not even know where the staff system is',
+     CFG.demo.staffAppUrl===undefined);
   })();
   /* flags */
   ok('Flags: every unverified module defaults OFF',Object.keys(CFG.flags).every(k=>CFG.flags[k]===false),Object.keys(CFG.flags).join(','));
@@ -5588,6 +5782,7 @@ go('today');
 /* a rest that was running when the page reloaded comes back with the time that
    actually passed taken off it, and a paused one comes back paused */
 restLoad();
+bootDoor();
 
 /* ── KEEPING THE FIELD YOU ARE TYPING IN VISIBLE ──────────────────────────
    The browser scrolls a focused field into the LAYOUT viewport, which does not
