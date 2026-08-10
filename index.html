@@ -60,6 +60,8 @@
 /* ── MEMBER APP SECTION ───────────────────────────────────── */
 /* the Staff OS's own tokens throughout: this belongs in the product, it does
    not sit on top of it */
+/* the sentence that says which rule won, under the feature it belongs to */
+.ma-truth{display:block;font-size:11.5px;font-weight:650;color:var(--brand-txt);margin-top:5px}
 .ma-tabs{display:flex;gap:6px;margin-bottom:var(--sp-4);flex-wrap:wrap}
 .ma-tab{min-height:44px;padding:0 18px;border-radius:var(--r-sm);border:1px solid var(--line);
  background:var(--surface);color:var(--muted);font-size:var(--fs-sm);font-weight:700}
@@ -5060,6 +5062,47 @@ function maEval(feature,pkg){
    customer. I assumed a c.plan string, By-package rendered empty, and this is
    why you read the seed instead of guessing the shape. */
 function maPackages(){return CFG.cohorts||[];}
+/* HOW MANY PEOPLE IS THIS, ACTUALLY. Every sentence in this section that
+   mentions a number gets it from here, so the screen and the confirmation can
+   never disagree about the size of what is about to happen. */
+function maHeadcount(){
+ const out={total:0,byPkg:{}};
+ mapSafe(DB.get('customers'),c=>{
+  const p=maPkgOf(c.name);
+  out.byPkg[p]=(out.byPkg[p]||0)+1;out.total++;return '';
+ });
+ return out;
+}
+/* who LOSES this feature if the rules change to `next`, counted through the
+   SAME evaluator the app runs, never through a second guess at the logic */
+function maWouldLose(feature,apply){
+ const r=maRules();
+ const before={};mapSafe(DB.get('customers'),c=>{before[c.name]=maEval(feature,maPkgOf(c.name)).on;return '';});
+ const snap=JSON.stringify({org:r.org,pkg:r.pkg});
+ apply();
+ let lost=0;mapSafe(DB.get('customers'),c=>{
+  if(before[c.name]&&!maEval(feature,maPkgOf(c.name)).on)lost++;return '';});
+ const back=JSON.parse(snap);r.org=back.org;r.pkg=back.pkg;   /* put it back */
+ return lost;
+}
+function maFeatureName(k){
+ const f=MA_FEATURES.find(x=>x.k===k);return f?f.n:k;
+}
+/* the sentence under a gym level switch: what is true, and what overrides it */
+function maOrgTruth(k){
+ const r=maRules(),head=maHeadcount();
+ const on=r.org[k]!==false;
+ const beaten=[];
+ maPackages().forEach(p=>{
+  const set=r.pkg[p]&&r.pkg[p][k];
+  if(set!==undefined&&set!==on)beaten.push({p:p,n:head.byPkg[p]||0,on:set});
+ });
+ if(!beaten.length)
+  return (on?'On':'Off')+' for all '+head.total+' member'+(head.total===1?'':'s');
+ const n=beaten.reduce((a,b)=>a+b.n,0);
+ return (on?'On for the gym':'Off for the gym')+', but '+n+' member'+(n===1?'':'s')
+   +' on '+beaten.map(b=>b.p).join(' and ')+' '+(beaten[0].on?'have it anyway':'do not get it');
+}
 function maPkgOf(name){
  const rp=(DB.get('recurringPlans')||[]).find(r=>r.name===name);
  const c=rp?rp.cohort:null;
@@ -5229,7 +5272,11 @@ function maExperience(el){
    +'<span class="ma-hint">the whole gym, unless a package below overrides it</span></div>'
    +'<div class="ma-list">'+MA_FEATURES.map(f=>{
      const on=r.org[f.k]!==false;
-     return '<div class="ma-row feat"><div class="ma-n">'+f.n+'<span class="ma-sub">'+f.d+'</span></div>'
+     /* THE RULE THAT WON, WHERE THE HAND IS. Without this the switch reads
+        "on" while a package quietly holds it off for a third of the gym. */
+     return '<div class="ma-row feat"><div class="ma-n">'+f.n
+      +'<span class="ma-sub">'+f.d+'</span>'
+      +'<span class="ma-truth">'+maEsc(maOrgTruth(f.k))+'</span></div>'
       +'<button class="ma-sw'+(on?' on':'')+'" role="switch" aria-checked="'+on+'" aria-label="'+f.n+' for the whole gym" onclick="maSetOrg(\''+f.k+'\','+(!on)+')"><span></span></button></div>';
     }).join('')+'</div></div>'
   +'<div class="ma-card"><div class="ma-h"><h3>By package</h3>'
@@ -5265,8 +5312,16 @@ function maExperience(el){
 let MA_WHO=null;
 function maSetOrg(k,on){
  const r=maRules();const was=r.org[k];
+ /* REMOVING ACCESS NEEDS A STRONGER CONFIRMATION THAN GRANTING IT. Counted
+    through the real evaluator, so the number in this sentence is the number
+    of people it actually happens to. */
+ if(!on){
+  const lose=maWouldLose(k,()=>{r.org[k]=false;});
+  if(lose&&!confirm(lose+' member'+(lose===1?'':'s')+' will lose '+maFeatureName(k)
+    +'.\n\nNothing is deleted. Everything behind it stays and comes back if you switch it on again.\n\nContinue?'))return;
+ }
  r.org[k]=on;DB.commit();renderMemberApp();
- toastUndo((on?'Switched on ':'Switched off ')+'for the whole gym',
+ toastUndo(maFeatureName(k)+(on?' switched on ':' switched off ')+'for the whole gym',
    ()=>{if(was===undefined)delete maRules().org[k];else maRules().org[k]=was;DB.commit();renderMemberApp();});
 }
 /* three states, in the order an owner thinks: follow the gym, force on, force off */
@@ -5274,11 +5329,18 @@ function maCyclePkg(pkg,k){
  const r=maRules();r.pkg[pkg]=r.pkg[pkg]||{};
  const cur=r.pkg[pkg][k];
  const was=cur;
- if(cur===undefined)r.pkg[pkg][k]=true;
- else if(cur===true)r.pkg[pkg][k]=false;
- else delete r.pkg[pkg][k];
+ /* work out where the tap lands BEFORE committing, so a removal can be
+    stopped and named rather than explained afterwards */
+ const next=(cur===undefined)?true:(cur===true?false:undefined);
+ const lose=maWouldLose(k,()=>{
+  if(next===undefined)delete r.pkg[pkg][k];else r.pkg[pkg][k]=next;});
+ if(lose&&!confirm(lose+' member'+(lose===1?'':'s')+' on '+pkg+' will lose '+maFeatureName(k)
+   +'.\n\nNothing is deleted. Continue?'))return;
+ if(next===undefined)delete r.pkg[pkg][k];else r.pkg[pkg][k]=next;
  DB.commit();renderMemberApp();
- toastUndo(pkg+' · '+k+' changed',()=>{
+ const word=(next===undefined)?'follows the gym setting again'
+   :(next?'forced on':'forced off');
+ toastUndo(maFeatureName(k)+' '+word+' for '+pkg,()=>{
    if(was===undefined)delete maRules().pkg[pkg][k];else maRules().pkg[pkg][k]=was;
    DB.commit();renderMemberApp();});
 }
@@ -5573,6 +5635,39 @@ async function runSelfTest(opts){
    /* content is plain text with a real cap, never arbitrary markup */
    maTab('content');
    const tas=Array.from(document.querySelectorAll('#maBody textarea'));
+   /* ── OPERATOR CONTROL: a manager can run this without calling BB ── */
+   (function(){
+    const pkgs=maPackages(), head=maHeadcount(), r=maRules();
+    /* SET THE STATE, DO NOT INHERIT IT. Earlier checks in this suite leave
+       photos switched off with a package override on top, so reading it as if
+       untouched reports the previous check instead of this one. */
+    const keep=JSON.stringify({org:r.org,pkg:r.pkg});
+    const restore=()=>{const k=JSON.parse(keep);r.org=k.org;r.pkg=k.pkg;};
+    r.org={};r.pkg={};                       /* every feature on, no overrides */
+
+    maTab('experience');renderMemberApp();
+    const rows=document.querySelectorAll('#maBody .ma-row.feat .ma-truth');
+    ok('Operator: every gym level switch says which rule won',
+       rows.length===MA_FEATURES.length,rows.length+' of '+MA_FEATURES.length);
+
+    /* the count offered before a removal is the real one, from the SAME
+       evaluator the app runs, never a second guess at the logic */
+    let holders=0;
+    mapSafe(DB.get('customers'),c=>{if(maEval('photos',maPkgOf(c.name)).on)holders++;return '';});
+    const offered=maWouldLose('photos',()=>{r.org.photos=false;});
+    ok('Operator: the count shown before taking a feature away is the real one',
+       offered===holders&&offered===head.total,offered+' vs '+holders+' of '+head.total);
+    ok('Operator: counting the damage does not cause any',
+       r.org.photos!==false,'rules untouched');
+
+    /* and an override is NAMED at the switch it overrides, with its headcount */
+    r.pkg[pkgs[0]]={photos:false};
+    const line=maOrgTruth('photos');
+    ok('Operator: an override is named at the switch it overrides',
+       line.indexOf(pkgs[0])>-1&&line.indexOf(String(head.byPkg[pkgs[0]]||0))>-1,line);
+
+    restore();maTab('access');renderMemberApp();
+   })();
    ok('Member App: app copy is capped plain text, never markup',
      tas.length>0&&tas.every(t=>+t.getAttribute('maxlength')>0),tas.length+' fields');
 
