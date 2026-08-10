@@ -2266,6 +2266,72 @@ function renderBadges(){
  const np=document.getElementById('nbPulse');if(np&&CFG.modules.pulse){const n=pulseData(scopeMembers()).filter(x=>x.band==='risk'||x.band==='critical').length;np.textContent=n||'';np.style.display=n?'':'none';}
  const nk=document.getElementById('nbCheckin');if(nk&&CFG.modules.pulse){const n=todayCheckins().length;nk.textContent=n||'';nk.style.display=n?'':'none';}
 }
+/* ══ THE TRIANGLE. This system owns the truth; the website and the member app
+   are windows onto it. Same origin on Pages, so the crossing is real. On the
+   gym's own domain these are three origins and the backend carries it. ══ */
+var TU_PUB_KEY='tu_public_v1', TU_ENQ_KEY='tu_enquiries_v1', TU_TAKEN_KEY='tu_enquiries_taken_v1';
+
+/* WHAT LEAVES THE BUILDING: plan names, fees, and what each tier includes.
+   Nothing else. No member, no takings, no arrears. */
+var TU_INCLUDES={
+ 'Standard':['Full floor access','The member app','Your plan written for you'],
+ 'Premium':['Everything in Standard','A trainer checking your form','Your plan adjusted monthly'],
+ 'PT Add-on':['Everything in Premium','One to one sessions','A trainer who knows your history']
+};
+function tuPublish(){
+ try{
+  var tiers=(CFG.cohorts||[]);
+  var plans=DB.get('recurringPlans')||[];
+  var out=tiers.map(function(nm,i){
+   /* the fee ON THE LEDGER is the fee the website shows. One number, one
+      source: a price typed separately into a website is a price that drifts. */
+   var row=plans.filter(function(r){return r.cohort===i&&r.fee;})[0];
+   return {name:nm, price:row?row.fee:null, per:'month',
+           best:i===1, includes:TU_INCLUDES[nm]||[]};
+  });
+  localStorage.setItem(TU_PUB_KEY,JSON.stringify({
+   plans:out, updated:todayISO(), source:'system'}));
+ }catch(e){}
+}
+
+function tuEnquiries(){
+ try{return JSON.parse(localStorage.getItem(TU_ENQ_KEY)||'[]');}catch(e){return [];}
+}
+function tuTaken(){
+ try{return JSON.parse(localStorage.getItem(TU_TAKEN_KEY)||'[]');}catch(e){return [];}
+}
+/* ONCE AND ONLY ONCE. The website writes a ref, this keeps the refs it has
+   taken, so a refresh, a second tab or a reopened system cannot turn one
+   enquiry into two records. */
+function tuPull(){
+ var q=tuEnquiries(), taken=tuTaken(), added=0;
+ if(!q.length)return 0;
+ var recs=DB.get('records')||[];
+ var nextId=recs.reduce(function(a,r){return Math.max(a,r.id||0);},0)+1;
+ q.forEach(function(e){
+  if(!e||!e.ref||taken.indexOf(e.ref)>-1)return;
+  recs.push({id:nextId++,name:e.name,co:(e.plan||'Not sure yet')+' \u00b7 '+(e.when||'any time'),
+   phone:e.phone,stage:'new',owner:1,value:0,followUp:todayISO(),
+   created:todayISO().slice(0,7),rev:null,src:e.src||'Website',
+   acts:[{t:'Enquiry received',m:'From the website. Wants '+(e.plan||'to talk it through')
+     +', best time '+(e.when||'any')+'.',tm:'just now'}]});
+  taken.push(e.ref);added++;
+ });
+ if(added){
+  /* the website's store is the client's. Read it, mark it, leave it. */
+  try{localStorage.setItem(TU_TAKEN_KEY,JSON.stringify(taken.slice(-200)));}catch(e){}
+  DB.commit();
+ }
+ return added;
+}
+/* an enquiry arriving while the desk is looking at the screen belongs on the
+   screen, not on the next reload */
+addEventListener('storage',function(e){
+ if(e&&e.key&&e.key!==TU_ENQ_KEY)return;
+ var n=tuPull();
+ if(n){renderApp();toast(n+' new '+(n===1?'enquiry':'enquiries')+' from the website');}
+});
+
 function renderApp(){
  renderBadges();
  const act=document.querySelector('.page.active');
@@ -5635,6 +5701,51 @@ async function runSelfTest(opts){
    /* content is plain text with a real cap, never arbitrary markup */
    maTab('content');
    const tas=Array.from(document.querySelectorAll('#maBody textarea'));
+   /* ── THE TRIANGLE: the website is a window onto this system ── */
+   (function(){
+    var q=tuEnquiries().slice(), taken=tuTaken().slice();
+    /* PUBLISH: the site shows what this system charges, and nothing private */
+    tuPublish();
+    var pubd=JSON.parse(localStorage.getItem(TU_PUB_KEY)||'{}');
+    ok('Triangle: the website reads this system\'s own plans',
+       !!pubd.plans&&pubd.plans.length===(CFG.cohorts||[]).length&&pubd.source==='system',
+       (pubd.plans||[]).length+' of '+(CFG.cohorts||[]).length+' tiers published');
+    ok('Triangle: a published price is the one on the ledger, never a second copy',
+       (function(){
+        var plans=DB.get('recurringPlans')||[];
+        return (pubd.plans||[]).every(function(p,i){
+         var row=plans.filter(function(r){return r.cohort===i&&r.fee;})[0];
+         return p.price===(row?row.fee:null);});})(),
+       (pubd.plans||[]).map(function(p){return p.price;}).join(', '));
+    /* NOTHING PRIVATE LEAVES THE BUILDING */
+    var blob=JSON.stringify(pubd);
+    var leaked=(DB.get('customers')||[]).slice(0,40).filter(function(c){
+      return blob.indexOf(c.name)>-1;});
+    ok('Triangle: no member, no takings and no arrears are published',
+       leaked.length===0&&blob.indexOf('arrear')<0&&blob.indexOf('phone')<0,
+       leaked.length?('LEAKED '+leaked[0].name):'plans and fees only');
+    /* PULL: an enquiry becomes work the desk can see */
+    var before=(DB.get('records')||[]).length, ref='TEST'+before;
+    try{localStorage.setItem(TU_ENQ_KEY,JSON.stringify(q.concat([{
+      ref:ref,name:'Harness Walkin',phone:'0771234567',
+      plan:'Premium',when:'Evening',at:todayISO(),src:'Website'}])));}catch(e){}
+    var added=tuPull();
+    var made=(DB.get('records')||[]).filter(function(r){return r.name==='Harness Walkin';});
+    ok('Triangle: a website enquiry lands in the pipeline as work',
+       added===1&&made.length===1&&made[0].stage==='new',
+       added+' added, stage '+(made[0]?made[0].stage:'none'));
+    ok('Triangle: it carries what they asked for, not a summary',
+       made.length===1&&made[0].co.indexOf('Premium')>-1&&made[0].phone==='0771234567',
+       made.length?made[0].co:'none');
+    ok('Triangle: pulling twice cannot make the same enquiry twice',
+       tuPull()===0&&(DB.get('records')||[]).filter(function(r){return r.name==='Harness Walkin';}).length===1,
+       'second pull added nothing');
+    /* put the world back exactly as it was found */
+    DB._d.records=(DB.get('records')||[]).filter(function(r){return r.name!=='Harness Walkin';});
+    try{localStorage.setItem(TU_ENQ_KEY,JSON.stringify(q));
+        localStorage.setItem(TU_TAKEN_KEY,JSON.stringify(taken));}catch(e){}
+    DB.commit();
+   })();
    /* ── OPERATOR CONTROL: a manager can run this without calling BB ── */
    (function(){
     const pkgs=maPackages(), head=maHeadcount(), r=maRules();
@@ -6500,6 +6611,9 @@ DB.load();
 /* apply tenant customizations over the mold defaults - brand vars, vocabulary,
    titles, nav texts, module visibility. The Studio re-runs this on every save. */
 applyConfig();
+/* the website reads what this publishes, and an enquiry that arrived while
+   the system was closed is still an enquiry */
+try{tuPublish();tuPull();}catch(e){}
 snapshotPages();   /* pristine page markup - lets errored views self-heal (see pageErrorBoundary) */
 document.querySelectorAll('.nav-item[data-pg]').forEach(n=>n.onclick=()=>go(n.dataset.pg));
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));

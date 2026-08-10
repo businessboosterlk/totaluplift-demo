@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Total Uplift | The gym that tells you what to put on the bar</title>
+<meta name="description" content="A Colombo gym where every member gets an app that tells them exactly what weight to lift today, and the front desk can see who has stopped turning up before they quit.">
+<link rel="canonical" href="https://businessboosterlk.github.io/totaluplift-demo/site/">
+<meta name="theme-color" content="#0A1B33">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Total Uplift | The gym that tells you what to put on the bar">
+<meta property="og:description" content="Every member gets an app that says exactly what weight to lift today. The desk sees who has stopped coming, before they quit.">
+<meta property="og:url" content="https://businessboosterlk.github.io/totaluplift-demo/site/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HealthClub","name":"Total Uplift","description":"A gym where every member gets a training app that tells them what weight to lift today.","url":"https://businessboosterlk.github.io/totaluplift-demo/site/","areaServed":"Colombo, Sri Lanka","openingHours":"Mo-Su 05:00-22:00"}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Do I need to know how to train already?","acceptedAnswer":{"@type":"Answer","text":"No. The app gives you the session and the weight for every set. If you have never lifted before you start at the bar and it moves you up from there."}},
+{"@type":"Question","name":"What happens if I miss a week?","acceptedAnswer":{"@type":"Answer","text":"Nothing is lost. Your plan waits and the app puts you back on the weight you last completed, not the one you were building towards."}},
+{"@type":"Question","name":"Can I train without a trainer?","acceptedAnswer":{"@type":"Answer","text":"Yes. The app is the reason people do. It replaces the part a trainer does most often, which is telling you what to load."}},
+{"@type":"Question","name":"Is there a joining fee?","acceptedAnswer":{"@type":"Answer","text":"Ask at the desk. Fees are set by the gym and shown on this page from the gym's own system, so what you see here is what they are charging today."}}]}
+</script>
+<style>
+:root{
+  --brand:#EF3A1B; --brand-dark:#C92E12; --brand-deep:#8F2009;
+  --brand-soft:#FDEDE9; --brand-ink:#0A1B33; --brand-glow:rgba(239,58,27,.30);
+  --accent-grad:linear-gradient(135deg,#FF6B45,var(--brand));
+
+  --bg:#f5f5f7; --surface:#ffffff; --surface-2:#f0f1f3;
+  --ink:#141417; --muted:#5b5b66; --faint:#8a8a95;
+  --line:#e6e6ea; --line-2:#d8d8de;
+  --green:#1a9d5a; --green-soft:#e5f5ec;
+
+  --shadow-xs:0 1px 2px rgba(20,20,30,.05), 0 1px 1px rgba(20,20,30,.04);
+  --shadow:0 2px 6px rgba(20,20,30,.06), 0 6px 16px rgba(20,20,30,.06);
+  --shadow-md:0 6px 14px rgba(20,20,30,.08), 0 14px 34px rgba(20,20,30,.10);
+  --shadow-lg:0 18px 40px rgba(20,20,30,.14), 0 30px 70px rgba(20,20,30,.12);
+  --ring:0 0 0 3px var(--brand-glow);
+
+  --radius:16px; --r-md:12px; --r-sm:9px; --r-lg:22px; --r-pill:999px;
+  --font-display:'Sora',system-ui,sans-serif;
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
+  --fs-2xs:11px; --fs-xs:12.5px; --fs-sm:13.5px; --fs-base:15px;
+  --fs-md:19px; --fs-lg:24px; --fs-xl:30px; --fs-2xl:38px;
+  --fs-3xl:clamp(34px,5vw,48px); --fs-4xl:clamp(42px,6vw,60px);
+  --lh-tight:1.06; --lh-snug:1.25; --lh:1.6;
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px;
+  --s-8:32px; --s-10:40px; --s-12:48px; --s-16:64px; --s-20:80px; --s-24:96px;
+  --ease:cubic-bezier(.16,1,.3,1); --t-fast:.15s; --t:.25s;
+  --maxw:1200px; --gutter:clamp(20px,5vw,40px); --nav-h:70px;
+  --sab:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;touch-action:manipulation}
+*{-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font-sans);font-size:var(--fs-base);line-height:var(--lh);
+  color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow-x:clip}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:800;line-height:var(--lh-tight);letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}
+img,svg{display:block;max-width:100%}
+svg{flex-shrink:0}
+button,input,select{font-family:inherit;font-size:inherit}
+button{cursor:pointer;border:none;background:none}
+:focus-visible{outline:none;box-shadow:var(--ring);border-radius:var(--r-sm)}
+::selection{background:var(--brand);color:#fff}
+.wrap{max-width:var(--maxw);margin:0 auto;padding-left:var(--gutter);padding-right:var(--gutter)}
+.section{padding:var(--s-24) 0}
+@media(max-width:700px){.section{padding:var(--s-16) 0}}
+
+/* reveals are GATED: visible by default, only hidden once JS proves it can run */
+.reveal{opacity:1}
+html.reveal-on .reveal{transition:opacity .6s var(--ease),transform .6s var(--ease)}
+html.reveal-on .reveal:not(.in){opacity:0;transform:translateY(18px)}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.06s!important;scroll-behavior:auto!important}
+ html.reveal-on .reveal{opacity:1;transform:none}}
+
+/* ── buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:50px;
+ padding:0 24px;border-radius:var(--r-pill);font-weight:700;font-size:var(--fs-sm);
+ letter-spacing:.01em;transition:transform var(--t-fast) var(--ease),box-shadow var(--t) var(--ease),background var(--t)}
+.btn:active{transform:translateY(1px)}
+.btn-p{background:var(--accent-grad);color:#fff;box-shadow:0 4px 14px var(--brand-glow)}
+.btn-p:hover{box-shadow:0 8px 24px var(--brand-glow)}
+.btn-g{background:var(--surface);color:var(--ink);border:1px solid var(--line-2);box-shadow:var(--shadow-xs)}
+.btn-g:hover{border-color:var(--brand)}
+.btn-l{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.22)}
+.btn-l:hover{background:rgba(255,255,255,.18)}
+.btn svg{width:17px;height:17px}
+
+/* ── nav ── */
+.nav{position:sticky;top:0;z-index:60;height:var(--nav-h);display:flex;align-items:center;
+ background:rgba(245,245,247,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+ border-bottom:1px solid transparent;transition:border-color var(--t),background var(--t)}
+.nav.on{border-bottom-color:var(--line);background:rgba(245,245,247,.94)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;width:100%}
+.brand{display:flex;align-items:center;gap:11px;flex:none;min-height:44px}
+.bmark{width:38px;height:38px;border-radius:11px;background:var(--accent-grad);color:#1A0A03;
+ display:grid;place-items:center;font-family:var(--font-display);font-weight:800;font-size:13px;
+ box-shadow:0 3px 10px var(--brand-glow)}
+.bname{font-family:var(--font-display);font-weight:800;font-size:var(--fs-base);letter-spacing:-.02em}
+.nlinks{display:flex;align-items:center;gap:var(--s-8)}
+.nlinks a{font-size:var(--fs-sm);font-weight:600;color:var(--muted);transition:color var(--t-fast);
+ display:inline-flex;align-items:center;min-height:44px}
+.nlinks a:hover{color:var(--ink)}
+/* 42 is under the bar. Measured, not eyeballed. */
+.nav .btn{min-height:44px;padding:0 18px}
+@media(max-width:860px){.nlinks{display:none}}
+
+/* ── hero ── */
+.hero{position:relative;background:var(--brand-ink);color:#fff;overflow:hidden}
+.hero::after{content:'';position:absolute;inset:0;
+ background:radial-gradient(900px 520px at 78% 12%,rgba(239,58,27,.30),transparent 62%);pointer-events:none}
+.hero .wrap{position:relative;z-index:1;padding-top:var(--s-24);padding-bottom:var(--s-24);
+ display:grid;grid-template-columns:1.06fr .94fr;gap:var(--s-16);align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:var(--fs-2xs);font-weight:800;
+ letter-spacing:.14em;text-transform:uppercase;color:#FFB39C}
+.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--brand);display:block}
+.hero h1{font-size:var(--fs-4xl);color:#fff;margin:var(--s-5) 0 var(--s-5);max-width:15ch}
+.hero h1 em{font-style:normal;color:#FF7A55}
+.hero p{font-size:var(--fs-md);color:rgba(255,255,255,.76);max-width:46ch;line-height:1.5}
+.hcta{display:flex;flex-wrap:wrap;gap:var(--s-3);margin-top:var(--s-8)}
+.hnote{margin-top:var(--s-5);font-size:var(--fs-xs);color:rgba(255,255,255,.5)}
+@media(max-width:900px){.hero .wrap{grid-template-columns:1fr;gap:var(--s-10)}
+ .hero h1{max-width:none}}
+
+/* the phone, drawn not photographed */
+.phone{width:100%;max-width:302px;margin:0 auto;background:#0E1620;border:1px solid rgba(255,255,255,.14);
+ border-radius:34px;padding:12px;box-shadow:var(--shadow-lg)}
+.pscr{background:#0A121A;border-radius:24px;padding:18px 16px 20px;color:#fff}
+.pday{font-size:var(--fs-2xs);font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7D8798}
+.ptitle{font-family:var(--font-display);font-weight:800;font-size:21px;margin:6px 0 14px}
+.pbar{background:linear-gradient(135deg,rgba(239,58,27,.16),rgba(239,58,27,.05));
+ border:1px solid rgba(239,58,27,.34);border-radius:13px;padding:13px 14px}
+.pbar b{display:block;font-family:var(--font-display);font-size:22px;font-weight:800;color:#FF7A55}
+.pbar span{display:block;font-size:12px;color:rgba(255,255,255,.62);line-height:1.5;margin-top:5px}
+.psets{margin-top:13px;display:flex;flex-direction:column;gap:7px}
+.pset{display:grid;grid-template-columns:44px 1fr 1fr;gap:7px;align-items:center}
+.pset i{font-style:normal;font-size:11px;font-weight:700;color:#7D8798}
+.pset u{text-decoration:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);
+ border-radius:8px;padding:8px 0;text-align:center;font-size:12.5px;color:rgba(255,255,255,.8)}
+.pset.done u{background:rgba(26,157,90,.16);border-color:rgba(26,157,90,.4);color:#7FE0A8}
+
+/* ── section heads ── */
+.shead{max-width:60ch;margin-bottom:var(--s-10)}
+.shead .eyebrow{color:var(--brand-deep)}
+.shead h2{font-size:var(--fs-2xl);margin:var(--s-4) 0 var(--s-4)}
+.shead p{color:var(--muted);font-size:var(--fs-md);line-height:1.5}
+
+/* ── grid of three ── */
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-5)}
+@media(max-width:880px){.g3{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+ padding:var(--s-6);box-shadow:var(--shadow-xs);transition:transform var(--t) var(--ease),box-shadow var(--t) var(--ease)}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.cico{width:42px;height:42px;border-radius:12px;background:var(--brand-soft);color:var(--brand-deep);
+ display:grid;place-items:center;margin-bottom:var(--s-4)}
+.cico svg{width:21px;height:21px}
+.card h3{font-size:var(--fs-md);margin-bottom:var(--s-2)}
+.card p{color:var(--muted);font-size:var(--fs-sm);line-height:1.65}
+
+/* ── plans, read live from the gym's system ── */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-5);align-items:start}
+@media(max-width:880px){.plans{grid-template-columns:1fr}}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:var(--s-6);
+ box-shadow:var(--shadow-xs);display:flex;flex-direction:column;gap:var(--s-4)}
+.plan.best{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand),var(--shadow-md);position:relative}
+.plan.best::before{content:'Most members';position:absolute;top:-11px;left:var(--s-6);
+ background:var(--brand);color:#fff;font-size:var(--fs-2xs);font-weight:800;letter-spacing:.06em;
+ padding:4px 11px;border-radius:var(--r-pill)}
+.plan h3{font-size:var(--fs-md)}
+.plan .price{font-family:var(--font-display);font-weight:800;font-size:var(--fs-xl);letter-spacing:-.03em}
+.plan .price small{font-size:var(--fs-sm);font-weight:600;color:var(--faint);letter-spacing:0}
+.plan ul{list-style:none;display:flex;flex-direction:column;gap:var(--s-2)}
+.plan li{display:flex;gap:9px;font-size:var(--fs-sm);color:var(--muted);line-height:1.5}
+.plan li svg{width:16px;height:16px;color:var(--green);margin-top:2px}
+.plan .btn{width:100%}
+.livemark{display:inline-flex;align-items:center;gap:7px;font-size:var(--fs-xs);color:var(--faint);
+ background:var(--surface-2);border-radius:var(--r-pill);padding:6px 13px;margin-top:var(--s-5)}
+.livemark i{width:7px;height:7px;border-radius:50%;background:var(--green);display:block}
+
+/* ── the plan finder, the smart feature ── */
+.finder{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+ padding:var(--s-8);box-shadow:var(--shadow)}
+@media(max-width:700px){.finder{padding:var(--s-5)}}
+.fq{margin-bottom:var(--s-6)}
+.fq:last-of-type{margin-bottom:var(--s-5)}
+.fq h4{font-size:var(--fs-sm);font-weight:700;color:var(--muted);margin-bottom:var(--s-3)}
+.fopts{display:flex;flex-wrap:wrap;gap:var(--s-2)}
+.fopt{min-height:46px;padding:0 18px;border-radius:var(--r-pill);border:1px solid var(--line-2);
+ background:var(--surface);font-size:var(--fs-sm);font-weight:600;color:var(--muted);
+ transition:all var(--t-fast) var(--ease)}
+.fopt:hover{border-color:var(--brand)}
+.fopt[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+.fout{background:var(--brand-ink);color:#fff;border-radius:var(--radius);padding:var(--s-6);margin-top:var(--s-6)}
+.fout .lab{font-size:var(--fs-2xs);font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#FFB39C}
+.fout h3{color:#fff;font-size:var(--fs-lg);margin:var(--s-3) 0 var(--s-3)}
+.fout p{color:rgba(255,255,255,.76);font-size:var(--fs-sm);line-height:1.65}
+.fout .btn{margin-top:var(--s-5)}
+.fmath{margin-top:var(--s-4);padding-top:var(--s-4);border-top:1px solid rgba(255,255,255,.14);
+ font-size:var(--fs-xs);color:rgba(255,255,255,.55);line-height:1.6}
+
+/* ── the app band ── */
+.appband{background:var(--brand-ink);color:#fff;border-radius:var(--r-lg);padding:var(--s-12) var(--s-10);
+ display:grid;grid-template-columns:1.1fr .9fr;gap:var(--s-10);align-items:center;position:relative;overflow:hidden}
+.appband::after{content:'';position:absolute;inset:0;
+ background:radial-gradient(620px 380px at 88% 18%,rgba(239,58,27,.26),transparent 64%);pointer-events:none}
+.appband > *{position:relative;z-index:1}
+.appband h2{color:#fff;font-size:var(--fs-xl);margin-bottom:var(--s-4)}
+.appband p{color:rgba(255,255,255,.76);font-size:var(--fs-base);line-height:1.65}
+.appband .btn{margin-top:var(--s-6)}
+.applist{list-style:none;display:flex;flex-direction:column;gap:var(--s-3)}
+.applist li{display:flex;gap:11px;font-size:var(--fs-sm);color:rgba(255,255,255,.82);line-height:1.5}
+.applist svg{width:17px;height:17px;color:#FF7A55;margin-top:2px}
+@media(max-width:880px){.appband{grid-template-columns:1fr;padding:var(--s-8) var(--s-5)}}
+
+/* ── enquiry ── */
+.enq{display:grid;grid-template-columns:.85fr 1.15fr;gap:var(--s-12);align-items:start}
+@media(max-width:880px){.enq{grid-template-columns:1fr;gap:var(--s-8)}}
+.form{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+ padding:var(--s-8);box-shadow:var(--shadow)}
+@media(max-width:700px){.form{padding:var(--s-5)}}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-4)}
+@media(max-width:620px){.f2{grid-template-columns:1fr}}
+.field{margin-bottom:var(--s-4)}
+.field label{display:block;font-size:var(--fs-xs);font-weight:700;color:var(--muted);margin-bottom:7px}
+.field input,.field select{width:100%;min-height:50px;padding:0 15px;border-radius:var(--r-md);
+ border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:16px;
+ transition:border-color var(--t-fast),box-shadow var(--t-fast)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--brand);box-shadow:var(--ring)}
+.field.bad input,.field.bad select{border-color:#d33a3a}
+.err{display:none;font-size:var(--fs-xs);color:#d33a3a;margin-top:6px;font-weight:600}
+.field.bad .err{display:block}
+.form .btn{width:100%;margin-top:var(--s-2)}
+.fsmall{font-size:var(--fs-xs);color:var(--faint);margin-top:var(--s-4);line-height:1.6}
+.done{display:none;text-align:center;padding:var(--s-6) 0}
+.done.show{display:block}
+.done .tick{width:56px;height:56px;border-radius:50%;background:var(--green-soft);color:var(--green);
+ display:grid;place-items:center;margin:0 auto var(--s-5)}
+.done .tick svg{width:26px;height:26px}
+.done h3{font-size:var(--fs-md);margin-bottom:var(--s-3)}
+.done p{color:var(--muted);font-size:var(--fs-sm);line-height:1.65;max-width:38ch;margin:0 auto}
+
+/* ── faq ── */
+.faq{max-width:760px}
+.fitem{border-bottom:1px solid var(--line)}
+.fitem summary{list-style:none;cursor:pointer;padding:var(--s-5) 0;display:flex;align-items:center;
+ justify-content:space-between;gap:var(--s-4);font-weight:700;font-size:var(--fs-base);min-height:56px}
+.fitem summary::-webkit-details-marker{display:none}
+.fitem summary svg{width:19px;height:19px;color:var(--faint);transition:transform var(--t) var(--ease);flex:none}
+.fitem[open] summary svg{transform:rotate(45deg)}
+.fitem p{padding:0 0 var(--s-5);color:var(--muted);font-size:var(--fs-sm);line-height:1.7;max-width:62ch}
+
+/* ── footer ── */
+.foot{background:var(--brand-ink);color:rgba(255,255,255,.66);padding:var(--s-12) 0 calc(var(--s-8) + var(--sab))}
+.foot .wrap{display:flex;flex-wrap:wrap;gap:var(--s-6);justify-content:space-between;align-items:flex-start}
+/* a 22px footer link is one a thumb misses. The height comes from padding
+   so the column keeps its rhythm and the hit area grows into empty space. */
+.foot a{color:rgba(255,255,255,.66);font-size:var(--fs-sm);
+ display:inline-flex;align-items:center;min-height:44px}
+.foot .fcol > a{margin:-10px 0}
+.foot a:hover{color:#fff}
+.fcol{display:flex;flex-direction:column;gap:var(--s-2)}
+.fcol b{color:#fff;font-size:var(--fs-xs);letter-spacing:.1em;text-transform:uppercase;margin-bottom:var(--s-2)}
+.fbot{margin-top:var(--s-8);padding-top:var(--s-5);border-top:1px solid rgba(255,255,255,.12);
+ font-size:var(--fs-xs);color:rgba(255,255,255,.42)}
+
+/* ── the action that follows you ── */
+.float{position:fixed;right:16px;bottom:calc(16px + var(--sab));z-index:70;width:56px;height:56px;
+ border-radius:50%;background:#25D366;color:#fff;display:grid;place-items:center;
+ box-shadow:0 6px 20px rgba(37,211,102,.42);transition:transform var(--t) var(--ease)}
+.float:hover{transform:scale(1.06)}
+.float svg{width:27px;height:27px}
+@media(min-width:861px){.float{width:52px;height:52px}}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="bmark">TU</span><span class="bname">Total Uplift</span></a>
+    <div class="nlinks">
+      <a href="#how">How it works</a>
+      <a href="#plans">Plans</a>
+      <a href="#finder">Find your plan</a>
+      <a href="#app">The app</a>
+    </div>
+    <a class="btn btn-p" href="#enquire">Join</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow"><i></i>Colombo</span>
+      <h1>The gym that tells you <em>what to put on the bar</em></h1>
+      <p>Most people quit because they never know if they are getting anywhere. Here, the app opens on the exact weight for today, and it worked that out from what you lifted last time.</p>
+      <div class="hcta">
+        <a class="btn btn-p" href="#enquire">Book a free week</a>
+        <a class="btn btn-l" href="#finder">Find your plan</a>
+      </div>
+      <p class="hnote">No contract to walk in. Come once, use the app, then decide.</p>
+    </div>
+    <div class="phone" aria-hidden="true">
+      <div class="pscr">
+        <div class="pday">Day 34 of 90</div>
+        <div class="ptitle">Push</div>
+        <div class="pbar">
+          <b>69 kg on the bar</b>
+          <span>Last time you finished every set inside the range at 69 kg. Stay there and chase 10 reps.</span>
+        </div>
+        <div class="psets">
+          <div class="pset done"><i>Set 1</i><u>69 kg</u><u>10 reps</u></div>
+          <div class="pset done"><i>Set 2</i><u>69 kg</u><u>10 reps</u></div>
+          <div class="pset"><i>Set 3</i><u>kg</u><u>8 to 10</u></div>
+          <div class="pset"><i>Set 4</i><u>kg</u><u>8 to 10</u></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="eyebrow">How it works</span>
+      <h2>Three things a normal gym does not do</h2>
+      <p>Every gym in Colombo has weights. These are the parts that decide whether you are still coming in three months.</p>
+    </div>
+    <div class="g3">
+      <article class="card reveal">
+        <div class="cico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6.5 6.5h11v11h-11z"/><path d="M3 10v4M21 10v4M6.5 8.5h-2v7h2M17.5 8.5h2v7h-2"/></svg></div>
+        <h3>It names the weight</h3>
+        <p>Open the app and the first thing you see is a number. It came from your own last session, not a chart on a wall. If you finished every set in range, it goes up. If you did not, it holds you there until you do.</p>
+      </article>
+      <article class="card reveal">
+        <div class="cico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div>
+        <h3>You can see every day you did</h3>
+        <p>Tap any date and the whole session comes back. Every set, every weight, every rep. Your best lift on each exercise sits at the top so you always know what you are chasing.</p>
+      </article>
+      <article class="card reveal">
+        <div class="cico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg></div>
+        <h3>The desk notices before you drift</h3>
+        <p>If you stop turning up, somebody here knows within days and gets in touch. Not a mass message. The person at the desk can see it is you and how long it has been.</p>
+      </article>
+    </div>
+    <div class="reveal" style="margin-top:var(--s-10);display:flex;flex-wrap:wrap;gap:var(--s-3);align-items:center">
+      <a class="btn btn-p" href="#enquire">Try it for a week, free</a>
+      <span style="font-size:var(--fs-sm);color:var(--muted)">Or <a href="#finder" style="color:var(--brand-deep);font-weight:700;text-decoration:underline">find the plan that fits you</a> first.</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="plans" style="background:var(--surface-2)">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="eyebrow">Plans</span>
+      <h2>Pick how much help you want</h2>
+      <p>Everyone gets the app and the full floor. The difference is how much of a coach comes with it.</p>
+    </div>
+    <div class="plans" id="planGrid"></div>
+    <div class="livemark" id="liveMark"><i></i><span>Loading the gym's current plans</span></div>
+  </div>
+</section>
+
+<section class="section" id="finder">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="eyebrow">Find your plan</span>
+      <h2>Answer three things and we will tell you where to start</h2>
+      <p>No email needed. It works out which plan fits and what your first ninety days actually look like.</p>
+    </div>
+    <div class="finder reveal">
+      <div class="fq">
+        <h4>What are you actually here for?</h4>
+        <div class="fopts" id="q1" role="group" aria-label="Your goal">
+          <button class="fopt" type="button" aria-pressed="false" data-v="lose">Lose weight</button>
+          <button class="fopt" type="button" aria-pressed="false" data-v="strong">Get stronger</button>
+          <button class="fopt" type="button" aria-pressed="false" data-v="habit">Just be consistent</button>
+        </div>
+      </div>
+      <div class="fq">
+        <h4>How many days a week can you really make?</h4>
+        <div class="fopts" id="q2" role="group" aria-label="Days per week">
+          <button class="fopt" type="button" aria-pressed="false" data-v="2">2 days</button>
+          <button class="fopt" type="button" aria-pressed="false" data-v="3">3 days</button>
+          <button class="fopt" type="button" aria-pressed="false" data-v="4">4 or more</button>
+        </div>
+      </div>
+      <div class="fq">
+        <h4>Have you trained with weights before?</h4>
+        <div class="fopts" id="q3" role="group" aria-label="Experience">
+          <button class="fopt" type="button" aria-pressed="false" data-v="no">Never</button>
+          <button class="fopt" type="button" aria-pressed="false" data-v="some">A bit</button>
+          <button class="fopt" type="button" aria-pressed="false" data-v="yes">Yes, regularly</button>
+        </div>
+      </div>
+      <div class="fout" id="fOut" hidden>
+        <div class="lab">Where you should start</div>
+        <h3 id="fName">Standard</h3>
+        <p id="fWhy"></p>
+        <div class="fmath" id="fMath"></div>
+        <a class="btn btn-p" id="fGo" href="#enquire">Book this as a free week</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="app">
+  <div class="wrap">
+    <div class="appband reveal">
+      <div>
+        <h2>The app is the gym, in your pocket</h2>
+        <p>It is not a booking app and it is not a step counter. It is the session you are doing today, the weight to load, and everything you have already done.</p>
+        <a class="btn btn-p" id="appLink" href="../member/">Open the member app</a>
+      </div>
+      <ul class="applist">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>The weight for every set, worked out from your last session</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Tap any past day and see exactly what you lifted</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Your all time best on every exercise, always in view</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>A rest timer that runs while you put the phone down</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Your membership and every receipt, so nothing is a question</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="enquire" style="background:var(--surface-2)">
+  <div class="wrap">
+    <div class="enq">
+      <div class="reveal">
+        <span class="eyebrow">Come in</span>
+        <h2 style="font-size:var(--fs-2xl);margin:var(--s-4) 0 var(--s-4)">Your first week costs nothing</h2>
+        <p style="color:var(--muted);font-size:var(--fs-md);line-height:1.5">Walk in, get set up on the app, train a full week. If it is not for you, nobody chases you.</p>
+        <p style="color:var(--muted);font-size:var(--fs-sm);margin-top:var(--s-5);line-height:1.7">Leave your number and the desk will message you the same day with a time to come in and who to ask for.</p>
+      </div>
+      <div class="form">
+        <form id="enqForm" novalidate>
+          <div class="f2">
+            <div class="field" id="fdName">
+              <label for="inName">Your name</label>
+              <input id="inName" name="name" autocomplete="name" enterkeyhint="next" required>
+              <p class="err">Please enter your name.</p>
+            </div>
+            <div class="field" id="fdPhone">
+              <label for="inPhone">WhatsApp number</label>
+              <input id="inPhone" name="phone" inputmode="tel" autocomplete="tel" placeholder="07X XXX XXXX" enterkeyhint="next" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+              <p class="err">Enter a valid Sri Lankan number, like 0771234567.</p>
+            </div>
+          </div>
+          <div class="f2">
+            <div class="field" id="fdPlan">
+              <label for="inPlan">Plan you are after</label>
+              <select id="inPlan" name="plan" required>
+                <option value="" selected disabled>Choose a plan</option>
+              </select>
+              <p class="err">Pick a plan, or Not sure yet.</p>
+            </div>
+            <div class="field" id="fdWhen">
+              <label for="inWhen">When can you come in</label>
+              <select id="inWhen" name="when" enterkeyhint="go" required>
+                <option value="" selected disabled>Choose a time</option>
+                <option>Early morning</option>
+                <option>Late morning</option>
+                <option>Afternoon</option>
+                <option>Evening</option>
+              </select>
+              <p class="err">Pick a rough time.</p>
+            </div>
+          </div>
+          <button class="btn btn-p" type="submit">Book my free week</button>
+          <p class="fsmall">This goes straight to the front desk. Your number is used to arrange your first session and nothing else.</p>
+        </form>
+        <div class="done" id="enqDone">
+          <div class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <h3>The desk has it</h3>
+          <p id="doneMsg">You are on the list. Somebody will message you on WhatsApp today with a time and who to ask for at the door.</p>
+          <a class="btn btn-g" id="waAgain" href="#" style="margin-top:var(--s-6)">Message us on WhatsApp instead</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="eyebrow">Before you ask</span>
+      <h2>The questions everybody asks at the door</h2>
+    </div>
+    <div class="faq">
+      <details class="fitem"><summary>Do I need to know how to train already?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <p>No. The app gives you the session and the weight for every set. If you have never lifted before you start at the bar and it moves you up from there, one small step at a time, based on what you actually managed.</p></details>
+      <details class="fitem"><summary>What happens if I miss a week?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <p>Nothing is lost. Your plan waits. When you come back the app puts you on the weight you last completed, not the one you were building towards, so the first session back is one you can finish.</p></details>
+      <details class="fitem"><summary>Can I train without a trainer?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <p>Yes, and most people here do. The app covers the part a trainer does most often, which is telling you what to load and when to move up. A trainer is worth adding when you want somebody watching how you move.</p></details>
+      <details class="fitem"><summary>What does it cost?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <p>The plans above come straight out of the gym's own system, so what you are reading is what is being charged today. If the desk changes a price this morning, this page says the new one this afternoon.</p></details>
+      <details class="fitem"><summary>Is my training data private?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <p>Your sessions are yours. The desk can see whether you have been coming, which is how they know to check on you, and your trainer sees your training if you are on a plan with one. Progress photos are private to you unless you share one.</p></details>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="fcol">
+      <a class="brand" href="#top" style="margin-bottom:var(--s-3)"><span class="bmark">TU</span><span class="bname" style="color:#fff">Total Uplift</span></a>
+      <span style="font-size:var(--fs-sm);max-width:32ch;line-height:1.6">A gym in Colombo where the app tells you what to lift and the desk notices when you stop coming.</span>
+    </div>
+    <div class="fcol"><b>Visit</b>
+      <a href="#how">How it works</a><a href="#plans">Plans</a><a href="#finder">Find your plan</a><a href="#enquire">Book a free week</a>
+    </div>
+    <div class="fcol"><b>Members</b>
+      <a href="../member/">Open the app</a><a href="#app">What the app does</a>
+    </div>
+  </div>
+  <div class="wrap"><div class="fbot">Total Uplift. Built by Business Booster. Hours and plans on this page are read live from the gym's own system.</div></div>
+</footer>
+
+<a class="float" id="waFloat" href="#" aria-label="Message Total Uplift on WhatsApp" target="_blank" rel="noopener">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.2-.7.2s-.7.9-.9 1.1c-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5 0-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2m0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2"/></svg>
+</a>
+
+<script>
+/* ══ THE TRIANGLE. The system owns the truth, this page is a window onto it.
+   Same origin as the Gym OS and the member app, so the crossing is real.
+   On the gym's own domain these are three origins and the backend carries it. ══ */
+var PUB_KEY='tu_public_v1', ENQ_KEY='tu_enquiries_v1';
+var WA='94770000000';
+
+/* LEG ONE: the page shows what the gym is charging TODAY, from the gym's system.
+   If it has never been published, the page says so rather than inventing a price. */
+var FALLBACK={plans:[
+  {name:'Standard', price:null, per:'month', best:false, includes:['Full floor access','The member app','Your plan written for you']},
+  {name:'Premium',  price:null, per:'month', best:true,  includes:['Everything in Standard','A trainer checking your form','Your plan adjusted monthly']},
+  {name:'PT Add-on',price:null, per:'month', best:false, includes:['Everything in Premium','One to one sessions','A trainer who knows your history']}
+], updated:null, source:'defaults'};
+
+function pub(){
+  try{var r=JSON.parse(localStorage.getItem(PUB_KEY)||'null');
+      return (r&&r.plans&&r.plans.length)?r:FALLBACK;}catch(e){return FALLBACK;}
+}
+function money(n){return 'LKR '+Number(n).toLocaleString('en-LK');}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+function renderPlans(){
+  var d=pub(), g=document.getElementById('planGrid'), sel=document.getElementById('inPlan');
+  if(!g)return;
+  g.innerHTML=d.plans.map(function(p){
+    return '<div class="plan'+(p.best?' best':'')+'">'
+      +'<h3>'+esc(p.name)+'</h3>'
+      +'<div class="price">'+(p.price?money(p.price):'Ask at the desk')
+        +(p.price?' <small>a '+esc(p.per||'month')+'</small>':'')+'</div>'
+      +'<ul>'+(p.includes||[]).map(function(i){
+          return '<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>'+esc(i)+'</span></li>';
+        }).join('')+'</ul>'
+      +'<a class="btn '+(p.best?'btn-p':'btn-g')+'" href="#enquire" data-plan="'+esc(p.name)+'">Start on '+esc(p.name)+'</a>'
+      +'</div>';
+  }).join('');
+  /* every plan button carries its own plan into the form. No generic CTA. */
+  g.querySelectorAll('[data-plan]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var s=document.getElementById('inPlan'); if(s)s.value=b.dataset.plan;
+    });
+  });
+  if(sel&&sel.options.length<2){
+    d.plans.forEach(function(p){var o=document.createElement('option');o.textContent=p.name;sel.appendChild(o);});
+    var o2=document.createElement('option');o2.textContent='Not sure yet';sel.appendChild(o2);
+  }
+  var m=document.getElementById('liveMark');
+  if(m)m.innerHTML='<i></i><span>'+(d.source==='system'
+      ? 'Read from the gym’s system'+(d.updated?', updated '+esc(d.updated):'')
+      : 'The gym has not published prices yet, so this page asks you to check at the desk')+'</span>';
+}
+
+/* ══ THE PLAN FINDER. It does real work and hands its answer to the enquiry. ══ */
+var PICK={};
+function wire(id){
+  var g=document.getElementById(id); if(!g)return;
+  g.addEventListener('click',function(e){
+    var b=e.target.closest('.fopt'); if(!b)return;
+    g.querySelectorAll('.fopt').forEach(function(x){x.setAttribute('aria-pressed','false');});
+    b.setAttribute('aria-pressed','true');
+    PICK[id]=b.dataset.v; finder();
+  });
+}
+function finder(){
+  if(!PICK.q1||!PICK.q2||!PICK.q3)return;
+  var days=parseInt(PICK.q2,10);
+  var plan = PICK.q3==='no' ? 'Premium'
+           : (PICK.q1==='strong'&&days>=4) ? 'PT Add-on'
+           : (days<=2) ? 'Premium' : 'Standard';
+  var why;
+  if(PICK.q3==='no') why='You have never lifted, so the first month is about learning to move properly rather than moving weight. Somebody watching you is worth more than anything else you could buy right now.';
+  else if(plan==='PT Add-on') why='You want to get stronger and you can be here four or more days. That is enough volume that programming stops being guesswork, and a trainer who knows your history is what turns it into a plan.';
+  else if(days<=2) why='Two days a week means each session has to count for more. A trainer checking your form and adjusting the plan monthly is what stops two days from being a wasted two days.';
+  else why='You can be here three days and you already know your way around. The app writes the sessions and names the weight, which is the part most people get wrong on their own.';
+
+  /* ARITHMETIC ONLY. Sessions can be counted. Kilos lost cannot be promised. */
+  var n=days*13;
+  var math='Three months at '+days+' day'+(days===1?'':'s')+' a week is <b style="color:#fff">'+n+' sessions</b>. '
+    +'Every one of them is logged, so on day ninety you are not guessing whether you turned up. You can count it.';
+
+  document.getElementById('fName').textContent=plan;
+  document.getElementById('fWhy').textContent=why;
+  document.getElementById('fMath').innerHTML=math;
+  var out=document.getElementById('fOut'); out.hidden=false;
+  document.getElementById('fGo').onclick=function(){
+    var s=document.getElementById('inPlan'); if(s)s.value=plan;
+  };
+}
+['q1','q2','q3'].forEach(wire);
+
+/* ══ THE ENQUIRY. It goes to the front desk's system AND to WhatsApp. ══ */
+var SL=/^(?:0|94|\+94)?7\d{8}$/;
+function val(id){return (document.getElementById(id).value||'').trim();}
+function bad(fid,is){document.getElementById(fid).classList.toggle('bad',!!is);return !is;}
+
+function waText(name,phone,plan,when){
+  return 'Hi! I would like to book a free week at Total Uplift.\n'
+    +'Name: '+name+'\nWhatsApp: '+phone+'\nPlan: '+plan+'\nBest time: '+when+'\n(Sent from the website)';
+}
+
+document.getElementById('enqForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var name=val('inName'), phone=val('inPhone').replace(/[\s-]/g,'');
+  var plan=val('inPlan'), when=val('inWhen');
+  var ok=true;
+  ok=bad('fdName',!name)&&ok;
+  ok=bad('fdPhone',!SL.test(phone))&&ok;
+  ok=bad('fdPlan',!plan)&&ok;
+  ok=bad('fdWhen',!when)&&ok;
+  if(!ok)return;
+
+  /* LEG TWO: the enquiry lands in the gym's pipeline. Nobody retypes it off a
+     phone. Wrapped so a private window or a full store can never stop somebody
+     from enquiring: WhatsApp still opens either way. */
+  try{
+    var q=JSON.parse(localStorage.getItem(ENQ_KEY)||'[]');
+    q.push({ref:'W'+Date.now().toString(36).toUpperCase(),
+            name:name,phone:phone,plan:plan,when:when,
+            at:new Date().toISOString(),src:'Website'});
+    localStorage.setItem(ENQ_KEY,JSON.stringify(q.slice(-50)));
+  }catch(err){}
+
+  var url='https://wa.me/'+WA+'?text='+encodeURIComponent(waText(name,phone,plan,when));
+  document.getElementById('waAgain').href=url;
+  document.getElementById('waAgain').target='_blank';
+  document.getElementById('doneMsg').textContent=
+    'You are on the list for '+plan+'. Somebody will message you on WhatsApp today with a time and who to ask for at the door.';
+  this.style.display='none';
+  document.getElementById('enqDone').classList.add('show');
+});
+['inName','inPhone','inPlan','inWhen'].forEach(function(id){
+  var el=document.getElementById(id);
+  el.addEventListener('input',function(){el.closest('.field').classList.remove('bad');});
+  el.addEventListener('change',function(){el.closest('.field').classList.remove('bad');});
+});
+
+/* the floating action carries context too, never a bare number */
+document.getElementById('waFloat').href='https://wa.me/'+WA+'?text='+
+  encodeURIComponent('Hi! I saw the Total Uplift website and I would like to ask about joining.');
+
+/* nav refines on scroll */
+var nav=document.getElementById('nav');
+addEventListener('scroll',function(){nav.classList.toggle('on',scrollY>8);},{passive:true});
+
+/* ══ REVEALS, GATED. Content is visible unless JS proves it can un-hide it. ══ */
+(function(){
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  if(!els.length||!('IntersectionObserver' in window))return;
+  document.documentElement.classList.add('reveal-on');
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}});
+  },{rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(el){io.observe(el);});
+  /* IF ANYTHING GOES WRONG, DROP THE GATE ENTIRELY rather than rely on the
+     same class that might have failed. With reveal-on gone there is no hiding
+     rule left to beat, so the worst case is a page that appears without
+     animating, which is the right worst case for a page meant to be read. */
+  setTimeout(function(){
+    els.forEach(function(el){el.classList.add('in');});
+    document.documentElement.classList.remove('reveal-on');
+  },2200);
+})();
+
+renderPlans();
+/* a price changed in the system while somebody is reading this page */
+addEventListener('storage',function(e){if(!e.key||e.key===PUB_KEY)renderPlans();});
+</script>
+</body>
+</html>
