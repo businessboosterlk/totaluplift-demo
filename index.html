@@ -70,6 +70,11 @@
 .ma-kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:var(--sp-4);box-shadow:var(--shadow-xs)}
 .ma-kpi .v{font-size:var(--fs-2xl);font-weight:800;letter-spacing:-.5px;line-height:1}
 .ma-kpi .l{font-size:var(--fs-xs);color:var(--muted);margin-top:6px}
+.ws-in{width:100%;min-height:44px;margin-top:8px;padding:10px 12px;border:1px solid var(--line2);
+ border-radius:var(--r-sm);background:var(--surface);color:var(--ink);font-size:14px}
+.ws-in:focus{outline:none;border-color:var(--brand)}
+.ws-cap{display:block;font-size:var(--fs-2xs);color:var(--faint);margin-top:5px}
+.ws-save{align-self:center}
 .ma-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
  padding:var(--sp-5);margin-bottom:var(--sp-4);box-shadow:var(--shadow-xs)}
 .ma-card.locked{border-style:dashed;background:var(--surface-2)}
@@ -1085,6 +1090,7 @@ body.dark .stat-kpi .val{color:#fff}
         <button class="nav-item" data-pg="team" data-role="owner" data-module="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Team</button>
         <button class="nav-item" data-pg="activity" data-role="manager" data-module="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><polyline points="12 6 12 12 16 14"/></svg>Activity</button>
         <button class="nav-item" data-pg="memberapp" data-role="manager"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg>Member App<span class="badge" id="nbMapp"></span></button>
+        <button class="nav-item" data-pg="website" data-role="manager"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>Website</button>
         <button class="nav-item" data-pg="settings" data-role="owner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
       </div>
     </nav>
@@ -1280,6 +1286,7 @@ body.dark .stat-kpi .val{color:#fff}
       </div>
 
       <!-- ══ MEMBER APP: access, entitlements and app-facing copy ══ -->
+      <div class="page" id="page-website"><div id="wsBody"></div></div>
       <div class="page" id="page-memberapp">
         <div class="ma-tabs" id="maTabs">
           <button class="ma-tab active" onclick="maTab('access')">Access</button>
@@ -1995,6 +2002,7 @@ let TITLES={};
 function buildTitles(){TITLES={
  dashboard:['Dashboard','Today at a glance'],
  memberapp:['Member App','Who can get in, what they see, and what it tells them'],
+ website:['Website','What the site says. Change it here, the site follows'],
  reports:['Reports','Month-over-month performance'],
  checkin:['Check-in','Tap a member as they arrive'],
  pulse:['Member Pulse','Who is slipping away, and exactly why'],
@@ -2266,6 +2274,81 @@ function renderBadges(){
  const np=document.getElementById('nbPulse');if(np&&CFG.modules.pulse){const n=pulseData(scopeMembers()).filter(x=>x.band==='risk'||x.band==='critical').length;np.textContent=n||'';np.style.display=n?'':'none';}
  const nk=document.getElementById('nbCheckin');if(nk&&CFG.modules.pulse){const n=todayCheckins().length;nk.textContent=n||'';nk.style.display=n?'':'none';}
 }
+/* ══ THE WEBSITE SECTION: the gym edits what the site SAYS, never what it IS.
+   Words flow through the SAME publish pipe as the prices, because a second
+   pipe for words beside the pipe for numbers is two code paths for one truth.
+   Each cap below is the layout's real limit, measured on the site at 390px:
+   inside the caps, nothing the gym types can break the design. ══ */
+var WS_FIELDS=[
+ {k:'headline', n:'Headline',        cap:46, d:'The gym that tells you',
+  w:'The big line at the top. The orange phrase below follows it.'},
+ {k:'accent',   n:'The orange phrase',cap:28, d:'what to put on the bar',
+  w:'Rendered in orange at the end of the headline.'},
+ {k:'sub',      n:'The line under it',cap:170,d:'Most people quit because they never know if they are getting anywhere. Here, the app opens on the exact weight for today, and it worked that out from what you lifted last time.',
+  w:'Two sentences that carry the whole pitch. Keep it about them, not about the gym.'},
+ {k:'offer',    n:'The offer note',   cap:80, d:'No contract to walk in. Come once, use the app, then decide.',
+  w:'Sits under the buttons. This is your promise at the door.'},
+ {k:'whatsapp', n:'WhatsApp number',  cap:12, d:'94770000000',
+  w:'Every enquiry and the floating button message THIS number. Digits only, 94 then 9 digits.'},
+ {k:'hours',    n:'Opening hours',    cap:40, d:'Open daily 5 AM to 10 PM',
+  w:'Shown in the footer of the site.'}
+];
+function wsContent(){
+ var o=cfgOverrides(); if(!o.site)o.site={};
+ return o.site;
+}
+function wsVal(k){
+ var v=wsContent()[k];
+ var f=WS_FIELDS.filter(function(x){return x.k===k;})[0];
+ return (v==null||v==='')?f.d:v;
+}
+function wsSave(k,raw){
+ var f=WS_FIELDS.filter(function(x){return x.k===k;})[0];
+ var v=String(raw||'').replace(/<[^>]*>/g,'').slice(0,f.cap).trim();
+ if(k==='whatsapp'){
+  v=v.replace(/\D/g,'');
+  if(!/^94\d{9}$/.test(v)){toast('The number is 94 then nine digits, like 94771234567');return;}
+ }
+ var was=wsContent()[k];
+ wsContent()[k]=v;
+ DB.commit();tuPublish();renderWebsite();
+ logFeed(CURRENT.id,'Website edited',f.n+' changed');
+ toastUndo(f.n+' is on the website',function(){
+  if(was==null)delete wsContent()[k];else wsContent()[k]=was;
+  DB.commit();tuPublish();renderWebsite();
+ });
+}
+function renderWebsite(){
+ var el=document.getElementById('wsBody'); if(!el)return;
+ var site=(CFG.demo&&CFG.demo.memberAppUrl)?'site/':'site/';
+ el.innerHTML=
+  '<div class="ma-card"><div class="ma-h"><h3>What the site says</h3>'
+  +'<span class="ma-hint">save a field and the website says it, nobody calls anybody</span></div>'
+  +'<div class="ma-list">'+WS_FIELDS.map(function(f){
+    var v=wsVal(f.k);
+    return '<div class="ma-row" style="align-items:flex-start"><div class="ma-n" style="flex:1;min-width:220px">'+f.n
+     +'<span class="ma-sub">'+f.w+'</span>'
+     +'<input class="ws-in" id="ws_'+f.k+'" maxlength="'+f.cap+'" value="'+maEsc(v).replace(/"/g,'&quot;')+'">'
+     +'<span class="ws-cap" id="wsc_'+f.k+'">'+v.length+' of '+f.cap+'</span></div>'
+     +'<button class="btn-secondary ws-save" onclick="wsSave(\''+f.k+'\',document.getElementById(\'ws_'+f.k+'\').value)">Save</button>'
+     +'</div>';
+   }).join('')+'</div></div>'
+  /* SAY WHICH RULE WON: prices are not edited here, and the card says why */
+  +'<div class="ma-card locked"><div class="ma-h"><h3>Prices on the website</h3></div>'
+  +'<div class="ma-sub" style="font-size:var(--fs-sm);color:var(--muted);line-height:1.6">'
+  +'Prices are read from Membership, off the same ledger the invoices use. Change a fee there and the website follows. '
+  +'There is nothing to edit here on purpose: a price typed into a website editor is a price that drifts.</div></div>'
+  +'<div class="ma-card"><div class="ma-h"><h3>See it live</h3></div>'
+  +'<a class="btn-secondary" href="'+site+'" target="_blank" rel="noopener">Open the website</a></div>';
+ WS_FIELDS.forEach(function(f){
+  var i=document.getElementById('ws_'+f.k); if(!i)return;
+  i.addEventListener('input',function(){
+   var c=document.getElementById('wsc_'+f.k);
+   if(c)c.textContent=i.value.length+' of '+f.cap;
+  });
+ });
+}
+
 /* ══ THE TRIANGLE. This system owns the truth; the website and the member app
    are windows onto it. Same origin on Pages, so the crossing is real. On the
    gym's own domain these are three origins and the backend carries it. ══ */
@@ -2289,8 +2372,10 @@ function tuPublish(){
    return {name:nm, price:row?row.fee:null, per:'month',
            best:i===1, includes:TU_INCLUDES[nm]||[]};
   });
+  var siteWords={};
+  WS_FIELDS.forEach(function(f){siteWords[f.k]=wsVal(f.k);});
   localStorage.setItem(TU_PUB_KEY,JSON.stringify({
-   plans:out, updated:todayISO(), source:'system'}));
+   plans:out, site:siteWords, updated:todayISO(), source:'system'}));
  }catch(e){}
 }
 
@@ -5436,7 +5521,7 @@ function maSetContent(k,v){
  if(lab)lab.textContent=v.length+lab.textContent.slice(lab.textContent.indexOf(' of '));
 }
 
-const RENDERERS={memberapp:renderMemberApp,dashboard:renderDashboard,reports:renderReports,checkin:renderCheckin,pulse:renderPulse,pipeline:renderBoard,records:renderRecords,customers:renderCustomers,quotes:renderQuotes,inventory:renderInventory,tasks:renderTasks,finance:renderFinance,recurring:renderRecurring,forecast:renderMMGrid,classes:renderClasses,ptpacks:renderPtPacks,commissions:renderCommissions,team:renderTeam,activity:renderActivity,settings:renderSettings};
+const RENDERERS={memberapp:renderMemberApp,website:renderWebsite,dashboard:renderDashboard,reports:renderReports,checkin:renderCheckin,pulse:renderPulse,pipeline:renderBoard,records:renderRecords,customers:renderCustomers,quotes:renderQuotes,inventory:renderInventory,tasks:renderTasks,finance:renderFinance,recurring:renderRecurring,forecast:renderMMGrid,classes:renderClasses,ptpacks:renderPtPacks,commissions:renderCommissions,team:renderTeam,activity:renderActivity,settings:renderSettings};
 
 /* ════════════════════════════════════════════════════════════════════
    SECTION 12 - SELF-TEST HARNESS (dev-only; the pre-deploy gate)
@@ -5701,6 +5786,40 @@ async function runSelfTest(opts){
    /* content is plain text with a real cap, never arbitrary markup */
    maTab('content');
    const tas=Array.from(document.querySelectorAll('#maBody textarea'));
+   /* ── THE WEBSITE SECTION: words flow like prices ── */
+   (function(){
+    var keep=JSON.stringify(cfgOverrides().site||{});
+    go('website');
+    ok('Website: a manager can reach the section',
+       (document.querySelector('.page.active')||{}).id==='page-website','');
+    ok('Website: every editable field is capped at the layout\'s real limit',
+       WS_FIELDS.every(function(f){var i=document.getElementById('ws_'+f.k);
+         return i&&i.maxLength===f.cap;}),
+       WS_FIELDS.map(function(f){return f.k+':'+f.cap;}).join(' '));
+    /* the round trip: save a word, find it in what the site will read */
+    cfgOverrides().site={};
+    wsSave('offer','Harness offer: first visit free');
+    var blob=JSON.parse(localStorage.getItem(TU_PUB_KEY)||'{}');
+    ok('Website: a saved word is in what the site reads, same pipe as prices',
+       blob.site&&blob.site.offer==='Harness offer: first visit free',
+       blob.site?blob.site.offer:'no site block');
+    /* nothing typed can become markup on the site */
+    cfgOverrides().site={};
+    wsSave('offer','<img src=x onerror=alert(1)>free week');
+    blob=JSON.parse(localStorage.getItem(TU_PUB_KEY)||'{}');
+    ok('Website: typed markup is stripped before it ever leaves the system',
+       blob.site&&blob.site.offer.indexOf('<')<0&&blob.site.offer.indexOf('free week')>-1,
+       blob.site?blob.site.offer:'');
+    /* a wrong WhatsApp number is refused, not published */
+    cfgOverrides().site={};
+    wsSave('whatsapp','0771234567');
+    ok('Website: a malformed WhatsApp number is refused, never published',
+       !cfgOverrides().site.whatsapp,'needs 94 then nine digits');
+    /* prices are not editable here and the card says which rule won */
+    ok('Website: the prices card points at Membership instead of an editor',
+       /read from Membership/.test(document.getElementById('wsBody').innerText),'');
+    cfgOverrides().site=JSON.parse(keep);DB.commit();tuPublish();
+   })();
    /* ── THE TRIANGLE: the website is a window onto this system ── */
    (function(){
     var q=tuEnquiries().slice(), taken=tuTaken().slice();

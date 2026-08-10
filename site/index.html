@@ -296,13 +296,13 @@ html.reveal-on .reveal:not(.in){opacity:0;transform:translateY(18px)}
   <div class="wrap">
     <div>
       <span class="eyebrow"><i></i>Colombo</span>
-      <h1>The gym that tells you <em>what to put on the bar</em></h1>
-      <p>Most people quit because they never know if they are getting anywhere. Here, the app opens on the exact weight for today, and it worked that out from what you lifted last time.</p>
+      <h1><span id="wHead">The gym that tells you</span> <em id="wAccent">what to put on the bar</em></h1>
+      <p id="wSub">Most people quit because they never know if they are getting anywhere. Here, the app opens on the exact weight for today, and it worked that out from what you lifted last time.</p>
       <div class="hcta">
         <a class="btn btn-p" href="#enquire">Book a free week</a>
         <a class="btn btn-l" href="#finder">Find your plan</a>
       </div>
-      <p class="hnote">No contract to walk in. Come once, use the app, then decide.</p>
+      <p class="hnote" id="wOffer">No contract to walk in. Come once, use the app, then decide.</p>
     </div>
     <div class="phone" aria-hidden="true">
       <div class="pscr">
@@ -519,7 +519,7 @@ html.reveal-on .reveal:not(.in){opacity:0;transform:translateY(18px)}
       <a href="../member/">Open the app</a><a href="#app">What the app does</a>
     </div>
   </div>
-  <div class="wrap"><div class="fbot">Total Uplift. Built by Business Booster. Hours and plans on this page are read live from the gym's own system.</div></div>
+  <div class="wrap"><div class="fbot"><span id="wHours">Open daily 5 AM to 10 PM</span> · Total Uplift. Built by Business Booster. Hours and plans on this page are read live from the gym's own system.</div></div>
 </footer>
 
 <a class="float" id="waFloat" href="#" aria-label="Message Total Uplift on WhatsApp" target="_blank" rel="noopener">
@@ -551,6 +551,17 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
 
 function renderPlans(){
   var d=pub(), g=document.getElementById('planGrid'), sel=document.getElementById('inPlan');
+  /* THE WORDS. textContent only: nothing typed in the system can become markup
+     here. The page's own copy is the fallback, so an unpublished site is never
+     blank. */
+  if(d.site){
+    var put=function(id,v){var e=document.getElementById(id);if(e&&v)e.textContent=v;};
+    put('wHead',d.site.headline); put('wAccent',d.site.accent);
+    put('wSub',d.site.sub); put('wOffer',d.site.offer); put('wHours',d.site.hours);
+    if(d.site.whatsapp&&/^94\d{9}$/.test(d.site.whatsapp))WA=d.site.whatsapp;
+    var fl=document.getElementById('waFloat');
+    if(fl)fl.href='https://wa.me/'+WA+'?text='+encodeURIComponent('Hi! I saw the Total Uplift website and I would like to ask about joining.');
+  }
   if(!g)return;
   g.innerHTML=d.plans.map(function(p){
     return '<div class="plan'+(p.best?' best':'')+'">'
