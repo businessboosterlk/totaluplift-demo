@@ -1185,7 +1185,7 @@ body.dark .stat-kpi .val{color:#fff}
       <div class="page" id="page-customers">
         <div class="stat-kpis" id="cusKpis"></div>
         <div class="toolbar">
-          <div class="seg-toggle" id="cusStatusSeg" style="display:none"><button class="segt active" data-cs="active" onclick="cusStatus('active')">Active</button><button class="segt" data-cs="alumni" onclick="cusStatus('alumni')">Alumni</button></div>
+          <div class="seg-toggle" id="cusStatusSeg" style="display:none"><button class="segt active" data-cs="active" onclick="cusStatus('active')">Active</button><button class="segt" data-cs="alumni" onclick="cusStatus('alumni')" id="segPast">Cancelled</button></div>
           <select class="filter" id="cusCohort" style="display:none" onchange="renderCustomers()"></select>
           <div class="sp"></div>
           <button class="btn-ghost imp-btn" onclick="openImport('customers')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import</button>
@@ -1551,6 +1551,16 @@ const CFG={
  access:{autoGate:false,maxFreezeDays:60,overrideDays:14},
  entity:{singular:'Enquiry',plural:'Enquiries'},
  contactWord:{singular:'Member',plural:'Members'},
+ /* THE WORD FOR SOMEBODY WHO HAS LEFT. A gym says Cancelled, a tuition
+    academy says Alumni, and hardcoding either is how the wrong vertical's
+    vocabulary ends up on a client's screen. */
+ pastWord:'Cancelled',
+ /* WORDS THAT BELONG TO ANOTHER VERTICAL. The harness fails if any of these
+    reaches a screen, because that is how a tuition word ended up in a gym.
+    Each cast owns this list: the tuition system removes the school words
+    and adds the gym ones. */
+ foreignWords:['alumni','student','tuition','syllabus','pupil','semester',
+   'enrolment','patient','diner','tenant','guest house','room service'],
  fieldLabels:{name:'Name',co:'Plan / detail',phone:'Phone',value:'Plan value',followUp:'Trial date',owner:'Trainer',stage:'Stage'},
  currency:'LKR',
  monthlyTarget:1250000,
@@ -2932,6 +2942,7 @@ function applyChrome(){
  document.getElementById('primaryActionLbl').textContent='New '+CFG.entity.singular;
  _setNavText('records',CFG.entity.plural);
  _setNavText('customers',CFG.contactWord.plural);
+ var _sp=document.getElementById('segPast'); if(_sp)_sp.textContent=CFG.pastWord;
  _setNavText('recurring',CFG.recurring.label+'s');
  _setNavText('settings','Customize');
  const qi=document.getElementById('quoIntro');if(qi)qi.textContent='Open a '+CFG.entity.singular.toLowerCase()+' to build its quote, then generate a branded PDF';
@@ -3476,7 +3487,7 @@ function renderCustomers(){
  document.getElementById('cusBody').innerHTML=mapSafe(arr,c=>{
   const done=c.sent>=3,due=custDue(c)&&c.status!=='alumni',next=custNext(c);
   const dots='<span class="cad-dots">'+[0,1,2].map(i=>'<span style="background:'+(c.sent>i?'var(--green)':(c.sent===i&&due?'var(--danger)':'var(--line)'))+'"></span>').join('')+'</span>';
-  const stat=c.status==='alumni'?['Alumni','bdg-blue']:done?['Complete','bdg-green']:due?[cadDays(c.sent)+'-day due','bdg-action']:['Scheduled','bdg-grey'];
+  const stat=c.status==='alumni'?[CFG.pastWord,'bdg-blue']:done?['Complete','bdg-green']:due?[cadDays(c.sent)+'-day due','bdg-action']:['Scheduled','bdg-grey'];
   return '<tr onclick="openCustomer('+c.id+')"><td><div class="tn">'+c.name.toString()+'</div><div class="tm">'+(c.co||'')+(cohortsOn?' · '+cohortLabel(c.cohort):'')+'</div></td>'
    +'<td>'+dots+'</td>'
    +'<td style="font-size:12.5px;color:'+(due?'var(--danger)':'var(--muted)')+'">'+(done||c.status==='alumni'?'-':fmtDate(next))+'</td>'
@@ -3654,7 +3665,7 @@ function openCustomer(id){
  }).join('');
  const hist=(c.history||[]).map(h=>'<tr><td style="font-size:12.5px">'+h.item+'</td><td class="tm">'+fmtDate(h.date)+'</td><td class="tnum" style="font-size:12.5px">'+lkr(h.value)+'</td></tr>').join('');
  const panel=document.getElementById('panel');
- panel.innerHTML='<div class="pn-head"><button class="pn-close" onclick="closePanel()">✕</button><div class="pn-nm">'+c.name+'</div><div class="pn-co">'+(c.co||'')+'</div><div class="pn-badges"><span class="bdg '+(c.type==='B2B'?'bdg-blue':'bdg-amber')+'">'+(c.type||'')+'</span><span class="bdg '+(c.status==='alumni'?'bdg-blue':done?'bdg-green':due?'bdg-action':'bdg-grey')+'">'+(c.status==='alumni'?'Alumni':done?'Cadence complete':due?cadLabel(c.sent)+' due':'Next: '+cadLabel(c.sent))+'</span></div></div>'
+ panel.innerHTML='<div class="pn-head"><button class="pn-close" onclick="closePanel()">✕</button><div class="pn-nm">'+c.name+'</div><div class="pn-co">'+(c.co||'')+'</div><div class="pn-badges"><span class="bdg '+(c.type==='B2B'?'bdg-blue':'bdg-amber')+'">'+(c.type||'')+'</span><span class="bdg '+(c.status==='alumni'?'bdg-blue':done?'bdg-green':due?'bdg-action':'bdg-grey')+'">'+(c.status==='alumni'?CFG.pastWord:done?'Cadence complete':due?cadLabel(c.sent)+' due':'Next: '+cadLabel(c.sent))+'</span></div></div>'
   +'<div class="pn-actions"><button class="pa primary" onclick="custSend('+id+')">'+I.phone+' WhatsApp</button>'
   /* the app is the other way to reach them, and it belongs beside the phone */
   +'<button class="pa" onclick="maMsgMember('+id+')">Message app</button>'
@@ -5786,6 +5797,43 @@ async function runSelfTest(opts){
    /* content is plain text with a real cap, never arbitrary markup */
    maTab('content');
    const tas=Array.from(document.querySelectorAll('#maBody textarea'));
+   /* ── NO OTHER VERTICAL'S VOCABULARY REACHES A SCREEN ── */
+   (function(){
+    const bad=[],back=CURRENT.role;
+    const re=new RegExp('\\b('+(CFG.foreignWords||[]).join('|')+')\\b','i');
+    Object.keys(RENDERERS).forEach(pg=>{
+     try{go(pg);}catch(e){return;}
+     const el=document.getElementById('page-'+pg); if(!el)return;
+     const m=(el.innerText||'').match(re);
+     if(m)bad.push(pg+': "'+m[0]+'"');
+    });
+    ok('Vocabulary: no other vertical\'s words reach a screen',bad.length===0,
+       bad.slice(0,3).join(' | ')||'clean across '+Object.keys(RENDERERS).length+' pages');
+   })();
+   /* ── NOTHING SCROLLS SIDEWAYS, AND EVERY PAGE REACHES ITS END ── */
+   (function(){
+    const wide=[],short=[];
+    Object.keys(RENDERERS).forEach(pg=>{
+     try{go(pg);}catch(e){return;}
+     const doc=document.documentElement;
+     if(doc.scrollWidth>innerWidth+1){
+      let w=null;
+      document.querySelectorAll('#page-'+pg+' *').forEach(e=>{
+       const r=e.getBoundingClientRect();
+       if(r.width>innerWidth+2&&(!w||r.width>w.w))
+        w={c:(typeof e.className==='string'?e.className.split(' ')[0]:e.tagName),w:Math.round(r.width)};
+      });
+      wide.push(pg+(w?' ('+w.c+' '+w.w+'px)':''));
+     }
+     /* a page taller than the viewport must be scrollable to its end */
+     if(doc.scrollHeight>innerHeight+2&&getComputedStyle(document.body).overflowY==='hidden')
+      short.push(pg);
+    });
+    ok('Layout: no page scrolls sideways',wide.length===0,
+       wide.slice(0,3).join(', ')||'clean at '+innerWidth+'px');
+    ok('Layout: every page can be scrolled to its end',short.length===0,
+       short.slice(0,3).join(', ')||'clean');
+   })();
    /* ── THE WEBSITE SECTION: words flow like prices ── */
    (function(){
     var keep=JSON.stringify(cfgOverrides().site||{});
