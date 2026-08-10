@@ -4086,19 +4086,39 @@ async function runSelfTest(){
   })();
   /* THE FREEZE, proven by doing it rather than by reading a class name. */
   (function(){
-   const ov=document.querySelector('.sheet-ov');
-   if(!ov){ok('App: the page behind an open sheet is frozen',true,'no sheets');return;}
-   /* the class that opens an overlay is the app's own word: sheets say `on`,
-      modals say `open`. Add both, restore exactly what was there. */
-   const had={on:ov.classList.contains('on'),open:ov.classList.contains('open')};
-   ov.classList.add('on');ov.classList.add('open');
-   BBF.sync();                 /* the observer runs a tick later; drive it now */
-   const frozen=cs2(document.body).position==='fixed';
-   const shielded=!!document.querySelector('.app[inert]');
-   if(!had.on)ov.classList.remove('on');
-   if(!had.open)ov.classList.remove('open');
-   BBF.sync();
-   ok('App: the page behind an open sheet is frozen',frozen,frozen?'pinned':'STILL SCROLLS');
+   /* BSWL found this: the gym's check looked for .modal-ov, the student app
+      has none, so it passed on "no modals" and the ninth check never ran,
+      hiding a real production bug underneath it. A check that passes because
+      it could not find its target is worse than no check. It asks the module
+      for the selector now, so it cannot be aimed at the wrong thing. */
+   /* TRY EVERY DECLARED OVERLAY, not the first one in document order. Taking
+      the first match found `.panel` in the staff OS, which does not open by
+      adding a class, so the check could not open it and called the page
+      unfrozen. That was true of that element and false of the app. Only a
+      failure to open ANY of them means this cannot be proven. */
+   let frozen=false, shielded=false, used='';
+   const all=[].slice.call(document.querySelectorAll(BBF.ovs));
+   for(let i=0;i<all.length&&!frozen;i++){
+    const ov=all[i];
+    const had={on:ov.classList.contains('on'),open:ov.classList.contains('open')};
+    ov.classList.add('on');ov.classList.add('open');
+    BBF.sync();               /* the observer runs a tick later; drive it now */
+    if(cs2(document.body).position==='fixed'){
+     frozen=true;shielded=!!document.querySelector('[inert]');
+     used=(String(ov.className).split(' ')[0]||ov.tagName);
+    }
+    if(!had.on)ov.classList.remove('on');
+    if(!had.open)ov.classList.remove('open');
+    BBF.sync();
+   }
+   if(!all.length){
+    ok('App: the page behind an open sheet is frozen',false,
+     'NO OVERLAY MATCHED '+BBF.ovs+', so this check proved nothing');
+    ok('App: the page behind an open sheet is out of reach',false,'not proven');
+    return;
+   }
+   ok('App: the page behind an open sheet is frozen',frozen,
+      frozen?('pinned, proven on .'+used):'none of '+all.length+' overlays froze it');
    ok('App: the page behind an open sheet is out of reach',shielded,
       shielded?'inert':'still tappable and tabbable');
    function cs2(e){return getComputedStyle(e);}
@@ -6028,9 +6048,21 @@ var BBF=(function(){
  function isOpen(el){
   var cs=getComputedStyle(el);
   if(cs.display==='none'||cs.visibility==='hidden')return false;
-  if(parseFloat(cs.opacity||'1')<0.05)return false;
   var r=el.getBoundingClientRect();
-  return r.width>0&&r.height>0;
+  if(!(r.width>0&&r.height>0))return false;
+  /* AN OVERLAY THAT FADES IN IS OPEN THE MOMENT IT STARTS. Reading opacity one
+     frame after the class lands gives 0, and the observer fires on the
+     microtask BEFORE the first frame, so a fading overlay was judged closed and
+     the body was never pinned. Found on BSWL's .scrim, which fades; the gym's
+     overlays do not, which is why this mold shipped with it. A running
+     transition means it is on its way in, so treat it as open. */
+  if(parseFloat(cs.opacity||'1')<0.05){
+   var moving=false;
+   try{moving=el.getAnimations().some(function(a){
+    return a.playState==='running'||a.playState==='pending';});}catch(e){}
+   if(!moving)return false;
+  }
+  return true;
  }
  function anyOpen(){
   var n=document.querySelectorAll(OVS), i;
@@ -6168,7 +6200,9 @@ var BBF=(function(){
   document.querySelectorAll('input,textarea').forEach(hint);
  }
 
- return {start:start,hintKeyboards:hintKeyboards,anyOpen:anyOpen,sync:sync,
+ /* the check asks the module what its overlays are. A hand written selector
+    in a check is a selector that can be pointed at nothing. */
+ return {start:start,hintKeyboards:hintKeyboards,anyOpen:anyOpen,sync:sync,ovs:OVS,
          isLocked:function(){return locked;}};
 })();
 
