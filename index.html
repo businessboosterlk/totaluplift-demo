@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="bb-build" content="2026-08-11T09:27">
+<meta name="bb-build" content="2026-08-11T10:11:19">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="manifest" href="manifest.json">
@@ -1155,14 +1155,23 @@ body.dark .stat-kpi .val{color:#fff}
 
       <!-- ══ RECORDS (table + filters + search + detail panel) ══ -->
       <div class="page" id="page-records">
-        <div class="toolbar">
+        <div class="toolbar" style="flex-wrap:wrap;gap:8px">
+          <input class="filter" id="recQ" type="search" placeholder="Search name or detail" oninput="renderRecords()" style="min-width:190px">
           <select class="filter" id="recStage" onchange="renderRecords()"><option value="all">All stages</option></select>
           <select class="filter" id="recOwner" onchange="setOwnerFilter(this.value)"><option value="all">Whole team</option></select>
+          <select class="filter" id="recRange" onchange="renderRecords()"><option value="all">Any follow-up</option><option value="due">Due now</option><option value="7">Next 7 days</option><option value="30">Next 30 days</option><option value="none">No date set</option></select>
+          <button class="btn-ghost" id="recClear" onclick="recReset()" style="display:none">Clear</button>
           <div class="sp"></div>
           <button class="btn-ghost imp-btn" onclick="openImport('records')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import</button>
           <button class="btn-ghost" onclick="exportRecords()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export Excel</button>
         </div>
-        <div class="card"><table class="tbl"><thead><tr><th data-fl="name">Name</th><th data-fl="stage">Stage</th><th data-fl="owner">Owner</th><th data-fl="followUp">Follow-up</th><th class="tnum" data-fl="value">Value</th></tr></thead><tbody id="recBody"></tbody></table><div id="recEmpty"></div></div>
+        <div class="card"><table class="tbl"><thead><tr>
+          <th data-fl="name" class="fs" onclick="recSort('name')">Name<i id="rsi_name"></i></th>
+          <th data-fl="stage" class="fs" onclick="recSort('stage')">Stage<i id="rsi_stage"></i></th>
+          <th data-fl="owner" class="fs" onclick="recSort('owner')">Owner<i id="rsi_owner"></i></th>
+          <th data-fl="followUp" class="fs" onclick="recSort('followUp')">Follow-up<i id="rsi_followUp"></i></th>
+          <th class="tnum fs" data-fl="value" onclick="recSort('value')">Value<i id="rsi_value"></i></th>
+        </tr></thead><tbody id="recBody"></tbody></table><div id="recEmpty"></div></div>
       </div>
 
       <!-- ══ TASKS ══ -->
@@ -1986,6 +1995,11 @@ function renderLogin(){
   '<button class="urow" onclick="pickUser('+s.id+')"><div class="uav'+(s.role==='owner'?'':' alt')+'">'+s.name[0]+'</div><div><div class="uname">'+s.name+'</div><div class="urole">'+(s.role==='staff'&&s.pos?posLabel(s.pos):roleLabel(s.role)+' · Full access')+'</div></div><span class="uarrow">&rarr;</span></button>').join('');
 }
 function pickUser(id){const s=DB.get('staff').find(x=>x.id===id);if(!s)return;PEND=s;
+ /* A DEMO PIN PROTECTS NOTHING: it is printed on the screen under the field.
+    So in demo mode a tap IS the sign in. With real data the PIN step stands.
+    Gated on the same flag that decides whether the hint is shown, so the two
+    can never disagree. */
+ if(CFG.data.mode==='demo'&&CFG.demo.pinHint&&s.pin)return signIn(s);
  document.getElementById('lgAv').textContent=s.name[0];document.getElementById('lgName').textContent=s.name;
  document.getElementById('lgRole').textContent=(s.role==='staff'&&s.pos)?posLabel(s.pos):roleLabel(s.role);
  document.getElementById('lgPw').value='';document.getElementById('lgErr').textContent='';
@@ -2164,9 +2178,10 @@ function exportXLS(name,headers,rows){
  const html='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body><table border="1" cellspacing="0">'+head+body+'</table></body></html>';
  _download(name,new Blob([html],{type:'application/vnd.ms-excel'}));
 }
+/* the export carries what is on screen, same rule as finance */
 function exportRecords(){exportXLS((CFG.app.client||'export').toLowerCase().replace(/\s+/g,'-')+'-'+CFG.entity.plural.toLowerCase()+'.xls',
  ['Name','Company','Phone','Stage','Owner','Follow-up','Value ('+CFG.currency+')'],
- scopeRecords().map(r=>[r.name,r.co,r.phone,stageLabel(r.stage),staffById(r.owner).name,r.followUp||'',r.value]));
+ recRows().map(r=>[r.name,r.co,r.phone,stageLabel(r.stage),staffById(r.owner).name,r.followUp||'',r.value]));
  toast(I.check+' Excel exported');}
 function waRecord(id){const r=DB.get('records').find(x=>x.id===id);if(!r)return;
  const ph=(r.phone||'').replace(/\D/g,'').replace(/^0/,'94');
@@ -2788,11 +2803,59 @@ function drop(e,stage){e.preventDefault();
 }
 
 /* ── Records table ── */
+/* THE SAME MECHANISM AS FINANCE. One function narrows, everything reads it. */
+var REC_SORT={k:'value',dir:-1};
+function recReset(){
+ ['recQ','recStage','recRange'].forEach(function(id){
+  var e=document.getElementById(id); if(e)e.value=(id==='recQ')?'':'all';});
+ REC_SORT={k:'value',dir:-1};renderRecords();
+}
+function recSort(k){
+ REC_SORT=(REC_SORT.k===k)?{k:k,dir:-REC_SORT.dir}:{k:k,dir:(k==='name'||k==='stage')?1:-1};
+ renderRecords();
+}
+function recRows(){
+ var q=((document.getElementById('recQ')||{}).value||'').trim().toLowerCase();
+ var stf=((document.getElementById('recStage')||{}).value)||'all';
+ var rg=((document.getElementById('recRange')||{}).value)||'all';
+ var rows=scopeRecords().filter(function(r){return stf==='all'||r.stage===stf;});
+ if(q)rows=rows.filter(function(r){
+  return String(r.name||'').toLowerCase().indexOf(q)>-1
+      || String(r.co||'').toLowerCase().indexOf(q)>-1
+      || String(r.phone||'').toLowerCase().indexOf(q)>-1;});
+ if(rg!=='all'){
+  var t=todayISO();
+  rows=rows.filter(function(r){
+   if(rg==='none')return !r.followUp;
+   if(!r.followUp)return false;
+   if(rg==='due')return r.followUp<=t;
+   var days=Math.round((new Date(r.followUp)-new Date(t))/86400000);
+   return days>=0&&days<=parseInt(rg,10);
+  });
+ }
+ var k=REC_SORT.k,dir=REC_SORT.dir;
+ rows.sort(function(a,b){
+  var x,y;
+  if(k==='owner'){x=staffById(a.owner).name.toLowerCase();y=staffById(b.owner).name.toLowerCase();}
+  else if(k==='stage'){x=stageLabel(a.stage).toLowerCase();y=stageLabel(b.stage).toLowerCase();}
+  else if(k==='value'){x=a.value||0;y=b.value||0;}
+  else if(k==='followUp'){x=a.followUp||'9999';y=b.followUp||'9999';}
+  else {x=String(a.name||'').toLowerCase();y=String(b.name||'').toLowerCase();}
+  return (x<y?-1:x>y?1:0)*dir;});
+ return rows;
+}
 function renderRecords(){
  const sSel=document.getElementById('recStage');
  if(sSel.options.length<=1)sSel.innerHTML='<option value="all">All stages</option>'+CFG.stages.map(s=>'<option value="'+s.k+'">'+s.label+'</option>').join('');
- const stf=sSel.value||'all';
- const rows=scopeRecords().filter(r=>stf==='all'||r.stage===stf).sort((a,b)=>b.value-a.value);
+ const rows=recRows();
+ ['name','stage','owner','followUp','value'].forEach(function(k){
+  var i=document.getElementById('rsi_'+k);
+  if(i)i.textContent=(REC_SORT.k===k)?(REC_SORT.dir>0?'\u2191':'\u2193'):'';});
+ var cl=document.getElementById('recClear');
+ if(cl){var q=(document.getElementById('recQ')||{}).value||'';
+  var st2=(document.getElementById('recStage')||{}).value||'all';
+  var rg2=(document.getElementById('recRange')||{}).value||'all';
+  cl.style.display=(q||st2!=='all'||rg2!=='all')?'':'none';}
  document.getElementById('recBody').innerHTML=mapSafe(rows,r=>{
   const due=r.followUp&&r.followUp<=todayISO()&&isOpen(r);
   return '<tr onclick="openRecord('+r.id+')"><td><div class="tn">'+r.name.toString()+'</div><div class="tm">'+(r.co||'')+'</div></td>'
@@ -6054,6 +6117,35 @@ async function runSelfTest(opts){
     ok('Finance: an empty result says how to get back',
        renderFinance.toString().indexOf('Clear the filters')>-1||
        document.getElementById('finBody').innerHTML.length>0,'');
+   })();
+   /* ── ENQUIRIES: the same floor as finance, checked the same way ── */
+   (function(){
+    go('records');
+    const all=scopeRecords().length;
+    ok('Enquiries: it has search, a stage filter and a date range',
+       !!document.getElementById('recQ')&&!!document.getElementById('recStage')&&!!document.getElementById('recRange'),
+       'search, stage, owner, follow-up range');
+    ok('Enquiries: every ordered column can be sorted',
+       document.querySelectorAll('#page-records th.fs').length===5,
+       document.querySelectorAll('#page-records th.fs').length+' of 5');
+    const first=scopeRecords()[0];
+    document.getElementById('recQ').value=first?String(first.name).split(' ')[0]:'zzz';
+    renderRecords();
+    const narrowed=recRows().length;
+    ok('Enquiries: search narrows the list, it does not just redraw it',
+       narrowed>0&&narrowed<all,narrowed+' of '+all);
+    ok('Enquiries: the export follows the filter',
+       exportRecords.toString().indexOf('recRows()')>-1,'exports what is on screen');
+    document.getElementById('recQ').value='';renderRecords();
+    ok('Enquiries: every row opens',
+       document.querySelectorAll('#page-records tbody tr[onclick]').length>0,'');
+   })();
+   /* ── SIGNING IN IS ONE TAP IN A DEMO ── */
+   (function(){
+    ok('Login: a demo tap signs you in, it does not look broken',
+       pickUser.toString().indexOf("CFG.data.mode==='demo'")>-1
+       &&pickUser.toString().indexOf('signIn(s)')>-1,
+       'tapping a name is the sign in when the PIN is printed on screen');
    })();
    /* ── THE BAR CALL TAKES COACHING, and says who coached it ── */
    (function(){
