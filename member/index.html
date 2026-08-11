@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="bb-build" content="appr123756">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B1117">
@@ -6127,8 +6126,12 @@ function b64ToU8(b64){
    not our code. */
 async function remSubscribe(){
  try{
-  if(!('serviceWorker' in navigator)||!('PushManager' in window))return 'unsupported';
-  if(!CLOUD.token)return 'not signed in';
+  if(!('serviceWorker' in navigator))return 'no service worker on this browser';
+  if(!('PushManager' in window))return 'this browser cannot receive push';
+  if(!navigator.standalone&&window.matchMedia&&!window.matchMedia('(display-mode: standalone)').matches
+     &&/iphone|ipad|ipod/i.test(navigator.userAgent))
+    return 'open it from the home screen icon, not the browser';
+  if(!CLOUD.token)return 'sign in first, then turn reminders on';
   var reg=await navigator.serviceWorker.ready;
   var sub=await reg.pushManager.getSubscription();
   if(!sub){
@@ -6175,10 +6178,15 @@ function renderRemind(){
   +'<p class="sub" style="margin-top:6px;line-height:1.55">'+body[1]+'</p>'
   +(body[2]?'<button class="ask" style="margin-top:12px" onclick="'+body[3]+'">'+body[2]+'</button>':'')
   +(st==='on'?'<button class="ask" style="margin-top:8px" onclick="remOff()">Turn them off</button>':'')
-  +(st==='on'?'<p class="sub" style="margin-top:10px;font-size:11.5px">'
+  +(st==='on'?'<p class="sub" style="margin-top:10px;font-size:11.5px;line-height:1.55">'
      +(REM_SUB_STATE==='saved'
         ? 'This phone is registered, so reminders reach you even with the app closed.'
-        : 'This phone can show reminders while the app is open. Tap Turn on reminders again to register it for when the app is closed.')
+        : REM_SUB_STATE
+          /* SAY WHY. The same card said the same vague thing for four different
+             causes, so nobody could tell which one they had. */
+          ? 'Reminders work while the app is open, but this phone is not registered for when it is closed. Reason: '+maEsc(REM_SUB_STATE)
+             +'. <a onclick="remRetry()" style="color:var(--brand-txt);font-weight:700;cursor:pointer">Try again</a>'
+          : 'Checking whether this phone is registered')
      +'</p>':'');
  if(st==='on'&&!REM_SUB_STATE)remSubscribe().then(function(x){REM_SUB_STATE=x;renderRemind();});
 }
@@ -6205,6 +6213,9 @@ function remOff(){
  toast('Reminders off. Your phone settings still control them too.');
 }
 function remTest(){remShow('Total Uplift','This is a test reminder. Tap it to open the app.');}
+function remRetry(){REM_SUB_STATE='';renderRemind();
+ remSubscribe().then(function(st){REM_SUB_STATE=st;renderRemind();
+  toast(st==='saved'?'This phone is registered':'Still not registered: '+st);});}
 /* Shown THROUGH the service worker, which is the same path a real push takes,
    so proving this proves the delivery route and not just an alert. */
 function remShow(title,body){
