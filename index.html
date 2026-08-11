@@ -2506,6 +2506,18 @@ function pushNameFor(uid){
  var c=(DB.get('customers')||[]).find(function(x){return x.id===linkedMemberId();});
  return (PUSH_PEOPLE.length===1&&c)?c.name:('Member '+String(uid).slice(0,8));
 }
+/* WHO COULD BE REACHED, and their real state. Showing only registered phones
+   made the screen read "nobody yet", which teaches nothing: a person cannot
+   tell whether the member has no app, no permission, or does not exist. */
+function pushRoster(){
+ var out=[];
+ var linked=(DB.get('customers')||[]).find(function(x){return x.id===linkedMemberId();});
+ if(linked)out.push({name:linked.name,
+   uid:PUSH_PEOPLE.length?PUSH_PEOPLE[0]:null,
+   ready:PUSH_PEOPLE.length>0,
+   why:PUSH_PEOPLE.length?'':'has not turned reminders on in the app yet'});
+ return out;
+}
 function pushWho(v){PUSH_WHO=v;renderPush();}
 async function pushSend(){
  var t=((document.getElementById('pu_title')||{}).value||'').trim();
@@ -2559,11 +2571,19 @@ function renderPush(){
   +'<div class="ma-row" style="align-items:flex-start"><div class="ma-n" style="flex:1;min-width:220px">Who gets it'
   +'<span class="ma-sub">Only members whose phone is registered appear here. Sending to one person is what keeps members; shouting at everyone is what makes them switch notifications off.</span>'
   +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">'
-  +'<button class="ma-chip'+(PUSH_WHO==='all'?' on':'')+'" onclick="pushWho(\'all\')">Everyone ('+PUSH_REACH+')</button>'
-  +PUSH_PEOPLE.map(function(u){
-    return '<button class="ma-chip'+(PUSH_WHO===u?' on':'')+'" onclick="pushWho(\''+u+'\')">'+maEsc(pushNameFor(u))+'</button>';}).join('')
-  +(PUSH_PEOPLE.length?'':'<span class="ma-note">nobody yet</span>')
-  +'</div></div></div>'
+  +'<button class="ma-chip'+(PUSH_WHO==='all'?' on':'')+'"'+(PUSH_REACH?'':' disabled')+' onclick="pushWho(\'all\')">Everyone ('+PUSH_REACH+')</button>'
+  +pushRoster().map(function(m){
+    return m.ready
+     ? '<button class="ma-chip'+(PUSH_WHO===m.uid?' on':'')+'" onclick="pushWho(\''+m.uid+'\')">'+maEsc(m.name)+'</button>'
+     /* SHOWN, NOT HIDDEN, WITH THE REASON. Hiding them is what made this read
+        "nobody yet" and left a person with nowhere to go. */
+     : '<span class="ma-chip" style="opacity:.55;cursor:default" title="'+maEsc(m.why)+'">'+maEsc(m.name)+' · not registered</span>';
+   }).join('')
+  +'</div>'
+  +(PUSH_REACH?'':'<div class="ma-note" style="margin-top:10px;line-height:1.6">'
+     +'Nobody can receive one yet. A member registers by opening the app <b>from their home screen icon</b>, signing in, then Membership and Turn on reminders. '
+     +'Until then this screen has nowhere to send to, which is why the button is off.</div>')
+  +'</div></div>'
   +'<div class="ma-row" style="align-items:flex-start"><div class="ma-n" style="flex:1;min-width:220px">What is this about'
   +'<span class="ma-sub">'+maEsc(pre.why)+'</span>'
   +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">'
@@ -6293,6 +6313,15 @@ async function runSelfTest(opts){
        typeof pushWho==='function'&&/PUSH_WHO==='all'/.test(pushSend.toString())
        &&pushSend.toString().indexOf('user_id:PUSH_WHO')>-1,
        'targets one member or everyone');
+    /* AN EMPTY STATE THAT SAYS "nobody yet" TEACHES NOTHING. A person cannot
+       tell whether the member has no app, no permission, or does not exist. */
+    ok('Notifications: an unreachable member is NAMED with the reason, not hidden',
+       typeof pushRoster==='function'&&pushRoster().length>0
+       &&(PUSH_REACH>0||/not registered/.test(document.getElementById('pushBody').innerText)),
+       PUSH_REACH?('reachable: '+PUSH_REACH):'names them and says why');
+    ok('Notifications: an empty state says how a member becomes reachable',
+       PUSH_REACH>0||/home screen icon/.test(document.getElementById('pushBody').innerText),
+       'tells you the actual steps');
     ok('Notifications: only phones actually registered are offered',
        pushReach.toString().indexOf('push_subscriptions')>-1
        &&pushReach.toString().indexOf('PUSH_PEOPLE')>-1,
