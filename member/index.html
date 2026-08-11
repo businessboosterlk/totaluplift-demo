@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="bb-build" content="app121218">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B1117">
@@ -6100,9 +6101,20 @@ bootDoor();
    The ask is never on load. A prompt nobody expected gets a permanent no, and
    a permanent no cannot be reversed from inside the app. */
 var REM_KEY='tu_reminders_v1';
-/* the PUBLIC half of the VAPID pair. Public by design: it is what tells the
-   phone's push service which server is allowed to wake it. */
-var VAPID_PUBLIC='BFAvhuDR6AyL0I-rOk5xWJC0PfNMi5pRK_Edw9s8d-SdP8_Pdq-awr-Wjulwg_IaQtXrNRuFgSmK2lpLVDuoVM4';
+/* THE APP DOES NOT CARRY A KEY. The pair is minted inside Supabase and lives
+   in Vault; this asks for the public half at runtime. A hardcoded copy would
+   mean a client rotating the pair needs an app redeploy, and it would be a
+   second copy of one truth. */
+var VAPID_PUBLIC=null;
+async function vapidPublic(){
+ if(VAPID_PUBLIC)return VAPID_PUBLIC;
+ var r=await fetch(CLOUD_CFG.url+'/functions/v1/push-send?action=public-key',
+  {headers:{apikey:CLOUD_CFG.key,Authorization:'Bearer '+CLOUD.token}});
+ var j=await r.json();
+ if(!j||!j.publicKey)throw new Error('no public key from the server');
+ VAPID_PUBLIC=j.publicKey;
+ return VAPID_PUBLIC;
+}
 function b64ToU8(b64){
  var pad='='.repeat((4-b64.length%4)%4);
  var raw=atob((b64+pad).replace(/-/g,'+').replace(/_/g,'/'));
@@ -6119,8 +6131,11 @@ async function remSubscribe(){
   if(!CLOUD.token)return 'not signed in';
   var reg=await navigator.serviceWorker.ready;
   var sub=await reg.pushManager.getSubscription();
-  if(!sub)sub=await reg.pushManager.subscribe({
-   userVisibleOnly:true, applicationServerKey:b64ToU8(VAPID_PUBLIC)});
+  if(!sub){
+   var pk=await vapidPublic();
+   sub=await reg.pushManager.subscribe({
+    userVisibleOnly:true, applicationServerKey:b64ToU8(pk)});
+  }
   var j=sub.toJSON();
   var me=await fetch(CLOUD_CFG.url+'/auth/v1/user',
    {headers:{apikey:CLOUD_CFG.key,Authorization:'Bearer '+CLOUD.token}}).then(r=>r.json());
