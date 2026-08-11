@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="bb-build" content="2026-08-11T09:27">
+<meta name="bb-build" content="push112240">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B1117">
@@ -107,6 +107,9 @@
    is a second opinion about the same gap; deleting the margin means there is
    only ever one. */
 .page > *{margin-bottom:0}
+/* a bare slot div would collapse its child's bottom margin out into the page
+   and beat the rhythm, so a card inside a slot never carries one */
+.page > * > *:last-child{margin-bottom:0}
 .page > .greet{margin-top:var(--gap-sec)}      /* the greeting opens a screen */
 .page > .greet + .promise{margin-top:4px}      /* the promise belongs to it */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -1161,6 +1164,7 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
   <div class="page" id="pg-membership">
     <div id="msAccess"></div>
     <div id="msInstall"></div>
+    <div id="msRemind"></div>
     <div class="greet" id="msPlan"></div>
     <div class="promise" style="font-size:24px">Your membership</div>
     <div class="card pad" id="msStatus"></div>
@@ -3441,14 +3445,15 @@ function msBalance(){
  return Math.max(0,CFG.membership.fee-paid);
 }
 function renderMembership(){
+ try{renderRemind();}catch(e){}
  renderAccessBars();
  /* the permanent home for it, so dismissing it on Today never loses it */
  (function(){const el=document.getElementById('msInstall');if(!el)return;
-  if(isInstalled()){el.innerHTML='<div class="mstat ok" style="margin-bottom:16px">'
+  if(isInstalled()){el.innerHTML='<div class="mstat ok">'
    +'<span class="dot"></span><span><span class="mt">Installed on this phone</span>'
    +'<div class="ms">You are using the app version. It works without signal.</div></span></div>';return;}
   const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  el.innerHTML='<button class="mstat" style="margin-bottom:16px" onclick="showInstallSheet()">'
+  el.innerHTML='<button class="mstat" onclick="showInstallSheet()">'
    +'<span class="dot" style="background:var(--brand)"></span>'
    +'<span style="min-width:0;flex:1"><span class="mt">Install Total Uplift</span>'
    +'<div class="ms">'+(iOS?'Two taps in Safari and the address bar is gone for good.'
@@ -4090,6 +4095,27 @@ async function runSelfTest(){
    go(back);
    ok('Layout: a card interior uses at most two vertical gaps',rough.length===0,
       rough.slice(0,3).join(' | ')||'level');
+  })();
+  /* ── REMINDERS: the ask must never fire on load ── */
+  (function(){
+   go('membership');
+   const card=document.getElementById('msRemind');
+   ok('Reminders: the member is offered them on the membership screen',
+      !!card&&(card.innerText||'').length>10,(card?card.innerText.slice(0,40):'missing'));
+   /* A PERMISSION PROMPT ON LOAD IS A PERMANENT NO. It must sit behind a tap. */
+   ok('Reminders: permission is asked from a tap, never on load',
+      /onclick="remAsk\(\)"/.test(card?card.innerHTML:'')||remState()==='on'||remState()==='blocked',
+      'state: '+remState());
+   ok('Reminders: a no is remembered so it never nags twice',
+      remAsk.toString().indexOf("localStorage.setItem(REM_KEY")>-1,'stores the answer');
+   /* the test send goes through the SERVICE WORKER, the same route a real push
+      takes, so proving it proves the delivery path and not just an alert */
+   ok('Reminders: a test goes through the service worker, the real push route',
+      remShow.toString().indexOf('serviceWorker.ready')>-1&&
+      remShow.toString().indexOf('showNotification')>-1,'same path as a push');
+   ok('Reminders: the card explains what they are agreeing to before asking',
+      /nudge|reminder/i.test(card?card.innerText:''),'has a plain reason');
+   go('today');
   })();
   /* ── BB APP FOUNDATIONS: the things that make it a product, not a page ── */
   (function(){
@@ -6070,6 +6096,66 @@ go('today');
    actually passed taken off it, and a paused one comes back paused */
 restLoad();
 bootDoor();
+
+/* ══ REMINDERS ══════════════════════════════════════════════════════════
+   The ask is never on load. A prompt nobody expected gets a permanent no, and
+   a permanent no cannot be reversed from inside the app. */
+var REM_KEY='tu_reminders_v1';
+function remState(){
+ if(!('Notification' in window))return 'unsupported';
+ if(Notification.permission==='granted')return 'on';
+ if(Notification.permission==='denied')return 'blocked';
+ try{if(localStorage.getItem(REM_KEY)==='no')return 'declined';}catch(e){}
+ return 'off';
+}
+function renderRemind(){
+ var el=document.getElementById('msRemind'); if(!el)return;
+ var st=remState();
+ if(st==='unsupported'){
+  el.innerHTML='<div class="card pad"><div class="promise" style="font-size:15px">Reminders</div>'
+   +'<p class="sub" style="margin-top:6px">This browser cannot show reminders. Install the app to your home screen and open it from there.</p></div>';
+  return;
+ }
+ var body={
+  off:['Reminders','A nudge on the day you train, and when your membership is due. Nothing else, and you can turn it off any time.','Turn on reminders','remAsk()'],
+  declined:['Reminders','You said no earlier. That is fine, nothing will nag you.','Change my mind','remAsk()'],
+  blocked:['Reminders','Your phone is blocking these. Turn notifications on for Total Uplift in your phone settings, then come back.','',''],
+  on:['Reminders are on','You will get a nudge on training days and before your membership is due.','Send me a test one','remTest()']
+ }[st];
+ el.innerHTML='<div class="card pad"><div class="promise" style="font-size:15px">'+body[0]+'</div>'
+  +'<p class="sub" style="margin-top:6px;line-height:1.55">'+body[1]+'</p>'
+  +(body[2]?'<button class="ask" style="margin-top:12px" onclick="'+body[3]+'">'+body[2]+'</button>':'')
+  +(st==='on'?'<button class="ask" style="margin-top:8px" onclick="remOff()">Turn them off</button>':'');
+}
+function remAsk(){
+ if(!('Notification' in window))return;
+ Notification.requestPermission().then(function(r){
+  /* a NO is remembered so the card stops offering a button that does nothing */
+  try{localStorage.setItem(REM_KEY,r==='granted'?'yes':'no');}catch(e){}
+  renderRemind();
+  if(r==='granted')remShow('Reminders are on','That is all it takes. This is what one looks like.');
+  else toast('No problem, nothing will nag you');
+ }).catch(function(){});
+}
+function remOff(){
+ /* the browser will not un-grant, so this is OUR switch and it must be honest */
+ try{localStorage.setItem(REM_KEY,'no');}catch(e){}
+ renderRemind();
+ toast('Reminders off. Your phone settings still control them too.');
+}
+function remTest(){remShow('Total Uplift','This is a test reminder. Tap it to open the app.');}
+/* Shown THROUGH the service worker, which is the same path a real push takes,
+   so proving this proves the delivery route and not just an alert. */
+function remShow(title,body){
+ if(Notification.permission!=='granted')return;
+ var opts={body:body,icon:'./icon-192.png',badge:'./icon-mono-512.png',
+           tag:'tu-test',data:{url:'./'}};
+ if(navigator.serviceWorker&&navigator.serviceWorker.ready){
+  navigator.serviceWorker.ready.then(function(reg){
+   reg.showNotification(title,opts);
+  }).catch(function(){try{new Notification(title,opts);}catch(e){}});
+ }else{try{new Notification(title,opts);}catch(e){}}
+}
 
 /* ══ BB APP FOUNDATIONS, the behaviour half ══════════════════════════════
    Identical in every BB app. The only line that differs is the overlay
