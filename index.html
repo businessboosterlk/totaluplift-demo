@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="bb-build" content="osr123756">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="manifest" href="manifest.json">
@@ -2458,6 +2457,8 @@ var PUSH_URL='https://yyviiwnqgphyklcoijyd.supabase.co';
 var PUSH_KEY='sb_publishable_RkGimnQ1rzRrU4Io5qn9xg_Fgi4LxiO';
 var PUSH_FN=PUSH_URL+'/functions/v1/push-send';
 var PUSH_TOKEN='', PUSH_REACH=0, PUSH_PICK='quiet';
+var PUSH_WHO='all';          /* 'all' or an auth user id */
+var PUSH_PEOPLE=[];          /* who actually has a phone registered */
 /* THE STAFF OS HAS NO LOGIN OF ITS OWN: it is PIN based, so for this demo it
    borrows the demo member's token to reach the function. Real staff auth is on
    the go-live list and this is one more reason it belongs there. */
@@ -2485,29 +2486,48 @@ var PUSH_PRESETS=[
 function pushPick(k){PUSH_PICK=k;renderPush();}
 /* enforced, not trusted */
 function pushHasMoney(t){return /\b(lkr|rs\.?|usd)\s*[\d,]/i.test(t)||/[\d,]{3,}\s*(lkr|rupees)/i.test(t)||/\$\s*[\d,]/.test(t);}
+/* WHO CAN BE REACHED, from the phones actually registered. Not the member
+   list: offering somebody with no app is offering a send that silently does
+   nothing. */
 async function pushReach(){
  try{
   var tok=await pushAuth();
-  var r=await fetch(PUSH_URL+'/rest/v1/push_subscriptions?select=id',
-   {headers:{apikey:PUSH_KEY,Authorization:'Bearer '+tok,Prefer:'count=exact',Range:'0-0'}});
-  var cr=r.headers.get('content-range')||'';
-  PUSH_REACH=parseInt((cr.split('/')[1]||'0'),10)||0;
- }catch(e){PUSH_REACH=0;}
+  var r=await fetch(PUSH_URL+'/rest/v1/push_subscriptions?select=user_id',
+   {headers:{apikey:PUSH_KEY,Authorization:'Bearer '+tok}});
+  var rows=await r.json();
+  var seen={};PUSH_PEOPLE=[];
+  (Array.isArray(rows)?rows:[]).forEach(function(x){
+   if(x.user_id&&!seen[x.user_id]){seen[x.user_id]=1;PUSH_PEOPLE.push(x.user_id);}});
+  PUSH_REACH=(Array.isArray(rows)?rows.length:0);
+ }catch(e){PUSH_REACH=0;PUSH_PEOPLE=[];}
  return PUSH_REACH;
 }
+/* the demo links ONE member to an app account, so that is the name we can put
+   against a phone. A real gym has an account per member and this list grows. */
+function pushNameFor(uid){
+ var c=(DB.get('customers')||[]).find(function(x){return x.id===linkedMemberId();});
+ return (PUSH_PEOPLE.length===1&&c)?c.name:('Member '+String(uid).slice(0,8));
+}
+function pushWho(v){PUSH_WHO=v;renderPush();}
 async function pushSend(){
  var t=((document.getElementById('pu_title')||{}).value||'').trim();
  var b=((document.getElementById('pu_body')||{}).value||'').trim();
  if(!t||!b){toast('A title and a message, both');return;}
  if(pushHasMoney(t+' '+b)){toast('No money figures in a notification. Anyone holding the phone can read it.');return;}
  if(!PUSH_REACH){toast('No member has allowed reminders yet');return;}
- if(!confirm(PUSH_REACH+' phone'+(PUSH_REACH===1?'':'s')+' will buzz.\n\n"'+t+'"\n'+b+'\n\nA notification cannot be unsent. Send it?'))return;
+ var n=(PUSH_WHO==='all')?PUSH_REACH:1;
+ var whoLbl=(PUSH_WHO==='all')?(n+' phone'+(n===1?'':'s')):pushNameFor(PUSH_WHO);
+ /* SENDING TO EVERYONE ASKS HARDER THAN SENDING TO ONE PERSON. */
+ var warn=(PUSH_WHO==='all'&&n>1)?'\n\nThis goes to EVERYONE who allowed reminders.':'';
+ if(!confirm(whoLbl+' will get this.'+warn+'\n\n"'+t+'"\n'+b+'\n\nA notification cannot be unsent. Send it?'))return;
  var btn=document.getElementById('pu_go'); if(btn){btn.disabled=true;btn.textContent='Sending';}
  try{
   var tok=await pushAuth();
   var r=await fetch(PUSH_FN,{method:'POST',
    headers:{apikey:PUSH_KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json'},
-   body:JSON.stringify({title:t,body:b,tag:'tu-'+PUSH_PICK})});
+   body:JSON.stringify(PUSH_WHO==='all'
+     ?{title:t,body:b,tag:'tu-'+PUSH_PICK}
+     :{title:t,body:b,tag:'tu-'+PUSH_PICK,user_id:PUSH_WHO})});
   var j=await r.json();
   logFeed(CURRENT.id,'Notification sent',t);DB.commit();
   toast(j.sent?(I.check+' Sent to '+j.sent+' phone'+(j.sent===1?'':'s')):('Nothing sent: '+(j.note||j.error||'unknown')));
@@ -2521,7 +2541,16 @@ function renderPush(){
  el.innerHTML=
   '<div class="ma-card"><div class="ma-h"><h3>Send a notification</h3>'
   +'<span class="ma-hint" id="pu_reach">'+(PUSH_REACH?PUSH_REACH+' phone'+(PUSH_REACH===1?'':'s')+' can receive one':'checking who can receive one')+'</span></div>'
-  +'<div class="ma-list"><div class="ma-row" style="align-items:flex-start"><div class="ma-n" style="flex:1;min-width:220px">What is this about'
+  +'<div class="ma-list">'
+  +'<div class="ma-row" style="align-items:flex-start"><div class="ma-n" style="flex:1;min-width:220px">Who gets it'
+  +'<span class="ma-sub">Only members whose phone is registered appear here. Sending to one person is what keeps members; shouting at everyone is what makes them switch notifications off.</span>'
+  +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">'
+  +'<button class="ma-chip'+(PUSH_WHO==='all'?' on':'')+'" onclick="pushWho(\'all\')">Everyone ('+PUSH_REACH+')</button>'
+  +PUSH_PEOPLE.map(function(u){
+    return '<button class="ma-chip'+(PUSH_WHO===u?' on':'')+'" onclick="pushWho(\''+u+'\')">'+maEsc(pushNameFor(u))+'</button>';}).join('')
+  +(PUSH_PEOPLE.length?'':'<span class="ma-note">nobody yet</span>')
+  +'</div></div></div>'
+  +'<div class="ma-row" style="align-items:flex-start"><div class="ma-n" style="flex:1;min-width:220px">What is this about'
   +'<span class="ma-sub">'+maEsc(pre.why)+'</span>'
   +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">'
   +PUSH_PRESETS.map(function(x){
@@ -6225,10 +6254,23 @@ async function runSelfTest(opts){
        &&!pushHasMoney('We have missed you'),'money blocked, plain text allowed');
     ok('Notifications: no preset carries an amount',
        PUSH_PRESETS.every(function(x){return !pushHasMoney(x.title+' '+x.body);}),'all clean');
-    ok('Notifications: sending names the blast radius first',
-       pushSend.toString().indexOf('will buzz')>-1
+    /* ONE PERSON BY NAME IS THE WHOLE POINT. Shouting at everyone is what makes
+       members turn notifications off, and they never turn them back on. */
+    ok('Notifications: the desk can pick who gets it, not only everyone',
+       typeof pushWho==='function'&&/PUSH_WHO==='all'/.test(pushSend.toString())
+       &&pushSend.toString().indexOf('user_id:PUSH_WHO')>-1,
+       'targets one member or everyone');
+    ok('Notifications: only phones actually registered are offered',
+       pushReach.toString().indexOf('push_subscriptions')>-1
+       &&pushReach.toString().indexOf('PUSH_PEOPLE')>-1,
+       'built from registered phones, never the member list');
+    ok('Notifications: sending to everyone warns harder than sending to one',
+       pushSend.toString().indexOf('goes to EVERYONE')>-1,'stronger confirmation');
+    ok('Notifications: sending names who gets it, and that it cannot be undone',
+       /will get this/.test(pushSend.toString())
+       &&pushSend.toString().indexOf('whoLbl')>-1
        &&pushSend.toString().indexOf('cannot be unsent')>-1,
-       'confirmation is the undo');
+       'names the recipient, confirmation is the undo');
     ok('Notifications: the screen says what a notification cannot do',
        /cannot be unsent|Do Not Disturb/.test(document.getElementById('pushBody').innerText),'');
    })();
