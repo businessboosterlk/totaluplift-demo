@@ -1096,7 +1096,6 @@ body.dark .stat-kpi .val{color:#fff}
         <button class="nav-item" data-pg="team" data-role="owner" data-module="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Team</button>
         <button class="nav-item" data-pg="activity" data-role="manager" data-module="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><polyline points="12 6 12 12 16 14"/></svg>Activity</button>
         <button class="nav-item" data-pg="memberapp" data-role="manager"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg>Member App<span class="badge" id="nbMapp"></span></button>
-        <button class="nav-item" data-pg="push" data-role="manager"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>Notifications</button>
         <button class="nav-item" data-pg="coach" data-role="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5h11v11h-11z"/><path d="M3 10v4M21 10v4M6.5 8.5h-2v7h2M17.5 8.5h2v7h-2"/></svg>Bar Call</button>
         <button class="nav-item" data-pg="website" data-role="manager"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>Website</button>
         <button class="nav-item" data-pg="settings" data-role="owner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
@@ -1315,7 +1314,6 @@ body.dark .stat-kpi .val{color:#fff}
       </div>
 
       <!-- ══ MEMBER APP: access, entitlements and app-facing copy ══ -->
-      <div class="page" id="page-push"><div id="pushBody"></div></div>
       <div class="page" id="page-coach"><div id="coachBody"></div></div>
       <div class="page" id="page-website"><div id="wsBody"></div></div>
       <div class="page" id="page-memberapp">
@@ -1323,6 +1321,7 @@ body.dark .stat-kpi .val{color:#fff}
           <button class="ma-tab active" onclick="maTab('access')">Access</button>
           <button class="ma-tab" onclick="maTab('experience')">Experience</button>
           <button class="ma-tab" onclick="maTab('content')">Content</button>
+          <button class="ma-tab" onclick="maTab('notify')">Notifications</button>
         </div>
         <div id="maBody"></div>
       </div>
@@ -2050,7 +2049,6 @@ function buildTitles(){TITLES={
  memberapp:['Member App','Who can get in, what they see, and what it tells them'],
  website:['Website','What the site says. Change it here, the site follows'],
  coach:['Bar Call','How fast the weight climbs, and where it stops'],
- push:['Notifications','Send a nudge, an offer or a reminder to the app'],
  reports:['Reports','Month-over-month performance'],
  checkin:['Check-in','Tap a member as they arrive'],
  pulse:['Member Pulse','Who is slipping away, and exactly why'],
@@ -2534,6 +2532,22 @@ async function pushSend(){
  }catch(e){toast('Could not send: '+e.message);}
  if(btn){btn.disabled=false;btn.textContent='Send it';}
  renderPush();
+}
+/* SEND TO THE PERSON ON SCREEN. Opens the section already pointed at them,
+   so the desk never picks the wrong name from a list. */
+async function pushToMember(id){
+ var c=(DB.get('customers')||[]).find(function(x){return x.id===id;});
+ if(!c)return;
+ await pushReach();
+ if(!PUSH_PEOPLE.length){
+  toast(c.name+' has not turned reminders on in the app yet');return;
+ }
+ /* the demo links one member to an app account; a real gym maps each member */
+ PUSH_WHO=(id===linkedMemberId()&&PUSH_PEOPLE[0])?PUSH_PEOPLE[0]:'all';
+ if(PUSH_WHO==='all'){toast(c.name+' has not turned reminders on in the app yet');return;}
+ PUSH_PICK='quiet';
+ closePanel();go('memberapp');maTab('notify');
+ toast('Ready to nudge '+c.name);
 }
 function renderPush(){
  var el=document.getElementById('pushBody'); if(!el)return;
@@ -3924,6 +3938,9 @@ function openCustomer(id){
   /* the app is the other way to reach them, and it belongs beside the phone */
   +'<button class="pa" onclick="maMsgMember('+id+')">Message app</button>'
   +'<button class="pa" onclick="maPayNote('+id+')">Payment due</button>'
+  /* THE MOMENT SOMEBODY WANTS TO NUDGE A MEMBER IS WHILE LOOKING AT THAT
+     MEMBER, not after navigating to a Notifications screen. */
+  +'<button class="pa" onclick="pushToMember('+id+')">Nudge their phone</button>'
   +(due?'<button class="pa" onclick="custDone('+id+')">'+I.check+' Mark done</button>':'')
   +(isMaster()?'<button class="pa" onclick="openMemberModal('+id+')">Edit</button>':'')+'</div>'
   +'<div class="pn-body">'
@@ -5690,6 +5707,7 @@ function renderMemberApp(){
  const el=document.getElementById('maBody');if(!el)return;
  if(MA_TAB==='access')return maAccess(el);
  if(MA_TAB==='experience')return maExperience(el);
+ if(MA_TAB==='notify'){el.innerHTML='<div id="pushBody"></div>';return renderPush();}
  return maContent(el);
 }
 
@@ -5874,7 +5892,7 @@ function maSetContent(k,v){
  if(lab)lab.textContent=v.length+lab.textContent.slice(lab.textContent.indexOf(' of '));
 }
 
-const RENDERERS={memberapp:renderMemberApp,website:renderWebsite,coach:renderCoach,push:renderPush,dashboard:renderDashboard,reports:renderReports,checkin:renderCheckin,pulse:renderPulse,pipeline:renderBoard,records:renderRecords,customers:renderCustomers,quotes:renderQuotes,inventory:renderInventory,tasks:renderTasks,finance:renderFinance,recurring:renderRecurring,forecast:renderMMGrid,classes:renderClasses,ptpacks:renderPtPacks,commissions:renderCommissions,team:renderTeam,activity:renderActivity,settings:renderSettings};
+const RENDERERS={memberapp:renderMemberApp,website:renderWebsite,coach:renderCoach,dashboard:renderDashboard,reports:renderReports,checkin:renderCheckin,pulse:renderPulse,pipeline:renderBoard,records:renderRecords,customers:renderCustomers,quotes:renderQuotes,inventory:renderInventory,tasks:renderTasks,finance:renderFinance,recurring:renderRecurring,forecast:renderMMGrid,classes:renderClasses,ptpacks:renderPtPacks,commissions:renderCommissions,team:renderTeam,activity:renderActivity,settings:renderSettings};
 
 /* ════════════════════════════════════════════════════════════════════
    SECTION 12 - SELF-TEST HARNESS (dev-only; the pre-deploy gate)
@@ -6068,7 +6086,15 @@ async function runSelfTest(opts){
    go('memberapp');
    ok('Member App: the section opens',
      (document.querySelector('.page.active')||{}).id==='page-memberapp');
-   ok('Member App: three tabs, not four',document.querySelectorAll('#maTabs .ma-tab').length===3);
+   /* THREE became four, and the reason matters. I argued against a fourth tab
+   when it was HEALTH, because it would have rendered four zeroes and taught
+   the owner the section was empty. This one does real work on day one. */
+   ok('Member App: four tabs, and every one of them does something',
+      document.querySelectorAll('#maTabs .ma-tab').length===4
+      &&['access','experience','content','notify'].every(function(t){
+        return /maTab\('+t+'\)/.test(document.getElementById('maTabs').innerHTML)
+            || document.getElementById('maTabs').innerHTML.indexOf("maTab('"+t+"')")>-1;}),
+      document.querySelectorAll('#maTabs .ma-tab').length+' tabs');
 
    /* the package list is the REAL one, not a guess at a field name */
    ok('Member App: packages come from the gym\'s own tiers',
@@ -6240,10 +6266,17 @@ async function runSelfTest(opts){
    })();
    /* ── NOTIFICATIONS: a desk job, and it cannot leak money ── */
    (function(){
-    go('push');
-    ok('Notifications: the desk can reach the sender without a developer',
-       (document.querySelector('.page.active')||{}).id==='page-push'
+    /* it lives inside Member App now, where controlling the app already lives */
+    go('memberapp');maTab('notify');
+    ok('Notifications: they live inside Member App, not as their own destination',
+       (document.querySelector('.page.active')||{}).id==='page-memberapp'
        &&!!document.getElementById('pu_title')&&!!document.getElementById('pu_go'),'');
+    /* THE SEND LIVES ON THE MEMBER TOO. The moment somebody wants to nudge a
+       member is while looking at that member. */
+    ok('Notifications: a member can be nudged from their own record',
+       typeof pushToMember==='function'
+       &&openCustomer.toString().indexOf('pushToMember')>-1,
+       'the action sits where the decision is made');
     ok('Notifications: reasons are presets, not a blank box',
        PUSH_PRESETS.length===3&&PUSH_PRESETS.every(function(x){return x.title&&x.body&&x.why;}),
        PUSH_PRESETS.map(function(x){return x.k;}).join(', '));
