@@ -6185,6 +6185,19 @@ async function runSelfTest(opts){
    /* content is plain text with a real cap, never arbitrary markup */
    maTab('content');
    const tas=Array.from(document.querySelectorAll('#maBody textarea'));
+   /* ── RENDERS MUST NOT DRIVE THE OVERLAY MACHINERY ── */
+   (function(){
+    /* The freeze of 11 August: a document-wide observer ran layout-reading
+       work on EVERY mutation batch, and count-up animations mutate sixty
+       times a second. The invariant that kills the whole class: navigating
+       pages schedules at most a couple of sync runs, because a render is
+       not an overlay change. */
+    const before=BBF.runs();
+    ['dashboard','finance','records','dashboard'].forEach(function(pg){try{go(pg);}catch(e){}});
+    const cost=BBF.runs()-before;
+    ok('Foundations: page renders do not drive the overlay machinery',cost<=3,
+       cost+' sync runs for 4 navigations'+(cost>3?', the observer storm is back':''));
+   })();
    /* ── A CONTROL'S OWN LABEL SITS IN THE MIDDLE OF IT ── */
    (function(){
     /* A CHECK THAT MEASURES A ZERO-SIZE WORLD MUST NOT REPORT SUCCESS. My
@@ -7498,7 +7511,21 @@ var BBF=(function(){
   if(e.key==='Escape'&&anyOpen()){e.preventDefault();history.back();}
  });
 
+ /* COALESCE. Observers may request a sync hundreds of times in one render;
+    the work runs once. Direct calls (the harness) still run synchronously. */
+ var syncQueued=false, inSync=false, syncRuns=0;
+ function scheduleSync(){
+  if(syncQueued)return;
+  syncQueued=true;
+  setTimeout(function(){syncQueued=false;sync();},0);
+ }
  function sync(){
+  if(inSync)return;           /* sync mutates the DOM; it must never re-enter */
+  inSync=true;
+  syncRuns++;
+  try{ syncBody(); }finally{ inSync=false; }
+ }
+ function syncBody(){
   var ov=anyOpen();
   if(ov&&!locked){
    lock();shield(ov);takeFocus(ov);
@@ -7516,6 +7543,7 @@ var BBF=(function(){
     setTimeout(function(){closing=false;},0);
    }
   }
+ 
  }
 
  /* ONE OBSERVER, NOT N EDITED FUNCTIONS. Overlays are opened by different
@@ -7524,16 +7552,21 @@ var BBF=(function(){
     overlay that exists and every one anyone adds after today, including in a
     cast of this mold into another client's app. */
  function start(){
-  var mo=new MutationObserver(sync);
+  var mo=new MutationObserver(scheduleSync);
   var watch=function(el){mo.observe(el,{attributes:true,attributeFilter:['class','style','hidden']});};
   document.querySelectorAll(OVS).forEach(watch);
+  /* THE STORM WAS HERE. This observer used to call sync() on EVERY mutation
+     batch in the document, and a page render floods hundreds while the
+     count-up animation adds sixty a second. Its only real job is spotting a
+     NEW overlay, so it only schedules when it actually saw one. */
   new MutationObserver(function(muts){
+   var sawOverlay=false;
    muts.forEach(function(m){
     [].slice.call(m.addedNodes).forEach(function(n){
-     if(n.nodeType===1&&n.matches&&n.matches(OVS))watch(n);
+     if(n.nodeType===1&&n.matches&&n.matches(OVS)){watch(n);sawOverlay=true;}
     });
    });
-   sync();
+   if(sawOverlay)scheduleSync();
   }).observe(document.body,{childList:true,subtree:true});
   sync();
  }
@@ -7562,6 +7595,7 @@ var BBF=(function(){
  /* the check asks the module what its overlays are. A hand written selector
     in a check is a selector that can be pointed at nothing. */
  return {start:start,hintKeyboards:hintKeyboards,anyOpen:anyOpen,sync:sync,ovs:OVS,
+         runs:function(){return syncRuns;},
          isLocked:function(){return locked;}};
 })();
 
