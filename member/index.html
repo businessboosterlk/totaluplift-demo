@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="bb-build" content="push112240">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B1117">
@@ -6101,6 +6100,41 @@ bootDoor();
    The ask is never on load. A prompt nobody expected gets a permanent no, and
    a permanent no cannot be reversed from inside the app. */
 var REM_KEY='tu_reminders_v1';
+/* the PUBLIC half of the VAPID pair. Public by design: it is what tells the
+   phone's push service which server is allowed to wake it. */
+var VAPID_PUBLIC='BFAvhuDR6AyL0I-rOk5xWJC0PfNMi5pRK_Edw9s8d-SdP8_Pdq-awr-Wjulwg_IaQtXrNRuFgSmK2lpLVDuoVM4';
+function b64ToU8(b64){
+ var pad='='.repeat((4-b64.length%4)%4);
+ var raw=atob((b64+pad).replace(/-/g,'+').replace(/_/g,'/'));
+ var out=new Uint8Array(raw.length);
+ for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+ return out;
+}
+/* HAND THE SERVER AN ADDRESS FOR THIS PHONE. This is the step that makes a
+   notification arrive with the app closed: the push service does the waking,
+   not our code. */
+async function remSubscribe(){
+ try{
+  if(!('serviceWorker' in navigator)||!('PushManager' in window))return 'unsupported';
+  if(!CLOUD.token)return 'not signed in';
+  var reg=await navigator.serviceWorker.ready;
+  var sub=await reg.pushManager.getSubscription();
+  if(!sub)sub=await reg.pushManager.subscribe({
+   userVisibleOnly:true, applicationServerKey:b64ToU8(VAPID_PUBLIC)});
+  var j=sub.toJSON();
+  var me=await fetch(CLOUD_CFG.url+'/auth/v1/user',
+   {headers:{apikey:CLOUD_CFG.key,Authorization:'Bearer '+CLOUD.token}}).then(r=>r.json());
+  if(!me||!me.id)return 'no user';
+  var res=await fetch(CLOUD_CFG.url+'/rest/v1/push_subscriptions',{
+   method:'POST',
+   headers:{apikey:CLOUD_CFG.key,Authorization:'Bearer '+CLOUD.token,
+            'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
+   body:JSON.stringify({user_id:me.id,endpoint:j.endpoint,
+     p256dh:j.keys.p256dh,auth:j.keys.auth,ua:navigator.userAgent.slice(0,180)})});
+  return res.ok?'saved':('save failed '+res.status);
+ }catch(e){return 'error: '+(e&&e.message||e);}
+}
+var REM_SUB_STATE='';
 function remState(){
  if(!('Notification' in window))return 'unsupported';
  if(Notification.permission==='granted')return 'on';
@@ -6125,7 +6159,13 @@ function renderRemind(){
  el.innerHTML='<div class="card pad"><div class="promise" style="font-size:15px">'+body[0]+'</div>'
   +'<p class="sub" style="margin-top:6px;line-height:1.55">'+body[1]+'</p>'
   +(body[2]?'<button class="ask" style="margin-top:12px" onclick="'+body[3]+'">'+body[2]+'</button>':'')
-  +(st==='on'?'<button class="ask" style="margin-top:8px" onclick="remOff()">Turn them off</button>':'');
+  +(st==='on'?'<button class="ask" style="margin-top:8px" onclick="remOff()">Turn them off</button>':'')
+  +(st==='on'?'<p class="sub" style="margin-top:10px;font-size:11.5px">'
+     +(REM_SUB_STATE==='saved'
+        ? 'This phone is registered, so reminders reach you even with the app closed.'
+        : 'This phone can show reminders while the app is open. Tap Turn on reminders again to register it for when the app is closed.')
+     +'</p>':'');
+ if(st==='on'&&!REM_SUB_STATE)remSubscribe().then(function(x){REM_SUB_STATE=x;renderRemind();});
 }
 function remAsk(){
  if(!('Notification' in window))return;
@@ -6133,8 +6173,14 @@ function remAsk(){
   /* a NO is remembered so the card stops offering a button that does nothing */
   try{localStorage.setItem(REM_KEY,r==='granted'?'yes':'no');}catch(e){}
   renderRemind();
-  if(r==='granted')remShow('Reminders are on','That is all it takes. This is what one looks like.');
-  else toast('No problem, nothing will nag you');
+  if(r==='granted'){
+   remShow('Reminders are on','That is all it takes. This is what one looks like.');
+   /* a failure here must not undo the yes: local reminders still work */
+   remSubscribe().then(function(st){
+    REM_SUB_STATE=st; renderRemind();
+    if(st!=='saved')console.warn('push subscribe:',st);
+   });
+  } else toast('No problem, nothing will nag you');
  }).catch(function(){});
 }
 function remOff(){
