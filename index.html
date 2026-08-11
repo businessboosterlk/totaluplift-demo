@@ -341,11 +341,11 @@ input,select,textarea{font-family:inherit;color:var(--ink)}
    BUTTONS - the premium primary recipe (gradient + inner top
    highlight + brand glow) + quiet ghost. --on-accent everywhere.
    ============================================================ */
-.btn-primary{background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 82%,#fff),var(--brand) 55%,var(--brand-dark));color:var(--on-accent);border-radius:var(--r-md);padding:10px 17px;font-size:13px;font-weight:650;letter-spacing:.1px;display:inline-flex;align-items:center;gap:7px;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 1px 3px var(--brand-glow);transition:box-shadow var(--t-fast),transform var(--t-fast) var(--ease),filter var(--t-fast)}
+.btn-primary{background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 82%,#fff),var(--brand) 55%,var(--brand-dark));color:var(--on-accent);border-radius:var(--r-md);padding:10px 17px;font-size:13px;font-weight:650;letter-spacing:.1px;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 1px 3px var(--brand-glow);transition:box-shadow var(--t-fast),transform var(--t-fast) var(--ease),filter var(--t-fast)}
 .btn-primary:hover{filter:brightness(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 4px 14px var(--brand-glow);transform:translateY(-1px)}
-.btn-ghost{font-size:12.5px;font-weight:600;padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;gap:7px;transition:border-color .15s,color .15s,transform .15s var(--ease)}
+.btn-ghost{font-size:12.5px;font-weight:600;padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:border-color .15s,color .15s,transform .15s var(--ease)}
 .btn-ghost:hover{border-color:var(--brand);color:var(--brand)}
-.btn-danger{background:var(--danger-soft);color:var(--danger);border:1px solid transparent;border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:650;display:inline-flex;align-items:center;gap:7px;transition:.15s}
+.btn-danger{background:var(--danger-soft);color:var(--danger);border:1px solid transparent;border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:650;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.15s}
 .btn-danger:hover{border-color:var(--danger)}
 .btn-primary:active,.btn-ghost:active,.btn-danger:active,.pa:active,.nav-item:active{transform:scale(.97)}
 .btn-primary[disabled],.btn-ghost[disabled]{opacity:.5;pointer-events:none}
@@ -503,7 +503,7 @@ select.filter{appearance:none;-webkit-appearance:none;background-image:url("data
 .pn-co{font-size:13px;color:var(--muted);margin-top:3px}
 .pn-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .pn-actions{display:flex;gap:8px;padding:14px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.pa{padding:8px 14px;border-radius:var(--r-sm);font-size:12.5px;font-weight:600;background:var(--bg);border:1px solid var(--line);transition:.15s;display:inline-flex;align-items:center;gap:6px}
+.pa{padding:8px 14px;border-radius:var(--r-sm);font-size:12.5px;font-weight:600;background:var(--bg);border:1px solid var(--line);transition:.15s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .pa:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
 .pa.primary{background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 82%,#fff),var(--brand) 55%,var(--brand-dark));color:var(--on-accent);border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 1px 3px var(--brand-glow)}
 .pa.primary:hover{filter:brightness(1.07);color:var(--on-accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 3px 10px var(--brand-glow)}
@@ -704,7 +704,7 @@ body.dark .stat-kpi .val{color:#fff}
 .seg{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left;transition:border-color .15s,box-shadow .15s,transform .12s var(--ease);box-shadow:var(--shadow-xs)}
 .seg:hover{border-color:var(--faint)}.seg.on{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand),var(--shadow-xs)}
 .seg .sv{font-family:'Poppins';font-size:22px;font-weight:800;line-height:1}
-.seg .sl{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:5px;display:flex;align-items:center;gap:6px}
+.seg .sl{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:5px;display:flex;align-items:center;justify-content:center;gap:6px}
 .seg .sl .dot{width:8px;height:8px;border-radius:50%}
 .pay-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
 .chip{background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--muted);transition:.15s}
@@ -713,10 +713,10 @@ body.dark .stat-kpi .val{color:#fff}
 .pay-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line2)}.pay-row:last-child{border:none}
 .pr-av{width:36px;height:36px;border-radius:9px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
 .pr-main{flex:1;min-width:0}.pr-nm{font-size:13.5px;font-weight:600}.pr-mt{font-size:11.5px;color:var(--muted)}
-.pr-act{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.pr-act{display:flex;align-items:center;justify-content:center;gap:7px;flex-shrink:0}
 .pr-pill{font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;white-space:nowrap}
 .pill-paid{background:var(--green-soft);color:var(--green)}.pill-partial{background:var(--amber-soft);color:var(--amber)}
-.btn-mark{background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 82%,#fff),var(--brand) 55%,var(--brand-dark));color:var(--on-accent);border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 1px 3px var(--brand-glow);white-space:nowrap;transition:.15s}
+.btn-mark{background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 82%,#fff),var(--brand) 55%,var(--brand-dark));color:var(--on-accent);border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:5px;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 1px 3px var(--brand-glow);white-space:nowrap;transition:.15s}
 .btn-mark:hover{filter:brightness(1.06)}.btn-mark:active{transform:scale(.96)}
 .btn-wa{width:34px;height:34px;border-radius:9px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
 .btn-wa:hover{background:var(--green);color:#fff}.btn-wa svg{width:17px;height:17px}
@@ -928,7 +928,7 @@ body.dark .stat-kpi .val{color:#fff}
 .bulkbar select{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:12.5px;color:var(--ink)}
 .bulkbar .sp{flex:1}
 .pl-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.pl-acts button{padding:6px 11px;font-size:11.5px;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);transition:.15s;display:inline-flex;align-items:center;gap:5px}
+.pl-acts button{padding:6px 11px;font-size:11.5px;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);transition:.15s;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 .pl-acts button:hover{border-color:var(--brand);color:var(--brand)}
 .pl-acts button.wa{color:var(--green)}.pl-acts button.wa:hover{border-color:var(--green);background:var(--green-soft)}
 /* ── THE OUTCOME SPINE ── */
@@ -979,7 +979,7 @@ body.dark .stat-kpi .val{color:#fff}
 .m3-prev{font-size:11.5px;color:var(--faint);margin-top:5px;padding-left:9px;border-left:2px solid var(--line)}
 .m3-say{font-size:12.5px;margin-top:9px;padding:9px 12px;background:var(--surface-2);border-radius:var(--r-sm);border-left:2px solid var(--brand);font-style:italic;color:var(--ink)}
 .m3-act{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
-.m3-act button{padding:8px 12px;font-size:12px;font-weight:700;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.m3-act button{padding:8px 12px;font-size:12px;font-weight:700;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .m3-act button:hover{border-color:var(--brand);color:var(--brand)}
 .m3-act button.wa:hover{border-color:var(--green);color:var(--green);background:var(--green-soft)}
 /* ── THE CHECK-IN VERDICT ── */
@@ -6185,6 +6185,43 @@ async function runSelfTest(opts){
    /* content is plain text with a real cap, never arbitrary markup */
    maTab('content');
    const tas=Array.from(document.querySelectorAll('#maBody textarea'));
+   /* ── A CONTROL'S OWN LABEL SITS IN THE MIDDLE OF IT ── */
+   (function(){
+    /* A CHECK THAT MEASURES A ZERO-SIZE WORLD MUST NOT REPORT SUCCESS. My
+       sweep said "0 misaligned" while every rect was 0x0, which is how a
+       left-aligned button shipped. Refuse the verdict instead. */
+    if(!innerWidth||!innerHeight){
+     ok('Controls: every label is centred in its own control',false,
+        'CANNOT MEASURE: viewport is '+innerWidth+'x'+innerHeight+', so this proves nothing');
+     return;
+    }
+    /* the gym OS has no PAGE variable, it reads the active nav item. The
+       member app does have one. Copying a check between the two files means
+       checking its assumptions, not only its logic. */
+    const bad=[],back=document.querySelector('.nav-item.active');
+    Object.keys(RENDERERS).forEach(function(pg){
+     try{go(pg);}catch(e){return;}
+     document.querySelectorAll('#page-'+pg+' button').forEach(function(b){
+      const r=b.getBoundingClientRect();
+      if(r.width<90||r.height<20)return;
+      /* A ROW IS NOT A BUTTON even when it is a <button>. A member row holds
+         a name and a detail line in element children, and a name belongs at
+         the LEFT. Only a control whose content is a plain label must centre. */
+      const kids=[].slice.call(b.children).filter(function(k){
+        return k.tagName!=='SVG'&&k.tagName!=='svg'&&k.getBoundingClientRect().height>0;});
+      if(kids.length)return;
+      const cs=getComputedStyle(b);
+      if(cs.display.indexOf('flex')<0)return;
+      /* only a stretched control can reveal this: at natural width the box
+         hugs its label and everything looks fine */
+      if(cs.justifyContent==='normal'||cs.justifyContent==='flex-start')
+       bad.push(pg+':"'+(b.innerText||'').trim().slice(0,16)+'" justify:'+cs.justifyContent);
+     });
+    });
+    if(back)go(back.dataset.pg);
+    ok('Controls: every label is centred in its own control',bad.length===0,
+       bad.slice(0,3).join(' | ')||'checked at '+innerWidth+'px');
+   })();
    /* ── NO OTHER VERTICAL'S VOCABULARY REACHES A SCREEN ── */
    (function(){
     const bad=[],back=CURRENT.role;

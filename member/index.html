@@ -302,7 +302,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .tile .dl.up{background:var(--amber-soft);color:var(--amber)}
 
 /* ── ASK YOUR TRAINER (the deterministic replacement for an AI coach) ── */
-.ask{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;transition:border-color .15s,transform .12s var(--ease)}
+.ask{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;transition:border-color .15s,transform .12s var(--ease)}
 .ask:hover{border-color:var(--brand-txt)}
 .ask:active{transform:scale(.985)}
 .ask .av{width:42px;height:42px;border-radius:10px;background:var(--surface-3);display:grid;place-items:center;font-weight:700;font-size:14px;flex-shrink:0;border:1px solid var(--line)}
@@ -475,7 +475,7 @@ input,textarea{font-family:inherit;color:var(--txt)}
 
 /* ── BOTTOM NAV ───────────────────────────────────────────── */
 .nav{position:fixed;bottom:0;left:0;right:0;background:color-mix(in srgb,var(--ink-deep) 94%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line);display:flex;z-index:30;padding-bottom:var(--sab)}
-.nav button{flex:1;padding:11px 4px 13px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--faint);font-size:10px;font-weight:700;letter-spacing:.4px}
+.nav button{flex:1;padding:11px 4px 13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--faint);font-size:10px;font-weight:700;letter-spacing:.4px}
 .nav button .ic{width:21px;height:21px}
 .nav button.on{color:var(--brand-txt)}
 /* ── TOAST ────────────────────────────────────────────────── */
@@ -4094,6 +4094,32 @@ async function runSelfTest(){
    go(back);
    ok('Layout: a card interior uses at most two vertical gaps',rough.length===0,
       rough.slice(0,3).join(' | ')||'level');
+  })();
+  /* ── A CONTROL'S OWN LABEL SITS IN THE MIDDLE OF IT ── */
+  (function(){
+   /* a check that measures a zero-size world must not report success */
+   if(!innerWidth||!innerHeight){
+    ok('Controls: every label is centred in its own control',false,
+       'CANNOT MEASURE: viewport is '+innerWidth+'x'+innerHeight);
+    return;
+   }
+   const bad=[];
+   document.querySelectorAll('button').forEach(function(b){
+    const r=b.getBoundingClientRect();
+    if(r.width<90||r.height<20)return;
+      /* A ROW IS NOT A BUTTON even when it is a <button>. A member row holds
+       a name and a detail line in element children, and a name belongs at
+       the LEFT. Only a control whose content is a plain label must centre. */
+    const kids=[].slice.call(b.children).filter(function(k){
+      return k.tagName!=='SVG'&&k.tagName!=='svg'&&k.getBoundingClientRect().height>0;});
+    if(kids.length)return;
+    const cs=getComputedStyle(b);
+    if(cs.display.indexOf('flex')<0)return;
+    if(cs.justifyContent==='normal'||cs.justifyContent==='flex-start')
+     bad.push('"'+(b.innerText||'').trim().slice(0,16)+'" justify:'+cs.justifyContent);
+   });
+   ok('Controls: every label is centred in its own control',bad.length===0,
+      bad.slice(0,3).join(' | ')||'checked at '+innerWidth+'px');
   })();
   /* ── REMINDERS: the ask must never fire on load ── */
   (function(){
