@@ -1581,7 +1581,13 @@ function bridgeRead(){
     It was missing from this return, so a sent session vanished silently. */
  const pl=(d.plan&&d.plan.date===today)?d.plan:null;
  const ac=(d.access&&d.access.date===today)?d.access:null;
- return {checkins:ck,summary:sm,notes:nt,plan:pl,access:ac};
+ /* PASS EVERYTHING ELSE THROUGH. The desk side ate two channels with a fixed
+    list like this one: `plan` once, and `coach` today. Date-scope only what is
+    about today. */
+ const out={};
+ Object.keys(d).forEach(function(k){out[k]=d[k];});
+ out.checkins=ck;out.summary=sm;out.notes=nt;out.plan=pl;out.access=ac;
+ return out;
 }
 function bridgeWrite(patch){
  if(!bridgeOn())return false;
@@ -3763,19 +3769,49 @@ function bestFor(name){
 }
 function weeksSince(iso){return Math.floor((new Date(todayISO())-new Date(iso))/(7*864e5));}
 /* THE CALL ITSELF. Deterministic, and it prints its own reasoning. */
+/* THE COACH'S BOUNDS. Set from the Gym OS, arriving on the same bridge as
+   everything else the desk sends. Absent means the app behaves exactly as it
+   always did, so a gym that never touches this loses nothing. */
+function coachFor(name){
+ try{
+  const c=(bridgeRead&&bridgeRead().coach)||null;
+  if(!c)return null;
+  const per=(c.perExercise&&c.perExercise[name])||{};
+  return {step:per.step!=null?per.step:c.step,
+          cap:per.cap!=null?per.cap:c.cap,
+          start:per.start!=null?per.start:null,
+          by:c.by||'your trainer'};
+ }catch(err){return null;}
+}
 function barCall(e){
+ const co=coachFor(e.n)||{};
  const hist=historyFor(e.n);
  const hi=parseInt(String(e.reps).split('-')[1]||e.reps,10)||0;
  const lo=parseInt(String(e.reps),10)||0;
- if(!hist.length)return {kg:e.kg,why:'First time logged. Start at the prescribed '+e.kg+' kg and see how it moves.'};
+ if(!hist.length){
+  /* a trainer can name the first weight, which is the moment it matters most */
+  if(co.start!=null)return {kg:co.start,
+   why:'First time logged. '+co.by+' set you to start at '+co.start+' kg.'};
+  return {kg:e.kg,why:'First time logged. Start at the prescribed '+e.kg+' kg and see how it moves.'};
+ }
  const last=hist[0];
  const kg=Math.max.apply(null,last.sets.map(s=>+s.kg||0));
  const allTop=last.sets.length&&last.sets.every(s=>(+s.reps||0)>=hi);
  const allIn=last.sets.length&&last.sets.every(s=>(+s.reps||0)>=lo);
- /* real gyms load in 2.5kg on a bar and 1kg on dumbbells */
- const step=kg>=40?2.5:1;
- if(allTop)return {kg:Math.round((kg+step)*2)/2,up:true,
-   why:'Last time you hit '+hi+' reps on every set at '+kg+' kg. That is the top of the range, so go up '+step+' kg.'};
+ /* real gyms load in 2.5kg on a bar and 1kg on dumbbells, unless the trainer
+    has set a different step for this member */
+ const step=(co.step!=null)?co.step:(kg>=40?2.5:1);
+ if(allTop){
+  let next=Math.round((kg+step)*2)/2;
+  /* A CAP IS A COACHING DECISION AND THE MEMBER MUST BE TOLD WHOSE. Somebody
+     coming back from injury who sees a number stop climbing needs to know a
+     person did that, not a bug. */
+  if(co.cap!=null&&next>co.cap)return {kg:co.cap,capped:true,
+   why:'You earned the step up, but '+co.by+' has capped you at '+co.cap+' kg for now. Stay here and add reps.'};
+  return {kg:next,up:true,
+   why:'Last time you hit '+hi+' reps on every set at '+kg+' kg. That is the top of the range, so go up '+step+' kg.'
+     +((co.step!=null)?' '+co.by+' set your step to '+step+' kg.':'')};
+ }
  if(allIn)return {kg:kg,why:'Last time you finished every set inside the range at '+kg+' kg. Stay there and chase '+hi+' reps.'};
  return {kg:kg,why:'Last time '+kg+' kg did not give you every set. Same weight again, no drop.'};
 }

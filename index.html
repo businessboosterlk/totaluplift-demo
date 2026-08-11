@@ -70,6 +70,12 @@
 .ma-kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:var(--sp-4);box-shadow:var(--shadow-xs)}
 .ma-kpi .v{font-size:var(--fs-2xl);font-weight:800;letter-spacing:-.5px;line-height:1}
 .ma-kpi .l{font-size:var(--fs-xs);color:var(--muted);margin-top:6px}
+/* a sortable header must LOOK sortable, or nobody discovers it */
+.tbl th.fs{cursor:pointer;user-select:none;white-space:nowrap}
+.tbl th.fs:hover{color:var(--brand)}
+.tbl th.fs i{font-style:normal;font-size:10px;margin-left:5px;color:var(--brand)}
+.tbl tr.fin-row{cursor:pointer}
+.tbl tr.fin-row:hover td{background:var(--surface-2)}
 .ws-in{width:100%;min-height:44px;margin-top:8px;padding:10px 12px;border:1px solid var(--line2);
  border-radius:var(--r-sm);background:var(--surface);color:var(--ink);font-size:14px}
 .ws-in:focus{outline:none;border-color:var(--brand)}
@@ -1090,6 +1096,7 @@ body.dark .stat-kpi .val{color:#fff}
         <button class="nav-item" data-pg="team" data-role="owner" data-module="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Team</button>
         <button class="nav-item" data-pg="activity" data-role="manager" data-module="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><polyline points="12 6 12 12 16 14"/></svg>Activity</button>
         <button class="nav-item" data-pg="memberapp" data-role="manager"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg>Member App<span class="badge" id="nbMapp"></span></button>
+        <button class="nav-item" data-pg="coach" data-role="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5h11v11h-11z"/><path d="M3 10v4M21 10v4M6.5 8.5h-2v7h2M17.5 8.5h2v7h-2"/></svg>Bar Call</button>
         <button class="nav-item" data-pg="website" data-role="manager"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>Website</button>
         <button class="nav-item" data-pg="settings" data-role="owner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
       </div>
@@ -1222,8 +1229,20 @@ body.dark .stat-kpi .val{color:#fff}
           <div class="card"><div class="card-h"><h3>Collection rate</h3><span class="hint">Collected vs invoiced</span></div><div class="card-b" style="display:flex;align-items:center;justify-content:center;padding:14px 18px 22px"><div class="fin-donut" id="finDonut"></div></div></div>
         </div>
         <div class="aging-row" id="finAging"></div>
-        <div class="toolbar"><select class="filter" id="finFilter" onchange="renderFinance()"><option value="all">All invoices</option><option value="Outstanding">Outstanding</option><option value="Overdue">Overdue only</option><option value="Paid">Paid</option></select><div class="sp"></div><button class="btn-ghost" onclick="exportFinance()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button></div>
-        <div class="card"><div class="card-h"><h3>Invoices &amp; collections</h3><span class="hint">Balances to collect, oldest first</span></div><table class="tbl"><thead><tr><th>Invoice</th><th>Customer</th><th class="tnum">Invoiced</th><th class="tnum">Balance</th><th>Due</th><th>Aging</th><th>Status</th><th></th></tr></thead><tbody id="finBody"></tbody></table></div>
+        <div class="toolbar" style="flex-wrap:wrap;gap:8px">
+          <input class="filter" id="finQ" type="search" placeholder="Search invoice or name" oninput="renderFinance()" style="min-width:190px">
+          <select class="filter" id="finFilter" onchange="renderFinance()"><option value="all">All invoices</option><option value="Outstanding">Outstanding</option><option value="Overdue">Overdue only</option><option value="Paid">Paid</option></select>
+          <select class="filter" id="finRange" onchange="renderFinance()"><option value="all">Any date</option><option value="30">Due last 30 days</option><option value="90">Due last 90 days</option><option value="tm">Due this month</option><option value="soon">Due next 30 days</option></select>
+          <button class="btn-ghost" id="finClear" onclick="finReset()" style="display:none">Clear</button>
+          <div class="sp"></div><button class="btn-ghost" onclick="exportFinance()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button></div>
+        <div class="card"><div class="card-h"><h3>Invoices &amp; collections</h3><span class="hint">Balances to collect, oldest first</span></div><table class="tbl"><thead><tr>
+          <th class="fs" onclick="finSort('ref')">Invoice<i id="fsi_ref"></i></th>
+          <th class="fs" onclick="finSort('cust')">Customer<i id="fsi_cust"></i></th>
+          <th class="tnum fs" onclick="finSort('amount')">Invoiced<i id="fsi_amount"></i></th>
+          <th class="tnum fs" onclick="finSort('bal')">Balance<i id="fsi_bal"></i></th>
+          <th class="fs" onclick="finSort('due')">Due<i id="fsi_due"></i></th>
+          <th class="fs" onclick="finSort('aging')">Aging<i id="fsi_aging"></i></th>
+          <th>Status</th><th></th></tr></thead><tbody id="finBody"></tbody></table></div>
       </div>
 
       <!-- ══ RECURRING (module: subscription/fee ledger) ══ -->
@@ -1286,6 +1305,7 @@ body.dark .stat-kpi .val{color:#fff}
       </div>
 
       <!-- ══ MEMBER APP: access, entitlements and app-facing copy ══ -->
+      <div class="page" id="page-coach"><div id="coachBody"></div></div>
       <div class="page" id="page-website"><div id="wsBody"></div></div>
       <div class="page" id="page-memberapp">
         <div class="ma-tabs" id="maTabs">
@@ -2013,6 +2033,7 @@ function buildTitles(){TITLES={
  dashboard:['Dashboard','Today at a glance'],
  memberapp:['Member App','Who can get in, what they see, and what it tells them'],
  website:['Website','What the site says. Change it here, the site follows'],
+ coach:['Bar Call','How fast the weight climbs, and where it stops'],
  reports:['Reports','Month-over-month performance'],
  checkin:['Check-in','Tap a member as they arrive'],
  pulse:['Member Pulse','Who is slipping away, and exactly why'],
@@ -2284,6 +2305,55 @@ function renderBadges(){
  const np=document.getElementById('nbPulse');if(np&&CFG.modules.pulse){const n=pulseData(scopeMembers()).filter(x=>x.band==='risk'||x.band==='critical').length;np.textContent=n||'';np.style.display=n?'':'none';}
  const nk=document.getElementById('nbCheckin');if(nk&&CFG.modules.pulse){const n=todayCheckins().length;nk.textContent=n||'';nk.style.display=n?'':'none';}
 }
+/* ══ COACHING THE BAR CALL ══════════════════════════════════════════════
+   The app's headline feature, and until now the gym had no say in it at all.
+   A trainer sets the BOUNDS it works inside; the logic still reads the
+   member's own last session. Bounds, not overrides: that is the difference
+   between coaching and switching the product off.
+
+   Nothing set here means the app behaves exactly as it always did, so a gym
+   that never opens this loses nothing. */
+function coachRead(){
+ var b=bridgeRead(); return b.coach||{step:null,cap:null,perExercise:{},by:''};
+}
+function coachSet(field,raw){
+ var c=coachRead();
+ var v=(raw===''||raw==null)?null:parseFloat(raw);
+ if(v!=null&&(!isFinite(v)||v<=0)){toast('Enter a number above zero, or leave it blank');return;}
+ if(field==='step'&&v!=null&&v>10){toast('A step above 10 kg is almost certainly a typo');return;}
+ var was=c[field];
+ c[field]=v; c.by=CURRENT.name.split(' ')[0];
+ if(!bridgeWrite({coach:c})){toast('This needs the demo bridge');return;}
+ var lbl=field==='step'?'Step':'Ceiling';
+ logFeed(CURRENT.id,'Bar Call coached',lbl+(v==null?' cleared':' set to '+v+' kg'));DB.commit();
+ renderMemberApp&&0; renderCoach();
+ toastUndo(lbl+(v==null?' cleared':' set to '+v+' kg')+' in the member app',function(){
+  var c2=coachRead(); c2[field]=was; bridgeWrite({coach:c2}); renderCoach();});
+}
+function renderCoach(){
+ var el=document.getElementById('coachBody'); if(!el)return;
+ var c=coachRead();
+ var linked=(DB.get('customers')||[]).find(function(x){return x.id===linkedMemberId();});
+ el.innerHTML=
+  '<div class="ma-card"><div class="ma-h"><h3>The weight it calls</h3>'
+  +'<span class="ma-hint">bounds, not overrides. It still reads their own last session</span></div>'
+  +'<div class="ma-list">'
+  +'<div class="ma-row" style="align-items:flex-start"><div class="ma-n" style="flex:1;min-width:210px">How much it adds'
+  +'<span class="ma-sub">When they finish every set at the top of the range. Blank means the normal 2.5 kg on a bar and 1 kg on dumbbells.</span>'
+  +'<input class="ws-in" id="co_step" type="number" step="0.5" min="0" placeholder="2.5" value="'+(c.step!=null?c.step:'')+'"></div>'
+  +'<button class="btn-secondary ws-save" onclick="coachSet(\'step\',document.getElementById(\'co_step\').value)">Save</button></div>'
+  +'<div class="ma-row" style="align-items:flex-start"><div class="ma-n" style="flex:1;min-width:210px">Ceiling'
+  +'<span class="ma-sub">It will never call past this. For somebody coming back from injury. The app tells them who set it, so a number that stops climbing never looks like a fault.</span>'
+  +'<input class="ws-in" id="co_cap" type="number" step="0.5" min="0" placeholder="no ceiling" value="'+(c.cap!=null?c.cap:'')+'"></div>'
+  +'<button class="btn-secondary ws-save" onclick="coachSet(\'cap\',document.getElementById(\'co_cap\').value)">Save</button></div>'
+  +'</div></div>'
+  +'<div class="ma-card locked"><div class="ma-h"><h3>What this does not change</h3></div>'
+  +'<div class="ma-sub" style="font-size:var(--fs-sm);color:var(--muted);line-height:1.6">'
+  +'The Bar Call still reads what they actually lifted last time and still explains itself in one line. '
+  +'You are setting how fast it climbs and where it stops, not typing a weight for them. '
+  +'Applies to '+(linked?maEsc(linked.name):'the linked member')+' in this demo.</div></div>';
+}
+
 /* ══ THE WEBSITE SECTION: the gym edits what the site SAYS, never what it IS.
    Words flow through the SAME publish pipe as the prices, because a second
    pipe for words beside the pipe for numbers is two code paths for one truth.
@@ -4012,9 +4082,56 @@ let FIN_FILTER='all';
 function invBalance(o){return o.amount-o.paid;}
 function invDaysOver(o){return Math.round((new Date(todayISO()+'T00:00:00')-new Date(o.due+'T00:00:00'))/86400000);}
 function invStatus(o){if(invBalance(o)<=0)return['Paid','bdg-green'];if(invDaysOver(o)>0)return['Overdue','bdg-action'];return['Open','bdg-grey'];}
+/* ONE FUNCTION NARROWS THE LIST. Search, status, date range and sort all run
+   through here, so a fifth control added later cannot invent a second path
+   that disagrees with this one. */
+var FIN_SORT={k:'aging',dir:-1};
+function finReset(){
+ ['finQ','finFilter','finRange'].forEach(function(id){
+  var e=document.getElementById(id); if(e)e.value=(id==='finQ')?'':'all';});
+ FIN_SORT={k:'aging',dir:-1};renderFinance();
+}
+function finSort(k){
+ FIN_SORT=(FIN_SORT.k===k)?{k:k,dir:-FIN_SORT.dir}:{k:k,dir:(k==='cust'||k==='ref')?1:-1};
+ renderFinance();
+}
+function finRows(){
+ var q=((document.getElementById('finQ')||{}).value||'').trim().toLowerCase();
+ var st=((document.getElementById('finFilter')||{}).value)||'all';
+ var rg=((document.getElementById('finRange')||{}).value)||'all';
+ var rows=(DB.get('invoices')||[]).slice();
+ if(q)rows=rows.filter(function(o){
+  return (o.ref||'').toLowerCase().indexOf(q)>-1||(o.cust||'').toLowerCase().indexOf(q)>-1;});
+ if(st==='Paid')rows=rows.filter(function(o){return invBalance(o)<=0;});
+ else if(st==='Outstanding')rows=rows.filter(function(o){return invBalance(o)>0;});
+ else if(st==='Overdue')rows=rows.filter(function(o){return invBalance(o)>0&&invDaysOver(o)>0;});
+ if(rg!=='all'){
+  var today=todayISO(), ym=today.slice(0,7);
+  rows=rows.filter(function(o){
+   var d=invDaysOver(o);                    /* positive means the due date has passed */
+   if(rg==='tm')return (o.due||'').slice(0,7)===ym;
+   if(rg==='soon')return d<0&&d>=-30;
+   return d>=0&&d<=parseInt(rg,10);
+  });
+ }
+ var k=FIN_SORT.k,dir=FIN_SORT.dir;
+ var val=function(o){
+  if(k==='bal')return invBalance(o);
+  if(k==='aging')return invDaysOver(o);
+  if(k==='amount')return o.amount;
+  if(k==='due')return o.due||'';
+  return String(o[k]||'').toLowerCase();
+ };
+ rows.sort(function(a,b){var x=val(a),y=val(b);
+  return (x<y?-1:x>y?1:0)*dir;});
+ return rows;
+}
 function renderFinance(){
  const fsel=document.getElementById('finFilter');if(fsel)FIN_FILTER=fsel.value;
- const O=DB.get('invoices');
+ /* THE TOTALS FOLLOW THE FILTER. Showing whole-book totals above a filtered
+    table is lying with real numbers, and it is the mistake most finance
+    screens ship. */
+ const O=finRows();
  const total=O.reduce((s,o)=>s+o.amount,0)||1;
  const collected=O.reduce((s,o)=>s+o.paid,0);
  const outstanding=total-collected;
@@ -4035,15 +4152,46 @@ function renderFinance(){
  const bk=[['Current',0],['1-30d',0],['31-60d',0],['61-90d',0],['90d+',0]];
  O.forEach(o=>{const b=invBalance(o);if(b<=0)return;const d=invDaysOver(o);if(d<=0)bk[0][1]+=b;else if(d<=30)bk[1][1]+=b;else if(d<=60)bk[2][1]+=b;else if(d<=90)bk[3][1]+=b;else bk[4][1]+=b;});
  document.getElementById('finAging').innerHTML=bk.map((b,i)=>'<div class="ag-box'+(i>=2&&b[1]>0?' over':'')+'"><div class="ag-l">'+b[0]+'</div><div class="ag-v">'+lkr(b[1])+'</div></div>').join('');
- let rows=[...O];
- if(FIN_FILTER==='Paid')rows=rows.filter(o=>invBalance(o)<=0);
- else if(FIN_FILTER==='Outstanding')rows=rows.filter(o=>invBalance(o)>0);
- else if(FIN_FILTER==='Overdue')rows=rows.filter(o=>invBalance(o)>0&&invDaysOver(o)>0);
- rows.sort((a,b)=>invDaysOver(b)-invDaysOver(a));
- document.getElementById('finBody').innerHTML=rows.map(o=>{const st=invStatus(o),bal=invBalance(o),d=invDaysOver(o);return '<tr><td class="tn">'+o.ref+'</td><td>'+o.cust+'</td><td class="tnum">'+lkr(o.amount)+'</td><td class="tnum" style="'+(bal>0?'color:var(--danger)':'')+'">'+(bal>0?lkr(bal):'-')+'</td><td class="tm">'+fmtDate(o.due)+'</td><td style="font-size:12px;font-weight:600;color:'+(bal>0&&d>0?'var(--danger)':'var(--muted)')+'">'+(bal<=0?'Settled':(d>0?d+'d over':(d===0?'due today':Math.abs(d)+'d left')))+'</td><td><span class="bdg '+st[1]+'">'+st[0]+'</span></td><td style="text-align:right">'+(bal>0?'<button class="btn-ghost" style="padding:6px 11px" onclick="markInvoicePaid('+o.id+')">Mark paid</button>':'<span class="tm">✓</span>')+'</td></tr>';}).join('')||'<tr><td colspan="8" style="color:var(--faint);padding:14px">Nothing for this filter.</td></tr>';
+ let rows=O;
+ /* the arrow tells you which column is sorting, and which way */
+ ['ref','cust','amount','bal','due','aging'].forEach(function(k){
+  var i=document.getElementById('fsi_'+k);
+  if(i)i.textContent=(FIN_SORT.k===k)?(FIN_SORT.dir>0?'\u2191':'\u2193'):'';});
+ var cl=document.getElementById('finClear');
+ if(cl){var q=(document.getElementById('finQ')||{}).value||'';
+  var st=(document.getElementById('finFilter')||{}).value||'all';
+  var rg=(document.getElementById('finRange')||{}).value||'all';
+  cl.style.display=(q||st!=='all'||rg!=='all')?'':'none';}
+ const hd=document.querySelector('#page-finance .card-h .hint');
+ if(hd)hd.textContent=rows.length+' of '+(DB.get('invoices')||[]).length+' invoices';
+ document.getElementById('finBody').innerHTML=rows.map(o=>{const st=invStatus(o),bal=invBalance(o),d=invDaysOver(o);return '<tr class="fin-row" onclick="openInvoice('+o.id+')"><td class="tn">'+o.ref+'</td><td>'+o.cust+'</td><td class="tnum">'+lkr(o.amount)+'</td><td class="tnum" style="'+(bal>0?'color:var(--danger)':'')+'">'+(bal>0?lkr(bal):'-')+'</td><td class="tm">'+fmtDate(o.due)+'</td><td style="font-size:12px;font-weight:600;color:'+(bal>0&&d>0?'var(--danger)':'var(--muted)')+'">'+(bal<=0?'Settled':(d>0?d+'d over':(d===0?'due today':Math.abs(d)+'d left')))+'</td><td><span class="bdg '+st[1]+'">'+st[0]+'</span></td><td style="text-align:right">'+(bal>0?'<button class="btn-ghost" style="padding:6px 11px" onclick="markInvoicePaid('+o.id+')">Mark paid</button>':'<span class="tm">✓</span>')+'</td></tr>';}).join('')||'<tr><td colspan="8" style="color:var(--faint);padding:18px;text-align:center">Nothing matches. <a onclick="finReset()" style="color:var(--brand);cursor:pointer;font-weight:600">Clear the filters</a> to see all '+(DB.get('invoices')||[]).length+' invoices.</td></tr>';
+}
+/* A ROW YOU CANNOT OPEN IS A ROW YOU CANNOT ACT ON. */
+function openInvoice(id){
+ const o=(DB.get('invoices')||[]).find(x=>x.id===id); if(!o)return;
+ const bal=invBalance(o),d=invDaysOver(o),st=invStatus(o);
+ const line=function(l,v,c){return '<div class="ma-row"><div class="ma-n">'+l+'</div>'
+  +'<div style="margin-left:auto;font-weight:700'+(c?';color:'+c:'')+'">'+v+'</div></div>';};
+ const panel=document.getElementById('panel');
+ panel.innerHTML=('<div class="pn-head"><button class="pn-close" onclick="closePanel()">\u2715</button>'
+  +'<div class="pn-nm">'+maEsc(o.ref)+'</div><div class="pn-co">'+maEsc(o.cust)+'</div>'
+  +'<div class="pn-badges"><span class="bdg '+st[1]+'">'+st[0]+'</span></div></div>'
+  +'<div class="pn-body">'
+  +line('Invoiced',lkr(o.amount))
+  +line('Paid',lkr(o.paid),'var(--green)')
+  +line('Balance',bal>0?lkr(bal):'Settled',bal>0?'var(--danger)':'var(--green)')
+  +line('Due',fmtDate(o.due))
+  +line('Aging',bal<=0?'Settled':(d>0?d+' days over':(d===0?'due today':Math.abs(d)+' days left')),
+        bal>0&&d>0?'var(--danger)':'')
+  +line('Method',o.method||'not recorded')
+  +(bal>0?'<button class="btn-primary" style="width:100%;margin-top:16px" onclick="markInvoicePaid('+o.id+');closePanel()">Mark paid</button>':'')
+  +'</div>');
+ document.getElementById('overlay').classList.add('open');panel.classList.add('open');
 }
 function markInvoicePaid(id){const o=DB.get('invoices').find(x=>x.id===id);if(!o)return;const prev=o.paid;o.paid=o.amount;logFeed(CURRENT.id,'Payment recorded',o.ref+' · '+o.cust);DB.commit();renderApp();toastUndo(I.check+' '+o.ref+' marked paid',function(){o.paid=prev;DB.commit();renderApp();});}
-function exportFinance(){exportCSV('finance.csv',['Invoice','Customer','Invoiced','Paid','Balance','Due','Days over','Method'],DB.get('invoices').map(o=>[o.ref,o.cust,o.amount,o.paid,invBalance(o),o.due,Math.max(0,invDaysOver(o)),o.method]));}
+/* THE EXPORT FOLLOWS THE FILTER. Exporting the whole book from a filtered
+   screen is how somebody sends a client the wrong list. */
+function exportFinance(){exportCSV('finance.csv',['Invoice','Customer','Invoiced','Paid','Balance','Due','Days over','Method'],finRows().map(o=>[o.ref,o.cust,o.amount,o.paid,invBalance(o),o.due,Math.max(0,invDaysOver(o)),o.method]));}
 
 /* ════════ ACTIVITY LOG + LOGIN AUDIT (always-on) ════════ */
 let ACT_TAB='feed';
@@ -4458,13 +4606,23 @@ function bridgeRead(){
     It was missing from this return, so a sent session vanished silently. */
  const pl=(d.plan&&d.plan.date===today)?d.plan:null;
  const ac=(d.access&&d.access.date===today)?d.access:null;
- return {checkins:ck,summary:sm,notes:nt,plan:pl,access:ac};
+ /* PASS EVERYTHING ELSE THROUGH. A fixed list here has now silently eaten two
+    channels: `plan` once, and `coach` today. Only date-scope what is about
+    today; anything added later survives without anyone remembering this
+    function exists. */
+ const out={};
+ Object.keys(d).forEach(function(k){out[k]=d[k];});
+ out.checkins=ck;out.summary=sm;out.notes=nt;out.plan=pl;out.access=ac;
+ return out;
 }
 function bridgeWrite(patch){
  if(!bridgeOn())return false;
  try{
   const cur=bridgeRead();
-  const next={checkins:cur.checkins,summary:cur.summary,notes:cur.notes,plan:cur.plan,access:cur.access};
+  /* start from everything that is already there, not from a list somebody has
+     to remember to extend */
+  const next={};
+  Object.keys(cur).forEach(k=>{next[k]=cur[k];});
   Object.keys(patch||{}).forEach(k=>{next[k]=patch[k];});
   localStorage.setItem(BRIDGE_KEY,JSON.stringify(next));
   return true;
@@ -5532,7 +5690,7 @@ function maSetContent(k,v){
  if(lab)lab.textContent=v.length+lab.textContent.slice(lab.textContent.indexOf(' of '));
 }
 
-const RENDERERS={memberapp:renderMemberApp,website:renderWebsite,dashboard:renderDashboard,reports:renderReports,checkin:renderCheckin,pulse:renderPulse,pipeline:renderBoard,records:renderRecords,customers:renderCustomers,quotes:renderQuotes,inventory:renderInventory,tasks:renderTasks,finance:renderFinance,recurring:renderRecurring,forecast:renderMMGrid,classes:renderClasses,ptpacks:renderPtPacks,commissions:renderCommissions,team:renderTeam,activity:renderActivity,settings:renderSettings};
+const RENDERERS={memberapp:renderMemberApp,website:renderWebsite,coach:renderCoach,dashboard:renderDashboard,reports:renderReports,checkin:renderCheckin,pulse:renderPulse,pipeline:renderBoard,records:renderRecords,customers:renderCustomers,quotes:renderQuotes,inventory:renderInventory,tasks:renderTasks,finance:renderFinance,recurring:renderRecurring,forecast:renderMMGrid,classes:renderClasses,ptpacks:renderPtPacks,commissions:renderCommissions,team:renderTeam,activity:renderActivity,settings:renderSettings};
 
 /* ════════════════════════════════════════════════════════════════════
    SECTION 12 - SELF-TEST HARNESS (dev-only; the pre-deploy gate)
@@ -5833,6 +5991,92 @@ async function runSelfTest(opts){
        wide.slice(0,3).join(', ')||'clean at '+innerWidth+'px');
     ok('Layout: every page can be scrolled to its end',short.length===0,
        short.slice(0,3).join(', ')||'clean');
+   })();
+   /* ── THE BRIDGE MUST NOT EAT A CHANNEL IT DOES NOT RECOGNISE ── */
+   (function(){
+    /* `plan` was eaten once and `coach` was eaten today, both by a fixed key
+       list, and both times the write reported success. Write a key nothing
+       knows about and prove it survives a round trip. */
+    const probe='__harness_'+Date.now();
+    const wrote=bridgeWrite({[probe]:{hello:'world'}});
+    const back=bridgeRead()[probe];
+    ok('Bridge: a channel nobody hardcoded still survives a round trip',
+       wrote&&back&&back.hello==='world',
+       wrote?(back?'survived':'WRITE SAID OK THEN LOST IT'):'write refused');
+    try{const b=bridgeRead();delete b[probe];
+        localStorage.setItem(BRIDGE_KEY,JSON.stringify(b));}catch(e){}
+   })();
+   /* ── A SECTION WIRED WITH A BAD ROLE VANISHES SILENTLY ── */
+   (function(){
+    const bad=[];
+    document.querySelectorAll('.nav-item[data-pg]').forEach(function(n){
+     const r=n.dataset.role;
+     if(r&&NEED_RANK[r]===undefined)bad.push(n.dataset.pg+' has role "'+r+'"');
+     if(!TITLES[n.dataset.pg])bad.push(n.dataset.pg+' has no title');
+     if(!RENDERERS[n.dataset.pg])bad.push(n.dataset.pg+' has no renderer');
+     if(!document.getElementById('page-'+n.dataset.pg))bad.push(n.dataset.pg+' has no page');
+    });
+    ok('Nav: every section is wired to a real role, title, renderer and page',
+       bad.length===0,bad.slice(0,3).join(' | ')||
+       document.querySelectorAll('.nav-item[data-pg]').length+' sections, all wired');
+   })();
+   /* ── FINANCE: the module floor, checked rather than assumed ── */
+   (function(){
+    go('finance');
+    const all=(DB.get('invoices')||[]).length;
+    ok('Finance: it has a real filter, a search and a date range',
+       !!document.getElementById('finQ')&&!!document.getElementById('finFilter')&&!!document.getElementById('finRange'),
+       'search, status, date range');
+    ok('Finance: every ordered column can be sorted',
+       document.querySelectorAll('#page-finance th.fs').length===6,
+       document.querySelectorAll('#page-finance th.fs').length+' of 6');
+    /* SEARCH ACTUALLY NARROWS. A filter that renders the same rows is a
+       decoration, and this is the check that catches that. */
+    const first=(DB.get('invoices')||[])[0];
+    document.getElementById('finQ').value=first?first.cust.split(' ')[0]:'zzz';
+    renderFinance();
+    const narrowed=finRows().length;
+    ok('Finance: search narrows the list, it does not just redraw it',
+       narrowed>0&&narrowed<all,narrowed+' of '+all);
+    /* THE TOTALS FOLLOW THE FILTER, or the screen lies with real numbers */
+    const kpi=document.getElementById('finKpis').innerText;
+    const sum=finRows().reduce(function(a,o){return a+o.amount;},0);
+    ok('Finance: the totals describe the filtered view, not the whole book',
+       kpi.indexOf(lkr(sum).replace('LKR ',''))>-1,'shows '+lkr(sum));
+    /* the export must carry the same rows a person is looking at */
+    ok('Finance: the export follows the filter',
+       exportFinance.toString().indexOf('finRows()')>-1,'exports what is on screen');
+    document.getElementById('finQ').value='';renderFinance();
+    ok('Finance: every row opens',
+       document.querySelectorAll('#page-finance tr.fin-row').length===all&&typeof openInvoice==='function',
+       all+' rows, all clickable');
+    ok('Finance: an empty result says how to get back',
+       renderFinance.toString().indexOf('Clear the filters')>-1||
+       document.getElementById('finBody').innerHTML.length>0,'');
+   })();
+   /* ── THE BAR CALL TAKES COACHING, and says who coached it ── */
+   (function(){
+    const keep=JSON.stringify(bridgeRead().coach||null);
+    go('coach');
+    ok('Bar Call: a trainer can reach the controls',
+       (document.querySelector('.page.active')||{}).id==='page-coach'&&!!document.getElementById('co_step'),'');
+    coachSet('step','5');
+    ok('Bar Call: a step the trainer sets reaches the app',
+       (bridgeRead().coach||{}).step===5,'step '+((bridgeRead().coach||{}).step));
+    coachSet('cap','60');
+    ok('Bar Call: a ceiling reaches the app and names who set it',
+       (bridgeRead().coach||{}).cap===60&&!!(bridgeRead().coach||{}).by,
+       'cap '+((bridgeRead().coach||{}).cap)+' by '+((bridgeRead().coach||{}).by));
+    /* A NONSENSE VALUE IS REFUSED, NEVER PUBLISHED. A 500kg step would silently
+       wreck every member's plan. */
+    const before=(bridgeRead().coach||{}).step;
+    coachSet('step','500');
+    ok('Bar Call: an impossible step is refused, not published',
+       (bridgeRead().coach||{}).step===before,'still '+((bridgeRead().coach||{}).step));
+    coachSet('step','');coachSet('cap','');
+    ok('Bar Call: clearing a bound puts the app back to normal',
+       (bridgeRead().coach||{}).step===null&&(bridgeRead().coach||{}).cap===null,'both cleared');
+    try{bridgeWrite({coach:JSON.parse(keep)});}catch(e){}
    })();
    /* ── THE WEBSITE SECTION: words flow like prices ── */
    (function(){
