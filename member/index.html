@@ -2236,7 +2236,18 @@ function membershipState(){
    s:'We could not read your record. It will refresh when you are back online.',go:'Retry'};
  if(left<0)return {k:'stopped',t:'Membership ended '+fmtD(until),
    s:'Your history stays here. Renew at the desk whenever you are ready.',go:'Renew'};
- if(left<=7)return {k:'soon',t:'Renews in '+left+' day'+(left===1?'':'s'),
+ /* THE LAST TWO DAYS GET WORDS, NOT ARITHMETIC. At left===0 this said
+    "Renews in 0 days", which is nonsense on the single most important day of
+    the membership, and at 1 it said "in 1 days" until a plural guard was
+    bolted on. A countdown that is still counting when the answer is TODAY has
+    stopped being a countdown.
+    Same four-band rule as the BSWL exam build: a number while it is far off,
+    a word when it is close, because "in 0 days" is a sentence no human says. */
+ if(left===0)return {k:'soon',t:'Renews today',
+   s:'Paid until '+fmtD(until)+'. Settle at the desk today and nothing pauses.',go:'Details'};
+ if(left===1)return {k:'soon',t:'Renews tomorrow',
+   s:'Paid until '+fmtD(until)+'. Renew at the desk to avoid a gap.',go:'Details'};
+ if(left<=7)return {k:'soon',t:'Renews in '+left+' days',
    s:'Paid until '+fmtD(until)+'. Renew at the desk to avoid a gap.',go:'Details'};
  return {k:'ok',t:'Membership active',s:'Paid until '+fmtD(until)+'.',go:'Details'};
 }
@@ -5790,6 +5801,25 @@ async function runSelfTest(){
    ok('Overlays: something that DOES cover the page still holds it still',
      pinned&&restored,!pinned?'a full-screen modal failed to pin':(!restored?'did not put the page back as it found it':'pins, then restores'));
    go('today');
+  })();
+  /* ══ THE RENEWAL COUNTDOWN SAYS SOMETHING A HUMAN WOULD SAY ══════════ */
+  (function(){
+   const m=DB.get('member'), realUntil=DB.get('payments');
+   const probe=function(d){
+    /* drive the real function through each band rather than re-implementing
+       its arithmetic in the check, which would only prove the check works */
+    const orig=msDaysLeft;
+    window.msDaysLeft=function(){return d;};
+    const r=membershipState();
+    window.msDaysLeft=orig;
+    return r.t;
+   };
+   const t0=probe(0), t1=probe(1), t3=probe(3);
+   ok('Renewal: the day it is due says TODAY, never "in 0 days"',
+     /today/i.test(t0)&&!/0 day/.test(t0),t0);
+   ok('Renewal: the day before says tomorrow, never "in 1 days"',
+     /tomorrow/i.test(t1)&&!/1 days/.test(t1),t1);
+   ok('Renewal: further out it still counts in days',/3 days/.test(t3),t3);
   })();
   /* ══ THE WELCOME WALKTHROUGH ══════════════════════════════════════════ */
   (function(){

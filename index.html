@@ -2039,11 +2039,61 @@ function animateCounts(scope){(scope||document).querySelectorAll('[data-to]').fo
 /* compact money for chart labels: a gym month is tens of thousands, not millions,
    so a hardcoded /1e6 reads "0.0M" and looks broken. */
 function kLabel(v){v=+v||0;if(v>=1e6)return (v/1e6).toFixed(v>=1e7?0:1)+'M';if(v>=1000)return Math.round(v/1000)+'k';return String(Math.round(v));}
-function barChart(data,h){h=h||140;const W=720;const max=Math.max.apply(null,data.map(d=>d.v).concat([1]));const gap=W/data.length;const bw=Math.min(48,gap*0.5);
- return '<svg viewBox="0 0 '+W+' '+(h+30)+'" style="width:100%;height:auto;display:block" role="img" aria-label="Bar chart">'+data.map(function(d,i){const bh=Math.max(3,d.v/max*h);const cx=i*gap+gap/2;const x=cx-bw/2;
-  return '<rect x="'+x+'" y="'+(h-bh)+'" width="'+bw+'" height="'+bh+'" rx="6" fill="'+(d.hi?'var(--brand)':'var(--line)')+'"><animate attributeName="height" from="0" to="'+bh+'" dur="0.7s" fill="freeze"/><animate attributeName="y" from="'+h+'" to="'+(h-bh)+'" dur="0.7s" fill="freeze"/></rect>'
-  +(d.hi?'<text x="'+cx+'" y="'+(h-bh-8)+'" text-anchor="middle" font-size="14" font-weight="700" fill="var(--brand)">'+d.top+'</text>':'')
-  +'<text x="'+cx+'" y="'+(h+22)+'" text-anchor="middle" font-size="14" fill="var(--muted)">'+d.label+'</text>';}).join('')+'</svg>';}
+/* ══ BAR CHART, WITH AN AXIS ═══════════════════════════════════════════════
+   The old one drew six bars and labelled ONE of them, the highlighted month.
+   So Reports showed February as a rectangle of unknown height next to a July
+   worth 38k, and a person could see that February was smaller without ever
+   learning what it WAS. A chart you cannot read a value off is a picture of
+   your data, not a report on it.
+
+   THE SCALE IS THE SAME ALGORITHM AS ~/bb-web-snippets/charts.html, on
+   purpose: BB should own ONE way of choosing axis numbers, not two that
+   disagree about whether the top of a chart is 38,000 or 40,000. Nice numbers
+   only, so the labels read 0 / 10k / 20k / 30k / 40k rather than 0 / 7.6k /
+   15.2k, which is what dividing the raw max by five gives you. */
+var CHART_LADDER=[1,1.5,2,2.5,3,4,5,6,8,10];
+function chartNiceStep(raw){
+ if(raw<=0)return 1;
+ var p=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10)), n=raw/p;
+ for(var i=0;i<CHART_LADDER.length;i++)if(n<=CHART_LADDER[i]+1e-9)return CHART_LADDER[i]*p;
+ return 10*p;
+}
+function chartNiceScale(rawMax){
+ if(!(rawMax>0))return {max:1,ticks:4,step:0.25};
+ var best=null;
+ [5,4,3,2].forEach(function(t){
+  var step=+(chartNiceStep(rawMax/t)).toPrecision(12), max=+(step*t).toPrecision(12);
+  var c={max:max,ticks:t,step:step,head:max-rawMax};
+  if(!best||c.head<best.head)best=c;
+ });
+ return best;
+}
+function barChart(data,h){
+ h=h||140;
+ const W=720, PAD_L=58, PAD_B=30;          /* room for the axis, measured not guessed */
+ const plotW=W-PAD_L;
+ const raw=Math.max.apply(null,data.map(d=>d.v).concat([1]));
+ const sc=chartNiceScale(raw);
+ const gap=plotW/data.length, bw=Math.min(48,gap*0.5);
+ const y=v=>h-(v/sc.max)*h;
+ let out='<svg viewBox="0 0 '+W+' '+(h+PAD_B)+'" style="width:100%;height:auto;display:block" role="img" aria-label="Bar chart">';
+ /* GRIDLINES AND THEIR NUMBERS. This is the whole fix. */
+ for(let i=0;i<=sc.ticks;i++){
+  const v=sc.step*i, yy=y(v);
+  out+='<line x1="'+PAD_L+'" y1="'+yy+'" x2="'+W+'" y2="'+yy+'" stroke="var(--line)" stroke-width="1"'+(i?'':' stroke-opacity="0.9"')+'/>'
+    +'<text x="'+(PAD_L-10)+'" y="'+(yy+4)+'" text-anchor="end" font-size="12" fill="var(--muted)">'+kLabel(v)+'</text>';
+ }
+ out+=data.map(function(d,i){
+  const bh=Math.max(3,d.v/sc.max*h), cx=PAD_L+i*gap+gap/2, x=cx-bw/2;
+  return '<rect x="'+x+'" y="'+(h-bh)+'" width="'+bw+'" height="'+bh+'" rx="6" fill="'+(d.hi?'var(--brand)':'var(--line-2, var(--line))')+'">'
+   +'<title>'+d.label+': '+lkr(d.v)+'</title>'      /* every bar answers on hover */
+   +'<animate attributeName="height" from="0" to="'+bh+'" dur="0.7s" fill="freeze"/>'
+   +'<animate attributeName="y" from="'+h+'" to="'+(h-bh)+'" dur="0.7s" fill="freeze"/></rect>'
+   +(d.hi?'<text x="'+cx+'" y="'+(h-bh-8)+'" text-anchor="middle" font-size="14" font-weight="700" fill="var(--brand)">'+d.top+'</text>':'')
+   +'<text x="'+cx+'" y="'+(h+22)+'" text-anchor="middle" font-size="14" fill="var(--muted)">'+d.label+'</text>';
+ }).join('');
+ return out+'</svg>';
+}
 
 /* ════════════════════════════════════════════════════════════════════
    SECTION 6 - AUTH & ROLES. Roles: owner > manager > staff.
@@ -6490,6 +6540,31 @@ async function runSelfTest(opts){
     }).map(function(e){return e.textContent+' should be '+e.getAttribute('data-to');});
     ok('Counters: an interrupted count-up still lands on the real number',wrong.length===0,
        wrong.length?('STALE: '+wrong.join(', ')):els.length+' counters snap to their true value');
+   })();
+   /* ── A CHART YOU CAN READ A NUMBER OFF ────────────────────────────────
+      Reports drew six bars and labelled only the highlighted one, so February
+      was a rectangle of unknown height. You could see it was smaller than July
+      without ever learning what it was. */
+   (function(){
+    go('reports');
+    /* TARGET THE CHART, NOT THE PAGE. '#page-reports svg' returned null while
+       the chart rendered perfectly, so the first version of this check would
+       have failed for a reason that had nothing to do with charts. Name the
+       host you actually mean. */
+    const host=document.getElementById('rpTrend');
+    const svg=host&&host.querySelector('svg');
+    if(!svg){ok('Reports: the chart carries an axis you can read values off',false,
+      'CANNOT MEASURE: no chart rendered, so this proves nothing');return;}
+    const grid=svg.querySelectorAll('line').length;
+    const axisNums=Array.from(svg.querySelectorAll('text[text-anchor="end"]')).map(t=>t.textContent);
+    const bars=svg.querySelectorAll('rect').length;
+    const titled=svg.querySelectorAll('rect > title').length;
+    ok('Reports: the chart carries an axis you can read values off',
+       grid>=3&&axisNums.length>=3&&axisNums[0]==='0',
+       grid+' gridlines, labels '+axisNums.join(' / '));
+    /* every bar answers for itself, not just the one we chose to highlight */
+    ok('Reports: every bar states its own value, not only the highlighted one',
+       bars>0&&titled===bars,titled+' of '+bars+' bars carry their value');
    })();
    /* ── EVERY PAGE IS REACHABLE. THE COMMAND CENTRE LESSON. ──────────────
       When the CC nav went 20 entries to 9, every old page was kept so deep
