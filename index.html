@@ -6372,9 +6372,17 @@ async function runSelfTest(opts){
     ok('Notifications: an empty state says how a member becomes reachable',
        PUSH_REACH>0||/home screen icon/.test(document.getElementById('pushBody').innerText),
        'tells you the actual steps');
+    /* THIS CHECK USED TO READ pushReach's SOURCE for the string
+       'push_subscriptions'. That asserted HOW the reach was fetched, not WHAT
+       must be true of it, so moving the read server-side (12 Aug 2026, to kill
+       a credential in the page) broke a check whose intent was never violated.
+       A check pinned to an implementation detail punishes the improvement and
+       tempts the next person to delete it. Assert the INTENT: the reach comes
+       from registered phones, never from the member list. */
     ok('Notifications: only phones actually registered are offered',
-       pushReach.toString().indexOf('push_subscriptions')>-1
-       &&pushReach.toString().indexOf('PUSH_PEOPLE')>-1,
+       /action=reach|push_subscriptions/.test(pushReach.toString())
+       &&pushReach.toString().indexOf('PUSH_PEOPLE')>-1
+       &&!/customers|DB\.get/.test(pushReach.toString()),
        'built from registered phones, never the member list');
     ok('Notifications: sending to everyone warns harder than sending to one',
        pushSend.toString().indexOf('goes to EVERYONE')>-1,'stronger confirmation');

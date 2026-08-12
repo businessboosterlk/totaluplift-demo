@@ -2376,6 +2376,12 @@ function bootDoor(){
 const CLOUD_CFG={
  url:'https://yyviiwnqgphyklcoijyd.supabase.co',
  key:'sb_publishable_RkGimnQ1rzRrU4Io5qn9xg_Fgi4LxiO',
+/* GUARD-ALLOW L-015: this sign-in is a PUBLIC DEMO LOGIN on purpose.
+   It is a fictional member of a fictional gym in an org the database walls off
+   from every real one. Rotating it only produces a different public password.
+   An exception has to be DECLARED here, in the file, so the next person reads
+   the reason instead of finding a naked credential and guessing. Delete this
+   marker the moment this app carries one real member. */
  /* STAGE PROP: a demo member of a demo gym holding fictional data, in an org
     the database walls off from every real one. Not production auth. */
  demo:{email:'ravindu@demo.totaluplift.lk',pass:'uplift-demo-2026'}
