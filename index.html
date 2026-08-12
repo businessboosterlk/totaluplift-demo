@@ -2385,6 +2385,71 @@ function markLost(id,reason){
  closePanel();renderApp();
  toastUndo(r.name+' marked lost',function(){r.stage=prev;delete r.lostReason;r.acts.shift();DB.commit();renderApp();});
 }
+
+/* ══ THE MISSING HALF OF WINNING AN ENQUIRY ════════════════════════════════
+   Found 12 Aug 2026 by testing it rather than reading it: marking an enquiry
+   Joined moved it to the won column and STOPPED. Measured on the live build,
+   120 members before and 120 after, and the person who had just signed up did
+   not appear in the roster at all.
+
+   So the gym's front desk would have had to type the same human in twice, once
+   as an enquiry and again as a member, and any gym owner clicking Joined in a
+   demo would have found the hole in about ten seconds.
+
+   THE LESSON: a pipeline that ends in "won" and writes nothing is a pipeline
+   that only tracks BB's own optimism. The end of a sale is the start of a
+   membership, and the software has to carry the person across that line.
+
+   LANDMINE, do not lose this: memberPlan() finds a plan with
+   `p.id === customer.id`. The plan and the customer share an id. Creating one
+   without the other, or with a different id, produces a member whose
+   membership is invisible everywhere. */
+function enrolMember(rid,silent){
+ const r=DB.get('records').find(x=>x.id===rid); if(!r)return null;
+ if(r.memberId){                       /* never create the same person twice */
+  if(!silent)toast(r.name+' is already in '+CFG.contactWord.plural);
+  return r.memberId;
+ }
+ const id=DB.nextId('customers');
+ const tier=(typeof r.cohort==='number')?r.cohort:0;
+ const fee=CFG.recurring.amount;
+ DB.get('customers').unshift({
+  id:id, name:r.name, co:CFG.cohorts[tier]+' plan · joined '+monthShort(ymNow()),
+  type:'B2C', phone:r.phone||'', email:r.email||'', owner:r.owner, cohort:tier,
+  sent:0, last:todayISO(), status:'active', history:[]});
+ /* SAME ID AS THE CUSTOMER. See the landmine above. */
+ DB.get('recurringPlans').unshift({
+  id:id, name:r.name, phone:r.phone||'', cohort:tier, fee:fee,
+  joined:todayISO(), status:'active'});
+ r.memberId=id;
+ r.acts.unshift({t:'Added to '+CFG.contactWord.plural,m:CFG.cohorts[tier]+' plan · '+lkr(fee)+' a '+CFG.recurring.cycle,tm:'just now'});
+ logFeed(CURRENT.id,'New '+CFG.contactWord.singular.toLowerCase(),r.name+' · '+CFG.cohorts[tier]);
+ DB.commit();
+ return id;
+}
+function unenrolMember(rid){
+ const r=DB.get('records').find(x=>x.id===rid); if(!r||!r.memberId)return;
+ const id=r.memberId;
+ [['customers'],['recurringPlans']].forEach(function(k){
+  const a=DB.get(k[0]); const i=a.findIndex(x=>x.id===id); if(i>-1)a.splice(i,1);
+ });
+ delete r.memberId; r.acts.shift(); DB.commit();
+}
+/* THE ASK. Creating a member starts a recurring charge, so it is confirmed and
+   never silent, which is the same standing rule as every other money action. */
+function offerEnrol(rid){
+ const r=DB.get('records').find(x=>x.id===rid); if(!r||r.memberId)return;
+ const tier=(typeof r.cohort==='number')?r.cohort:0;
+ const one=CFG.contactWord.singular.toLowerCase();
+ if(!confirm('Add '+r.name+' to '+CFG.contactWord.plural+'?\n\n'
+   +CFG.cohorts[tier]+' plan · '+lkr(CFG.recurring.amount)+' a '+CFG.recurring.cycle+'\n'
+   +'Starts today · trainer '+staffById(r.owner).name+'\n\n'
+   +'They can be checked in from tomorrow and their '+CFG.recurring.label.toLowerCase()
+   +' will show in the ledger.'))return;
+ enrolMember(rid);
+ renderApp();
+ toastUndo(I.check+' '+r.name+' is now a '+one,function(){unenrolMember(rid);renderApp();});
+}
 function markWon(id){
  const r=DB.get('records').find(x=>x.id===id);if(!r)return;
  const prev=r.stage;const wonK=(CFG.stages.find(s=>s.terminal==='won')||{}).k;if(!wonK)return;
@@ -2393,6 +2458,10 @@ function markWon(id){
  r.acts.unshift({t:'Joined',m:'Moved to '+stageLabel(wonK),tm:'just now'});logFeed(CURRENT.id,'Joined',r.name+(r.value?' · '+lkr(r.value):''));DB.commit();
  closePanel();renderApp();
  toastUndo(I.check+' '+r.name+' joined',function(){r.stage=prev;r.acts.shift();if(invUndo)invUndo();DB.commit();renderApp();});
+ /* AND THEN CARRY THEM ACROSS THE LINE. Winning an enquiry used to end here,
+    which left the person nowhere: won in the pipeline and absent from the
+    roster. Asked, not assumed, because it starts a recurring charge. */
+ setTimeout(function(){offerEnrol(id);},350);
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -6367,6 +6436,31 @@ async function runSelfTest(opts){
     const cost=BBF.runs()-before;
     ok('Foundations: page renders do not drive the overlay machinery',cost<=3,
        cost+' sync runs for 4 navigations'+(cost>3?', the observer storm is back':''));
+   })();
+   /* ── WINNING AN ENQUIRY ACTUALLY CREATES A MEMBER ──────────────────────
+      This shipped broken and no check saw it, because every check read the
+      PIPELINE and none of them asked what happened on the other side of the
+      win. Measured on the live build: 120 members before, 120 after. The rule
+      now: a stage that claims an outcome must be tested for the outcome, not
+      for the stage change. */
+   (function(){
+    const rec=DB.get('records').find(x=>x.stage!=='joined'&&x.stage!=='lost'&&!x.memberId);
+    if(!rec){ok('Sales: winning an enquiry creates a real member',false,
+      'CANNOT MEASURE: no open enquiry to test with, so this proves nothing');return;}
+    const before=DB.get('customers').length, plansBefore=DB.get('recurringPlans').length;
+    const id=enrolMember(rec.id,true);
+    const c=DB.get('customers').find(x=>x.id===id);
+    const pl=memberPlan(id);
+    const twice=enrolMember(rec.id,true);          /* must never double-create */
+    const afterTwice=DB.get('customers').length;
+    unenrolMember(rec.id);
+    const clean=DB.get('customers').length===before&&DB.get('recurringPlans').length===plansBefore;
+    ok('Sales: winning an enquiry creates a real member',
+       !!c&&!!pl&&pl.id===c.id&&c.status==='active'&&twice===id&&afterTwice===before+1&&clean,
+       !c?'no member created':(!pl?'member has no membership':
+        (pl.id!==c.id?'plan id does not match the member id, so the membership is invisible':
+         (afterTwice!==before+1?'enrolling twice created a duplicate':
+          (!clean?'undo left rows behind':'creates member + membership, refuses a duplicate, undo is clean')))));
    })();
    /* ── AN INTERRUPTED COUNT-UP STILL TELLS THE TRUTH ── */
    (function(){
