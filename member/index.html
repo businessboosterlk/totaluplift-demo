@@ -5291,13 +5291,40 @@ async function runSelfTest(){
        what keepFieldClear guarantees, and which is checked directly below. */
     /* an instant scroll, because a check that measures during a smooth one is
        measuring the animation rather than the result */
-    if(inp){inp.focus();keepFieldClear(inp,true);}
-    const ir2=inp?inp.getBoundingClientRect():null;
-    const br2=bar.getBoundingClientRect();
-    const covered=!!ir2&&ir2.width&&bar.classList.contains('on')
-      &&Math.min(ir2.bottom,br2.bottom)-Math.max(ir2.top,br2.top)>2;
-    ok('Rest: the field you are logging into is never under the timer',!covered,
-      ir2?('field '+Math.round(ir2.bottom)+', bar top '+Math.round(br2.top)):'no field');
+    /* CREATE THE CONDITION, DO NOT WAIT AND HOPE FOR IT. ══════════════════
+       This check only tested anything when the rest bar happened to be
+       RUNNING, and on most runs it is not, so it passed VACUOUSLY: green while
+       proving nothing. Then a run where an earlier check had left the timer on
+       reported it as a go-live blocker, and it could not be reproduced at
+       390px, 1280x800 or 1280x860, on the first field or on all 26.
+       A check that is green when it tested nothing and red on a timing
+       artifact is worse than no check, because both of its answers get
+       believed. So: force the state, measure every field a person could
+       actually be typing in, and refuse a verdict if the state cannot be made.
+       The timer is restored afterwards, because a check must not leave the app
+       in a state it did not find it in: that is what made the earlier run
+       fail. */
+    const wasOn=bar.classList.contains('on');
+    bar.classList.add('on');
+    const fields=[].slice.call(document.querySelectorAll('#plEx .set input'))
+      .filter(function(f){const r=f.getBoundingClientRect();return r.width>4&&r.height>4;});
+    let worst=null;
+    fields.forEach(function(f){
+     f.focus(); keepFieldClear(f,true);
+     const fr=f.getBoundingClientRect(), b2=bar.getBoundingClientRect();
+     const ov=Math.min(fr.bottom,b2.bottom)-Math.max(fr.top,b2.top);
+     if(ov>2&&(!worst||ov>worst.ov))worst={ov:Math.round(ov),bottom:Math.round(fr.bottom),barTop:Math.round(b2.top)};
+    });
+    if(fields.length)document.activeElement&&document.activeElement.blur();
+    if(!wasOn)bar.classList.remove('on');
+    if(!fields.length){
+     ok('Rest: the field you are logging into is never under the timer',false,
+       'CANNOT MEASURE: no visible set field on the plan, so this proves nothing');
+    }else{
+     ok('Rest: the field you are logging into is never under the timer',!worst,
+       worst?('field bottom '+worst.bottom+' under a bar starting at '+worst.barTop+', covered by '+worst.ov+'px')
+        :(fields.length+' fields, every one clear of the timer at '+innerWidth+'x'+innerHeight));
+    }
     if(inp)inp.blur();
     /* AND THE FIELD YOU ARE TYPING IN IS PUT SOMEWHERE YOU CAN SEE IT. */
     (function(){

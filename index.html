@@ -6220,6 +6220,20 @@ async function runSelfTest(opts){
       if(!seen(el))return;                         /* hidden rects are stale */
       const r=el.getBoundingClientRect(); if(r.width<4||r.height<4)return;
       if(el.parentElement&&el.parentElement.closest('.card, .tile')!==card)return;
+      /* CONTENT INSIDE A HORIZONTAL SCROLLER IS SUPPOSED TO GO PAST THE EDGE.
+         That is what scrolling IS. This check flagged four cells of the
+         Records table as touching the card edge at 390px, and reported it as a
+         go-live blocker. The card is overflow-x:auto and genuinely scrolls, a
+         600px table in a 360px card, so nothing is clipped and nothing is
+         lost: the cells were exactly where a person scrolls to reach them.
+         A check that calls correct behaviour a blocker costs more than the
+         bug it was hunting, because the next real hit gets waved through. */
+      let sc=el.parentElement, inScroller=false;
+      while(sc&&sc!==card){
+       if(/auto|scroll/.test(getComputedStyle(sc).overflowX)){inScroller=true;break;}
+       sc=sc.parentElement;
+      }
+      if(inScroller||/auto|scroll/.test(getComputedStyle(card).overflowX))return;
       const L=r.left-cr.left,R=cr.right-r.right;
       if(L<8||R<8)hits.push(k+':'+(String(cls).split(' ')[0]||el.tagName)+' L'+Math.round(L)+' R'+Math.round(R));
      });});});
