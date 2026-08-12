@@ -2454,19 +2454,21 @@ var TU_PUB_KEY='tu_public_v1', TU_ENQ_KEY='tu_enquiries_v1', TU_TAKEN_KEY='tu_en
 var PUSH_URL='https://yyviiwnqgphyklcoijyd.supabase.co';
 var PUSH_KEY='sb_publishable_RkGimnQ1rzRrU4Io5qn9xg_Fgi4LxiO';
 var PUSH_FN=PUSH_URL+'/functions/v1/push-send';
-var PUSH_TOKEN='', PUSH_REACH=0, PUSH_PICK='quiet';
+var PUSH_REACH=0, PUSH_PICK='quiet';
 var PUSH_WHO='all';          /* 'all' or an auth user id */
 var PUSH_PEOPLE=[];          /* who actually has a phone registered */
-/* THE STAFF OS HAS NO LOGIN OF ITS OWN: it is PIN based, so for this demo it
-   borrows the demo member's token to reach the function. Real staff auth is on
-   the go-live list and this is one more reason it belongs there. */
-async function pushAuth(){
- if(PUSH_TOKEN)return PUSH_TOKEN;
- var r=await fetch(PUSH_URL+'/auth/v1/token?grant_type=password',
-  {method:'POST',headers:{apikey:PUSH_KEY,'Content-Type':'application/json'},
-   body:JSON.stringify({email:'ravindu@demo.totaluplift.lk',password:'uplift-demo-2026'})});
- var j=await r.json(); PUSH_TOKEN=j.access_token||''; return PUSH_TOKEN;
-}
+/* THE STAFF OS HAS NO LOGIN OF ITS OWN: it is PIN based. It used to reach the
+   sender by signing in as the demo MEMBER, with that member's email and
+   password written into this file, which put a live credential in a public
+   page. Removed 12 Aug 2026 after the screening engine found it.
+
+   THE RULE IT BROKE: A FRONT-END-ONLY PAGE CANNOT HOLD A SECRET. Whatever it
+   needs in order to work is readable by anyone who opens it, so the only real
+   question is which thing you publish. A password is the worst answer, because
+   it unlocks every table that account touches and people try passwords
+   elsewhere. So the page now carries ONLY the publishable key, which is public
+   by design, and the function gates itself. Real staff auth is on the go-live
+   list and this is one more reason it belongs there. */
 var PUSH_PRESETS=[
  {k:'quiet', n:'Someone has gone quiet',
   title:'We have missed you',
@@ -2489,14 +2491,13 @@ function pushHasMoney(t){return /\b(lkr|rs\.?|usd)\s*[\d,]/i.test(t)||/[\d,]{3,}
    nothing. */
 async function pushReach(){
  try{
-  var tok=await pushAuth();
-  var r=await fetch(PUSH_URL+'/rest/v1/push_subscriptions?select=user_id',
-   {headers:{apikey:PUSH_KEY,Authorization:'Bearer '+tok}});
-  var rows=await r.json();
-  var seen={};PUSH_PEOPLE=[];
-  (Array.isArray(rows)?rows:[]).forEach(function(x){
-   if(x.user_id&&!seen[x.user_id]){seen[x.user_id]=1;PUSH_PEOPLE.push(x.user_id);}});
-  PUSH_REACH=(Array.isArray(rows)?rows.length:0);
+  /* ASK, never read the table. The function holds the service key and hands
+     back a count and opaque ids, never an endpoint: an endpoint is a writable
+     address for somebody's phone and does not belong in a page. */
+  var r=await fetch(PUSH_FN+'?action=reach',{headers:{apikey:PUSH_KEY}});
+  var j=await r.json();
+  PUSH_PEOPLE=Array.isArray(j.users)?j.users:[];
+  PUSH_REACH=(typeof j.count==='number')?j.count:0;
  }catch(e){PUSH_REACH=0;PUSH_PEOPLE=[];}
  return PUSH_REACH;
 }
@@ -2532,9 +2533,8 @@ async function pushSend(){
  if(!confirm(whoLbl+' will get this.'+warn+'\n\n"'+t+'"\n'+b+'\n\nA notification cannot be unsent. Send it?'))return;
  var btn=document.getElementById('pu_go'); if(btn){btn.disabled=true;btn.textContent='Sending';}
  try{
-  var tok=await pushAuth();
   var r=await fetch(PUSH_FN,{method:'POST',
-   headers:{apikey:PUSH_KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json'},
+   headers:{apikey:PUSH_KEY,'Content-Type':'application/json'},
    body:JSON.stringify(PUSH_WHO==='all'
      ?{title:t,body:b,tag:'tu-'+PUSH_PICK}
      :{title:t,body:b,tag:'tu-'+PUSH_PICK,user_id:PUSH_WHO})});
