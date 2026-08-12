@@ -7793,9 +7793,25 @@ var BBF=(function(){
   }
   return true;
  }
+ /* MODAL, NOT MERELY FLOATING. Ported from the member app 12 Aug 2026, where
+    this exact gap FROZE the Membership page: a 130px install prompt was
+    position:fixed, so it matched the overlay selector, so the page behind it
+    was pinned and would not scroll. Nobody had opened anything.
+    Every overlay in THIS file happens to be full-screen today, so the rule
+    changes nothing here and exists so the class cannot come back the first
+    time somebody adds a toast, a banner or a floating prompt.
+    Measured, never named, because the next app will invent a new class: a
+    modal reaches from the top of the screen to the bottom, because that is
+    what covering the page means. A prompt is anchored to one edge and leaves
+    the rest of the page usable, which is the whole point of it. */
+ function isModal(el){
+  if(!innerHeight)return true;   /* cannot judge: pin, the safe direction */
+  var r=el.getBoundingClientRect();
+  return r.top<=1&&r.bottom>=innerHeight-1;
+ }
  function anyOpen(){
   var n=document.querySelectorAll(OVS), i;
-  for(i=0;i<n.length;i++)if(isOpen(n[i]))return n[i];
+  for(i=0;i<n.length;i++)if(isOpen(n[i])&&isModal(n[i]))return n[i];
   return null;
  }
 

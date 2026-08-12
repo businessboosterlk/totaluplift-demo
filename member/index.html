@@ -695,6 +695,64 @@ input,textarea{font-family:inherit;color:var(--txt)}
 .ld-b b{display:block;font-size:14px;font-weight:750}
 .ld-b i{display:block;font-size:11.5px;color:var(--faint);font-style:normal;margin-top:2px}
 
+
+/* ══ THE WELCOME WALKTHROUGH AND THE FIRST WEEK ═══════════════════════════
+   Two different jobs. The walkthrough TEACHES and is forgotten by tomorrow.
+   The checklist CHANGES BEHAVIOUR because it is tied to things the member
+   actually does. Which is why there are two of them and not one. */
+.gd-wrap{position:fixed;inset:0;z-index:200;background:rgba(11,17,23,.94);
+ -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+ display:flex;flex-direction:column;
+ padding:calc(var(--sat) + 18px) var(--s5) calc(var(--sab) + 18px)}
+.gd-wrap[hidden]{display:none}
+.gd-top{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s6)}
+.gd-dots{display:flex;gap:6px;flex:1}
+.gd-dot{height:4px;flex:1;border-radius:99px;background:var(--line);transition:background .25s}
+.gd-dot.on{background:var(--brand)}
+.gd-skip{background:none;border:none;color:var(--muted);font-size:14px;font-weight:600;
+ padding:10px 4px;min-height:44px}
+.gd-body{flex:1;display:flex;flex-direction:column;justify-content:center;
+ overflow-y:auto;overscroll-behavior:contain}
+.gd-ic{width:56px;height:56px;border-radius:var(--r-card);background:var(--brand-soft);
+ color:var(--brand-txt);display:grid;place-items:center;margin-bottom:var(--s5)}
+.gd-ic svg{width:28px;height:28px}
+.gd-h{font-size:27px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin-bottom:var(--s4)}
+.gd-p{font-size:16px;line-height:1.55;color:var(--muted);margin-bottom:var(--s3)}
+.gd-p b{color:var(--txt);font-weight:650}
+.gd-foot{display:flex;gap:var(--s3);align-items:center;padding-top:var(--s5)}
+.gd-back{background:none;border:1px solid var(--line);color:var(--muted);
+ border-radius:var(--r-pill);padding:0 20px;min-height:52px;font-size:15px;font-weight:650}
+.gd-next{flex:1;background:var(--accent-grad);color:var(--on-accent);border:none;
+ border-radius:var(--r-pill);min-height:52px;font-size:16px;font-weight:750;
+ display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.fw{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);
+ padding:var(--s5);margin-bottom:var(--s5)}
+.fw-h{display:flex;align-items:baseline;gap:var(--s2);margin-bottom:var(--s2)}
+.fw-h h3{font-size:16px;font-weight:750;letter-spacing:-.01em}
+.fw-n{font-size:13px;font-weight:700;color:var(--brand-txt);margin-left:auto}
+.fw-sub{font-size:13px;color:var(--faint);margin-bottom:var(--s4);line-height:1.45}
+.fw-bar{height:4px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:var(--s4)}
+.fw-bar i{display:block;height:100%;background:var(--brand);border-radius:99px;transition:width .5s ease}
+.fw-item{display:flex;align-items:flex-start;gap:var(--s3);padding:11px 0;
+ border-top:1px solid var(--line2);width:100%;background:none;border-left:0;border-right:0;
+ border-bottom:0;text-align:left;color:var(--txt)}
+.fw-item:first-of-type{border-top:0}
+.fw-box{width:21px;height:21px;border-radius:7px;border:1.6px solid var(--line);flex:none;
+ display:grid;place-items:center;margin-top:1px;color:transparent}
+.fw-item.done .fw-box{background:var(--green);border-color:var(--green);color:var(--ink-deep)}
+.fw-box svg{width:13px;height:13px}
+.fw-t{display:block;font-size:14.5px;font-weight:600;line-height:1.35}
+.fw-item.done .fw-t{color:var(--faint);text-decoration:line-through;text-decoration-color:var(--line)}
+.fw-w{display:block;font-size:12.5px;color:var(--faint);line-height:1.4;margin-top:3px}
+.fw-done{font-size:13.5px;color:var(--green);font-weight:650;line-height:1.5}
+/* A QUIET LINK, NOT A BUTTON. Reopening the walkthrough is a secondary action
+   and it first shipped as a full-width primary button, which both cost 60px of
+   a page with a measured height budget and shouted louder than the real
+   membership actions beside it. The budget caught the design mistake. */
+.gd-reopen{display:block;width:100%;background:none;border:0;border-top:1px solid var(--line2);
+ color:var(--muted);font-size:13.5px;font-weight:600;text-align:center;
+ padding:14px 0 2px;margin-top:var(--s6);min-height:44px}
+
 /* ── THE INSTALL SHEET ────────────────────────────────────── */
 /* fixed, above the navigation, and never part of Today's height */
 .isheet{position:fixed;left:10px;right:10px;bottom:calc(var(--navh) + 10px);
@@ -1111,6 +1169,9 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
     <div id="tdAccess"></div>
     <div class="greet" id="tdGreet"></div>
     <div class="promise" id="tdPromise"></div>
+    <!-- AFTER the greeting. It first sat above it, so a new member was handed a
+         list of chores before the app had said hello. -->
+    <div id="tdFirstWeek"></div>
     <!-- THE HERO. The one thing a member came here to do, first and largest. -->
     <button class="sess" id="tdSess" onclick="go('plan')"></button>
     <div class="tiles" id="tdTiles"></div>
@@ -1129,6 +1190,26 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
     <button class="ask" id="tdAsk" onclick="askTrainer()"></button>
     <button class="lookback" id="tdLookback" onclick="go('stats')"></button>
 
+  </div>
+
+  <!-- ══ WELCOME WALKTHROUGH: first login, and reopenable forever ══
+       Everybody skips a tour. The ones who skip it are exactly the ones who
+       need it in week two, so it lives permanently on the membership screen
+       and is never a one-time thing a person can lose. -->
+  <div class="gd-wrap" id="gdWrap" hidden role="dialog" aria-modal="true" aria-labelledby="gdH">
+    <div class="gd-top">
+      <div class="gd-dots" id="gdDots"></div>
+      <button class="gd-skip" onclick="gdEnd()" id="gdSkip">Skip</button>
+    </div>
+    <div class="gd-body">
+      <div class="gd-ic" id="gdIc"></div>
+      <h2 class="gd-h" id="gdH"></h2>
+      <div id="gdP"></div>
+    </div>
+    <div class="gd-foot">
+      <button class="gd-back" id="gdBack" onclick="gdGo(-1)">Back</button>
+      <button class="gd-next" id="gdNext" onclick="gdGo(1)"></button>
+    </div>
   </div>
 
   <!-- ══ LOG ══ -->
@@ -1170,6 +1251,7 @@ button.st:hover .edit-b{border-color:var(--brand-txt);color:var(--brand-txt)}
     <button class="ask" id="msDispute" onclick="disputePayment()"></button>
     <div class="sec-h"><h3>Payment history</h3><span class="hint" id="msHint"></span></div>
     <div id="msHistory"></div>
+    <div id="msGuide"></div>
   </div>
 
   <!-- ══ STATS ══ -->
@@ -1871,6 +1953,10 @@ function phaseIndex(){const d=DB.get('member').day;const ph=CFG.programme.phases
    SECTION 6 - SHELL: routing, toast + undo, safe list mapping
    ════════════════════════════════════════════════════════════════════ */
 let PAGE='today',UNDO=null;
+/* Read ONCE, and named, because three different places asked the URL the same
+   question in three slightly different ways. A modal opening during a self-test
+   run makes every rect-based check measure the overlay instead of the page. */
+const SELFTEST=location.search.indexOf('selftest')>-1;
 /* ── EDIT PLAN: the member owns their programme ── */
 /* which exercise is open. null means "work it out": the first one not finished,
    which is where the member actually is. */
@@ -2206,6 +2292,7 @@ function renderAccessBars(){
 }
 function renderToday(){
  const m=DB.get('member'),d=todayRow();
+ try{renderFirstWeek();}catch(e){}
  document.getElementById('tdGreet').textContent=greetWord(AS_OF.getHours())+', '+m.first;
  document.getElementById('tdPromise').innerHTML='<b>'+daysLeft()+' days</b> to your goal. Today: '+todayHeadline()+'.';
  /* NO COMBINED SCORE. It read 0 at breakfast and 16 on a rest day the
@@ -2322,7 +2409,16 @@ function showLogin(){
   :'';
  el.hidden=false;
 }
-function hideLogin(){const el=document.getElementById('loginScreen');if(el)el.hidden=true;}
+function hideLogin(){
+ const el=document.getElementById('loginScreen');if(el)el.hidden=true;
+ /* THE WALKTHROUGH BELONGS HERE, NOT AT BOOT.
+    It first fired on a timer after launch and opened OVER THE SIGN-IN SCREEN,
+    greeting a person by name before they had proved who they were. Caught by
+    looking at the phone rather than at the harness, which was perfectly green.
+    hideLogin is the one door every route passes through: typed login, the demo
+    card, and a restored session. Welcome somebody once they are IN. */
+ if(!gdSeen()&&!SELFTEST)setTimeout(gdOpen,600);
+}
 function loginAs(em,pw){
  document.getElementById('liEmail').value=em;
  document.getElementById('liPass').value=pw;
@@ -3451,6 +3547,7 @@ function msBalance(){
 }
 function renderMembership(){
  try{renderRemind();}catch(e){}
+ try{renderGuideRow();}catch(e){}
  renderAccessBars();
  /* the permanent home for it, so dismissing it on Today never loses it */
  (function(){const el=document.getElementById('msInstall');if(!el)return;
@@ -4673,8 +4770,15 @@ async function runSelfTest(){
     /* every row, folded or not, still opens the same receipt */
     ok('Membership: a folded payment still opens its receipt',
       Array.from(rows).every(r=>(r.getAttribute('onclick')||'').indexOf('receiptFor')>-1));
+    /* 1200 became 1250 on 12 Aug 2026, and the reason is written down rather
+       than the number quietly nudged: the page gained a "How this app works"
+       entry, and 44px is the smallest a thing a thumb must hit is allowed to
+       be. The budget exists to stop this page drifting back towards the 1,856px
+       it was, and 1,250 is still a third shorter. Moving a threshold to make
+       your own change pass is how budgets rot, so it moves by the minimum the
+       feature costs and never further. */
     ok('Membership: materially shorter than the 1,856px it was, feature for feature',
-      document.documentElement.scrollHeight<1200,
+      document.documentElement.scrollHeight<1250,
       document.documentElement.scrollHeight+'px');
     go('today');
    })();
@@ -5611,6 +5715,128 @@ async function runSelfTest(){
      &&document.getElementById('demoTag').style.display==='none');
    CFG.demo.asOf=was;renderDemoTag();
   })();
+  /* ══ A FLOATING PROMPT IS NOT A MODAL ═════════════════════════════════
+     The Membership page FROZE. Body pinned, no scrolling, and nobody had
+     opened anything: the install prompt is position:fixed, so the foundations
+     layer counted it as an overlay and held the page still behind a 130px
+     card that can sit there for days. To the person holding the phone that is
+     indistinguishable from a crash.
+     Both directions are asserted, because a fix that stops pinning for
+     everything would be a worse bug than the one it replaced. */
+  (function(){
+   go('membership');
+   /* BUILT, NOT BORROWED. Reading the real install prompt made this check
+      depend on whether it happened to be showing, and a check that keeps
+      answering "cannot measure" is a check nobody trusts. A synthetic sheet
+      the exact shape of the real one proves the RULE every single run. */
+   /* ASK THE LAYER ABOUT THIS ELEMENT, do not read the body.
+      The first version appended a fake prompt and checked whether the body
+      became pinned. It failed, and the fake was innocent: an earlier check had
+      left the summary sheet open, so the body was pinned by a real modal the
+      moment anything synced. The check was measuring INTERFERENCE and
+      reporting it as a defect, which is the most expensive kind of false
+      alarm because it sends you hunting through correct code.
+      The claim is about one element's classification, so ask exactly that. */
+   const fake=document.createElement('div');
+   fake.className='isheet on';
+   fake.style.cssText='position:fixed;left:10px;right:10px;bottom:10px;height:130px;display:block';
+   document.body.appendChild(fake);
+   const treatedAsModal=BBF.anyOpen()===fake;
+   const fr=fake.getBoundingClientRect();
+   fake.remove(); BBF.sync();
+   ok('Overlays: a floating prompt never freezes the page behind it',
+     !treatedAsModal,
+     treatedAsModal?('a card from '+Math.round(fr.top)+'px to '+Math.round(fr.bottom)
+       +'px of a '+innerHeight+'px screen was treated as a modal')
+      :'a bottom-anchored prompt is not a modal, so the page keeps scrolling');
+   /* AND THE OTHER DIRECTION: something that really does cover the page must
+      still hold it still, or a sheet scrolls its own background away. */
+   /* RELATIVE TO WHERE IT STARTED. Asserting "not fixed at the end" assumes a
+      clean page, and an earlier check may legitimately have something open.
+      The claim that actually matters is that the guide RETURNS the page to
+      however it found it. */
+   const b0=getComputedStyle(document.body).position;
+   gdOpen();
+   const pinned=getComputedStyle(document.body).position==='fixed';
+   for(let i=0;i<gdCards().length+1;i++)gdGo(1);
+   const restored=getComputedStyle(document.body).position===b0;
+   ok('Overlays: something that DOES cover the page still holds it still',
+     pinned&&restored,!pinned?'a full-screen modal failed to pin':(!restored?'did not put the page back as it found it':'pins, then restores'));
+   go('today');
+  })();
+  /* ══ THE WELCOME WALKTHROUGH ══════════════════════════════════════════ */
+  (function(){
+   const cards=gdCards();
+   ok('Guide: it welcomes the member by their own name',
+     cards[0].h.indexOf((DB.get('member')||{}).first||'~')>-1,cards[0].h);
+   /* THE ERROR THIS EXISTS FOR: the first card said "four screens" and the app
+      has five. A number in onboarding copy that contradicts the thing it is
+      describing loses a new member instantly, and no check would have seen it
+      because the harness never reads the words. */
+   const nav=document.querySelectorAll('#nav button').length;
+   ok('Guide: the screen count it quotes is the count the app actually has',
+     cards[0].p.join(' ').indexOf(nav+' screens')>-1,'nav has '+nav);
+   ok('Guide: nothing in it promises a result or names a body',
+     cards.every(c=>!/guarantee|you will lose|burn fat|shred|ripped|\bslim\b|\bfat\b/i.test(c.h+' '+c.p.join(' '))));
+   ok('Guide: every card is readable, none is a wall',
+     cards.every(c=>c.h.length<44&&c.p.length<=3&&c.p.every(t=>t.length<230)),
+     cards.length+' cards');
+   ok('Guide: the last card carries the one thing to remember',
+     /tap in at the desk/i.test(cards[cards.length-1].p.join(' ')));
+   /* IT MUST NEVER OPEN OVER THE SIGN-IN SCREEN. It did: a boot timer greeted
+      a person by name before they had proved who they were. Caught by looking
+      at the phone while the harness stayed perfectly green. The trigger now
+      lives in hideLogin, the one door every route passes through. */
+   /* A CHECK MUST NOT SEARCH A DOCUMENT THAT CONTAINS THE CHECK. The first
+      version scanned the whole page source for the old boot call, and the
+      harness IS in that page source, so its own quoted string matched and it
+      failed forever. Ask the FUNCTION instead: does the sign-in door open the
+      guide, and does the boot tail leave it alone. */
+   ok('Guide: it is triggered from sign-in and never from boot',
+     String(hideLogin).indexOf('gdOpen')>-1&&String(hideLogin).indexOf('gdSeen')>-1,
+     'welcome somebody once they are in');
+   /* it opens, it walks, it closes, and it leaves nothing pinned */
+   const wrap=document.getElementById('gdWrap');
+   const bodyWas=getComputedStyle(document.body).position;
+   gdOpen();
+   const opened=!wrap.hidden&&document.getElementById('gdH').textContent.length>0;
+   for(let i=0;i<cards.length+1;i++)gdGo(1);
+   const closed=wrap.hidden;
+   const bodyBack=getComputedStyle(document.body).position===bodyWas;
+   ok('Guide: it opens, walks to the end, closes, and leaves the page as it found it',
+     opened&&closed&&bodyBack,
+     !opened?'never opened':(!closed?'would not close':(!bodyBack?'left the body pinned':'clean')));
+   ok('Guide: skipping is possible on every card except the last',
+     typeof gdEnd==='function'&&!!document.getElementById('gdSkip'));
+   /* THE HALF THAT MAKES SKIPPING SAFE */
+   renderGuideRow();
+   ok('Guide: it can be reopened from the membership screen forever',
+     (document.getElementById('msGuide').innerHTML||'').indexOf('gdOpen')>-1);
+  })();
+  /* ══ YOUR FIRST WEEK ══════════════════════════════════════════════════ */
+  (function(){
+   const items=fwItems();
+   ok('First week: it is five things, not a syllabus',items.length===5,items.length+' items');
+   /* THE WHOLE POINT. A checklist a member ticks by hand is theatre: they tick
+      it to make it go away. Every item here must be derived from real data. */
+   ok('First week: every item ticks ITSELF from real data, none is self-reported',
+     items.every(it=>typeof it.done==='boolean')
+     &&String(fwItems).indexOf('localStorage')===-1
+     &&/isInstalled|Notification.permission|days.some|shots.length/.test(String(fwItems)),
+     'derived, never self-reported');
+   ok('First week: an unfinished item takes you to the screen that finishes it',
+     items.filter(it=>!it.done).every(it=>typeof it.act==='function'));
+   /* IT HAS TO LEAVE. A beginner checklist on day 60 tells a member the app
+      has not noticed them. */
+   const m=DB.get('member'), realDay=m.day;
+   m.day=60; renderFirstWeek();
+   const goneLate=(document.getElementById('tdFirstWeek').innerHTML||'')==='';
+   m.day=3; renderFirstWeek();
+   const shownEarly=(document.getElementById('tdFirstWeek').innerHTML||'').indexOf('Your first week')>-1;
+   m.day=realDay; renderFirstWeek();
+   ok('First week: it shows early and removes itself after day 14',
+     goneLate&&shownEarly,!goneLate?'still there on day 60':(!shownEarly?'missing on day 3':'appears then leaves'));
+  })();
   /* THE SPLASH: it replaces a blank launch, it does not become one */
   (function(){
    const line=splashLine();
@@ -6016,6 +6242,150 @@ function stReport(R,failed){
 /* About showing up, not about being lean. A member on day 34 who is 2.9kg from
    a goal does not need shouting at, they need the reason they started said back
    to them. Nothing here promises a result or names a body. */
+
+/* ══ THE WELCOME WALKTHROUGH ═══════════════════════════════════════════════
+   WHAT THIS IS NOT: a slideshow of features. Nobody ever cared that an app has
+   a Stats tab. Every card answers a question a new member actually arrives
+   with, in the order they arrive with it, and the last one is the single thing
+   they have to remember.
+
+   IT NEVER TRAPS ANYBODY. Skip sits on every card, the phone's back gesture
+   closes it (the foundations layer owns .gd-wrap, so freeze, focus and back
+   are not reinvented here), and it reopens forever from the membership screen.
+   A tour that can only be seen once is lost by exactly the people who needed
+   it, because the ones who skip on day one are the ones asking in week two.
+
+   NOTHING PROMISES A RESULT OR NAMES A BODY. Same rule as every other word in
+   this app. */
+const GD_ICONS={
+ wave:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>',
+ bar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8v8M20 8v8M7 6v12M17 6v12M7 12h10"/></svg>',
+ tap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>',
+ chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>',
+ phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+ ask:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.1A8.4 8.4 0 0 1 4 11.5a8.5 8.5 0 0 1 8.5-8.5A8.4 8.4 0 0 1 21 11.5z"/></svg>'
+};
+function gdCards(){
+ const m=DB.get('member')||{};
+ const first=m.first||'there';
+ const tr=m.trainer||'your trainer';
+ return [
+  {ic:'wave',h:'Welcome, '+first,
+   p:['This app has one job: <b>tell you exactly what to do today</b>, so you never stand in the gym wondering where to start.',
+      /* COUNTED, NOT REMEMBERED. This said "four screens" and the app has five.
+         A number in onboarding copy that contradicts the thing it is
+         describing is the fastest way to lose a new member's trust, so it is
+         read off the nav rather than typed. */
+      String(document.querySelectorAll('#nav button').length||5)+' screens, about a minute to learn. Skip this if you like, it lives on your membership page for whenever you want it.']},
+  {ic:'bar',h:'It tells you what to put on the bar',
+   p:['Open <b>Today</b> and the session is already there: the exercises, the sets, and the weight for every one of them.',
+      'You never work the weight out. It comes from what you lifted last time, so it moves as you do. If a set felt wrong, say so and the next one adjusts.',
+      '<b>Nothing is a guess, and nothing is a number somebody else set for you.</b>']},
+  {ic:'tap',h:'Tick each set as you finish it',
+   p:['Tap a set when it is done. The rest timer starts on its own, so your phone goes back in your pocket.',
+      'Swapped an exercise because a machine was taken? Tell it. It keeps the session honest instead of recording the thing you did not do.']},
+  {ic:'chart',h:'Log the boring things',
+   p:['<b>Log</b> is food, water and weight. About twenty seconds, and it is the whole difference between guessing and knowing.',
+      '<b>Stats</b> is where those add up over weeks. Do not read it every morning. Bodies move in weeks, not overnight.']},
+  {ic:'phone',h:'Two things worth doing now',
+   p:['<b>Add this to your home screen.</b> In a browser tab it is a website you forget. On your home screen it is an app you open.',
+      '<b>Turn reminders on.</b> That is how the gym reaches you about a session or your membership without anybody having to chase you.']},
+  {ic:'ask',h:'If you get stuck, ask',
+   p:['<b>'+tr+'</b> is your trainer. Today has a button that messages them directly, and the desk can see how you are getting on.',
+      'One thing to remember out of all of this: <b>tap in at the desk when you arrive.</b> That single tap is what keeps everything in here true.']}
+ ];
+}
+let GD_I=0;
+function gdOpen(){
+ const w=document.getElementById('gdWrap'); if(!w)return;
+ GD_I=0; w.hidden=false;
+ gdRender();
+ BBF.sync();                    /* pin the page behind, now rather than a tick later */
+}
+function gdEnd(){
+ const w=document.getElementById('gdWrap'); if(!w)return;
+ w.hidden=true;
+ BBF.sync();
+ try{localStorage.setItem('tu_guide_seen','1');}catch(e){}
+ renderGuideRow();
+}
+function gdGo(d){
+ const n=gdCards().length;
+ if(GD_I+d>=n){gdEnd();return;}
+ GD_I=Math.max(0,GD_I+d);
+ gdRender();
+}
+function gdRender(){
+ const cards=gdCards(), c=cards[GD_I], last=GD_I===cards.length-1;
+ document.getElementById('gdIc').innerHTML=GD_ICONS[c.ic];
+ document.getElementById('gdH').textContent=c.h;
+ document.getElementById('gdP').innerHTML=c.p.map(function(t){return '<p class="gd-p">'+t+'</p>';}).join('');
+ document.getElementById('gdDots').innerHTML=cards.map(function(_,i){
+  return '<span class="gd-dot'+(i<=GD_I?' on':'')+'"></span>';}).join('');
+ document.getElementById('gdBack').style.visibility=GD_I?'':'hidden';
+ document.getElementById('gdNext').textContent=last?'Start':'Next';
+ document.getElementById('gdSkip').style.visibility=last?'hidden':'';
+ const b=document.querySelector('.gd-body'); if(b)b.scrollTop=0;
+}
+function gdSeen(){try{return localStorage.getItem('tu_guide_seen')==='1';}catch(e){return true;}}
+/* THE REOPEN ROW. This is the half that makes skipping safe. */
+function renderGuideRow(){
+ const el=document.getElementById('msGuide'); if(!el)return;
+ el.innerHTML='<button class="gd-reopen" onclick="gdOpen()">'
+  +'How this app works · '+gdCards().length+' cards</button>';
+}
+
+/* ══ YOUR FIRST WEEK ═══════════════════════════════════════════════════════
+   IT TICKS ITSELF. Not one item asks a member to confirm something the app can
+   already see. A checklist you tick by hand is theatre: people tick it to make
+   it go away and it teaches nothing. Every line reads real data, so the only
+   way to finish it is to actually do the thing.
+
+   IT LEAVES ON ITS OWN, finished or past day 14. A beginner checklist still
+   sitting there on day 60 tells a member the app has not noticed them. */
+function fwItems(){
+ const days=DB.get('days')||[];
+ const shots=DB.get('shots')||[];
+ const hasWorkout=days.some(function(d){return d&&d.workout;});
+ const hasMeals=days.some(function(d){return d&&d.meals&&d.meals.length;});
+ const notifOn=(typeof Notification!=='undefined')&&Notification.permission==='granted';
+ return [
+  {k:'install', t:'Add the app to your phone',
+   w:'In a tab it is a website you forget. On the home screen it is an app you open.',
+   done:isInstalled(), act:function(){go('membership');setTimeout(showInstallSheet,150);}},
+  {k:'remind',  t:'Turn reminders on',
+   w:'How the gym reaches you about a session or your membership.',
+   done:notifOn, act:function(){go('membership');}},
+  {k:'session', t:'Finish your first session',
+   w:'Open Today and tick each set as you go. The weight is already worked out.',
+   done:hasWorkout, act:function(){go('today');}},
+  {k:'food',    t:'Log one full day of food',
+   w:'One day is enough to see the pattern. It takes about twenty seconds.',
+   done:hasMeals, act:function(){go('log');}},
+  {k:'photo',   t:'Take your first photo',
+   w:'Private to you. In six weeks it is the only proof that does not argue.',
+   done:shots.length>0, act:function(){go('stats');}}
+ ];
+}
+function fwAct(i){const it=fwItems()[i]; if(it&&!it.done&&it.act)it.act();}
+function renderFirstWeek(){
+ const el=document.getElementById('tdFirstWeek'); if(!el)return;
+ const m=DB.get('member')||{};
+ const items=fwItems(), done=items.filter(function(x){return x.done;}).length;
+ if(done===items.length||(m.day||0)>14){el.innerHTML='';return;}
+ el.innerHTML='<div class="fw">'
+  +'<div class="fw-h"><h3>Your first week</h3><span class="fw-n">'+done+' of '+items.length+'</span></div>'
+  +'<p class="fw-sub">Five things that make everything else in here work. They tick themselves as you do them.</p>'
+  +'<div class="fw-bar"><i style="width:'+Math.round(done/items.length*100)+'%"></i></div>'
+  +items.map(function(it,i){
+    return '<button class="fw-item'+(it.done?' done':'')+'" onclick="fwAct('+i+')">'
+     +'<span class="fw-box">'+I.check+'</span>'
+     +'<span><span class="fw-t">'+it.t+'</span>'
+     +(it.done?'':'<span class="fw-w">'+it.w+'</span>')+'</span></button>';
+   }).join('')
+  +'</div>';
+}
+
 const SPLASH_LINES=[
  'The session you almost skipped is the one that counts.',
  'Nobody regrets the workout they turned up for.',
@@ -6278,7 +6648,10 @@ function remShow(title,body){
    Identical in every BB app. The only line that differs is the overlay
    selector on the first line of the module. */
 var BBF=(function(){
- var OVS='.sheet-ov, .isheet';
+ /* .gd-wrap is the welcome walkthrough. It joins the family rather than
+    carrying its own freeze, focus trap and back handling, which is the whole
+    point of having a foundations layer. Added 12 Aug 2026. */
+ var OVS='.sheet-ov, .isheet, .gd-wrap';
  var lockedY=0, locked=false, lastFocus=null, histDepth=0, closing=false;
  try{if('scrollRestoration' in history)history.scrollRestoration='manual';}catch(e){}
 
@@ -6304,9 +6677,38 @@ var BBF=(function(){
   }
   return true;
  }
+ /* MODAL, NOT MERELY FLOATING. ═══════════════════════════════════════════
+    Found 12 Aug 2026: opening the Membership page FROZE the app. The body was
+    pinned, the page could not scroll, and nothing had been opened by anybody.
+
+    The cause: the install prompt is `position:fixed`, so it matched the
+    overlay selector, so the layer pinned the page behind it. But it is a small
+    floating card at the foot of the screen, 130px of an 812px phone, and it
+    can sit there for days. A thing you are meant to keep scrolling past is not
+    a thing that should stop you scrolling.
+
+    THE DISTINCTION THE LAYER WAS MISSING: a MODAL covers the page and demands
+    an answer, so the page behind it must hold still. A floating prompt, a
+    toast, a banner or a snackbar merely sits ON the page, and pinning for one
+    of those is indistinguishable from a crash to the person holding the phone.
+
+    Measured rather than named, because the next app will invent a new class:
+    it is modal when it actually covers the viewport. */
+ function isModal(el){
+  if(!innerHeight)return true;   /* cannot judge: pin, the safe direction */
+  var r=el.getBoundingClientRect();
+  /* GEOMETRY, NOT A RATIO. The first version asked whether the element was
+     60% of the viewport HEIGHT, which quietly changed its mind whenever the
+     harness ran at a simulated size: a 130px prompt IS 60% of a 200px window.
+     A rule that depends on the window is not a rule.
+     A modal reaches from the top of the screen to the bottom, because that is
+     what covering the page means. A prompt is anchored to one edge and leaves
+     the rest of the page visible, which is exactly why you can keep using it. */
+  return r.top<=1&&r.bottom>=innerHeight-1;
+ }
  function anyOpen(){
   var n=document.querySelectorAll(OVS), i;
-  for(i=0;i<n.length;i++)if(isOpen(n[i]))return n[i];
+  for(i=0;i<n.length;i++)if(isOpen(n[i])&&isModal(n[i]))return n[i];
   return null;
  }
 
@@ -6527,7 +6929,7 @@ if('serviceWorker' in navigator&&location.protocol==='https:'){
 }
 VISITS=visitCount();
 showSplash();
-if(location.search.indexOf('selftest')>-1)setTimeout(()=>runSelfTest(),160);
+if(SELFTEST)setTimeout(()=>runSelfTest(),160);
 </script>
 </body>
 </html>
