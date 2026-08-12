@@ -1067,9 +1067,10 @@ body.dark .stat-kpi .val{color:#fff}
       </div>
       <div class="nav-group" data-group="members">
         <button class="nav-label" onclick="toggleGroup(this)">Members<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span></button>
-        <button class="nav-item" data-pg="checkin" data-role="all" data-pos="frontdesk" data-module="pulse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Check-in<span class="badge" id="nbCheckin"></span></button>
-        <button class="nav-item" data-pg="pulse" data-role="all" data-pos="trainer" data-module="pulse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Member Pulse<span class="badge" id="nbPulse"></span></button>
-        <button class="nav-item" data-pg="customers" data-role="all" data-pos="trainer" data-module="customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>Members<span class="badge" id="nbCustomers"></span></button>
+        <!-- ONE entry, three modes. The role and position gates that used to sit
+             on three separate rows now sit on the mode BUTTONS, unchanged, so
+             nobody silently gained a page in the merge. -->
+        <button class="nav-item" data-pg="people" data-role="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>People<span class="badge" id="nbPeople"></span></button>
         <button class="nav-item" data-pg="recurring" data-role="all" data-pos="frontdesk" data-module="recurring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Memberships</button>
       </div>
       <div class="nav-group" data-group="growth">
@@ -1198,7 +1199,39 @@ body.dark .stat-kpi .val{color:#fff}
       </div>
 
       <!-- ══ CUSTOMERS (post-sale contacts, LTV + 30/60/90 cadence, always-on) ══ -->
-      <div class="page" id="page-customers">
+      <div class="page" id="page-people">
+        <!-- ══ PEOPLE: ONE list of members, three ways to look at it ═══════════
+             Check-in, the roster and the at-risk board were three sidebar
+             entries reading the SAME members. They are now three MODES here.
+             The renderers are untouched and still own their own markup, which
+             is the Command Centre's Delivery lesson: mount an existing view,
+             never duplicate it, or two boards on one table drift apart.
+             THE RISK THIS CARRIES: a tap means different things per mode. In
+             Arrivals it checks somebody in, in Everyone it opens their file.
+             So the mode is announced loudly, the front desk always LANDS on
+             Arrivals rather than inheriting a remembered mode, and check-in
+             keeps its ten-second undo. ══════════════════════════════════════ -->
+        <div class="toolbar" style="margin-bottom:14px">
+          <div class="seg-toggle" id="peopleSeg">
+            <button class="segt active" data-pm="checkin"   onclick="peopleMode('checkin')">Arrivals<span class="segn" id="pmnCheckin"></span></button>
+            <button class="segt"        data-pm="customers" onclick="peopleMode('customers')">Everyone<span class="segn" id="pmnCustomers"></span></button>
+            <button class="segt"        data-pm="pulse"     onclick="peopleMode('pulse')">At risk<span class="segn" id="pmnPulse"></span></button>
+          </div>
+          <div class="sp"></div>
+          <span class="hint" id="peopleHint" style="font-size:12px;font-weight:650"></span>
+        </div>
+        <div class="pmode" id="pmode-checkin">
+        <div class="stat-kpis" id="ckKpis" style="grid-template-columns:repeat(3,1fr)"></div>
+        <div class="toolbar">
+          <input class="search" id="ckSearch" placeholder="Find a member by name or phone" style="width:280px;max-width:100%" oninput="CK.setQ(this.value)" aria-label="Find a member">
+          <div class="sp"></div>
+        </div>
+        <div id="ckVerdict"></div>
+        <div class="ck-grid" id="ckGrid"></div>
+        <div id="ckEmpty"></div>
+        <div class="card" style="margin-top:20px"><div class="card-h"><h3>Today at the desk</h3><span class="hint" id="ckTodayHint"></span></div><div class="card-b" id="ckRecent" style="padding:8px 20px 16px"></div></div>
+      </div>
+        <div class="pmode" id="pmode-customers">
         <div class="stat-kpis" id="cusKpis"></div>
         <div class="toolbar">
           <div class="seg-toggle" id="cusStatusSeg" style="display:none"><button class="segt active" data-cs="active" onclick="cusStatus('active')">Active</button><button class="segt" data-cs="alumni" onclick="cusStatus('alumni')" id="segPast">Cancelled</button></div>
@@ -1208,6 +1241,16 @@ body.dark .stat-kpi .val{color:#fff}
           <button class="btn-ghost" onclick="exportCustomers()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
         </div>
         <div class="card"><table class="tbl"><thead><tr id="cusHead"></tr></thead><tbody id="cusBody"></tbody></table><div id="cusEmpty"></div></div>
+      </div>
+        <div class="pmode" id="pmode-pulse">
+        <div class="pb-grid" id="pulseBands"></div>
+        <div class="toolbar">
+          <span class="hint" id="pulseHint" style="font-size:12px;color:var(--muted)"></span>
+          <div class="sp"></div>
+          <button class="btn-ghost" onclick="exportPulse()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
+        </div>
+        <div class="card"><div class="card-b" id="pulseList" style="padding:8px 20px 16px"></div></div>
+      </div>
       </div>
 
       <!-- ══ QUOTES (module: quote generator + branded PDF) ══ -->
@@ -1289,29 +1332,10 @@ body.dark .stat-kpi .val{color:#fff}
       </div>
 
       <!-- ══ CHECK-IN (gym core: the heartbeat - front desk taps a name) ══ -->
-      <div class="page" id="page-checkin">
-        <div class="stat-kpis" id="ckKpis" style="grid-template-columns:repeat(3,1fr)"></div>
-        <div class="toolbar">
-          <input class="search" id="ckSearch" placeholder="Find a member by name or phone" style="width:280px;max-width:100%" oninput="CK.setQ(this.value)" aria-label="Find a member">
-          <div class="sp"></div>
-          <span class="hint" style="font-size:12.5px;color:var(--muted)">Tap a member as they arrive</span>
-        </div>
-        <div id="ckVerdict"></div>
-        <div class="ck-grid" id="ckGrid"></div>
-        <div id="ckEmpty"></div>
-        <div class="card" style="margin-top:20px"><div class="card-h"><h3>Today at the desk</h3><span class="hint" id="ckTodayHint"></span></div><div class="card-b" id="ckRecent" style="padding:8px 20px 16px"></div></div>
-      </div>
+      
 
       <!-- ══ MEMBER PULSE (gym core: at-risk board, reasons always visible) ══ -->
-      <div class="page" id="page-pulse">
-        <div class="pb-grid" id="pulseBands"></div>
-        <div class="toolbar">
-          <span class="hint" id="pulseHint" style="font-size:12px;color:var(--muted)"></span>
-          <div class="sp"></div>
-          <button class="btn-ghost" onclick="exportPulse()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
-        </div>
-        <div class="card"><div class="card-b" id="pulseList" style="padding:8px 20px 16px"></div></div>
-      </div>
+      
 
       <!-- ══ MEMBER APP: access, entitlements and app-facing copy ══ -->
       <div class="page" id="page-coach"><div id="coachBody"></div></div>
@@ -1961,7 +1985,56 @@ function seedData(){
 const lkr=n=>CFG.currency+' '+Math.round(n).toLocaleString('en-LK');
 const init2=s=>s.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 function fmtNum(v,fmt){if(fmt==='m')return CFG.currency+' '+v.toFixed(2)+'M';if(fmt==='pct')return Math.round(v)+'%';if(fmt==='lkr')return lkr(v);return Math.round(v).toLocaleString();}
-function countUp(el){const to=parseFloat(el.getAttribute('data-to'));const from=parseFloat(el.getAttribute('data-from'))||0;const fmt=el.getAttribute('data-fmt')||'int';const dur=780;let st=null;function tick(now){if(st===null)st=now;const p=Math.min(1,(now-st)/dur);const e=1-Math.pow(1-p,3);el.textContent=fmtNum(from+(to-from)*e,fmt);if(p<1)requestAnimationFrame(tick);else el.textContent=fmtNum(to,fmt);}requestAnimationFrame(tick);}
+/* ══ COUNT-UP, AND THE REASON IT CARRIES A SAFETY NET ══════════════════════
+   Found 12 Aug 2026 on the People page: the KPIs read "1 check-in" and "17
+   members" while the truth was 6 and 109. Nothing was wrong with the numbers.
+   The count-up animation had been INTERRUPTED and left its half-way value on
+   screen permanently.
+
+   THE CAUSE: a browser stops requestAnimationFrame in a hidden tab. The old
+   loop only wrote the true value in its final frame, so any interruption, a
+   tab switch, a backgrounded window, a phone locking, froze the figure part
+   way and it never corrected. Every KPI in the system was exposed: dashboard,
+   finance, reports, all of it.
+
+   WHY IT MATTERS MORE THAN IT LOOKS: a number that is missing is obviously
+   missing. A number that is confidently WRONG is worse, because a person acts
+   on it. An owner reading "1 check-in today" when six people came in is being
+   lied to by his own system.
+
+   THE RULE: an animation may never be the only thing that writes the truth.
+   The real value goes down on the first frame or not at all, so the worst an
+   interruption can do is skip the decoration. */
+const COUNTERS=new Set();
+function snapCount(el){
+ el.textContent=fmtNum(parseFloat(el.getAttribute('data-to')),el.getAttribute('data-fmt')||'int');
+ COUNTERS.delete(el);
+}
+function countUp(el){
+ const to=parseFloat(el.getAttribute('data-to'));
+ const from=parseFloat(el.getAttribute('data-from'))||0;
+ const fmt=el.getAttribute('data-fmt')||'int';
+ const dur=780;
+ /* no frames are coming, so do not pretend: write the answer */
+ if(document.hidden||typeof requestAnimationFrame!=='function'){snapCount(el);return;}
+ COUNTERS.add(el);
+ let st=null;
+ function tick(now){
+  if(!COUNTERS.has(el))return;      /* already snapped by the net below */
+  if(st===null)st=now;
+  const p=Math.min(1,(now-st)/dur);
+  const e=1-Math.pow(1-p,3);
+  el.textContent=fmtNum(from+(to-from)*e,fmt);
+  if(p<1)requestAnimationFrame(tick); else snapCount(el);
+ }
+ requestAnimationFrame(tick);
+}
+function snapAllCounts(){Array.from(COUNTERS).forEach(snapCount);}
+/* THE NET. The moment the page stops being watched, every number in flight
+   jumps to its real value, so whatever is on screen when a person comes back
+   is true. */
+document.addEventListener('visibilitychange',function(){if(document.hidden)snapAllCounts();});
+window.addEventListener('pagehide',snapAllCounts);
 function animateCounts(scope){(scope||document).querySelectorAll('[data-to]').forEach(countUp);}
 /* compact money for chart labels: a gym month is tens of thousands, not millions,
    so a hardcoded /1e6 reads "0.0M" and looks broken. */
@@ -2050,6 +2123,7 @@ function buildTitles(){TITLES={
  website:['Website','What the site says. Change it here, the site follows'],
  coach:['Bar Call','How fast the weight climbs, and where it stops'],
  reports:['Reports','Month-over-month performance'],
+ people:['People','Everyone at the gym, three ways to look at them'],
  checkin:['Check-in','Tap a member as they arrive'],
  pulse:['Member Pulse','Who is slipping away, and exactly why'],
  pipeline:['Pipeline','Every enquiry from first contact to joined'],
@@ -2082,7 +2156,20 @@ function pageAllowed(pg){
  return canSee(n.dataset.role)&&posOk(n)&&(!n.dataset.module||CFG.modules[n.dataset.module]);
 }
 function go(pg){
+ /* THE THREE OLD ROUTES STILL WORK. checkin, customers and pulse became modes
+    of People, so they are aliased here rather than renamed at forty call
+    sites. Every existing go('checkin') and every saved deep link still lands
+    on exactly the screen it always did. */
+ let _mode=null;
+ if(PEOPLE_MODES.indexOf(pg)>-1&&peopleModeAllowed(pg)){_mode=pg;pg='people';}
  if(!TITLES[pg]||!pageAllowed(pg))pg='dashboard';
+ if(pg==='people'&&!_mode){
+  /* THE FRONT DESK ALWAYS LANDS ON ARRIVALS. It never inherits a mode somebody
+     else left behind, because the cost of the wrong mode is a check-in against
+     the wrong member. */
+  _mode=(!isMaster()&&CURRENT.pos==='frontdesk')?'checkin':PEOPLE_MODE;
+ }
+ if(_mode)PEOPLE_MODE=_mode;
  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.pg===pg));
  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
  document.getElementById('page-'+pg).classList.add('active');
@@ -2316,10 +2403,17 @@ function setOwnerFilter(v){OWNER_FILTER=v;['pipeOwner','recOwner'].forEach(id=>{
 function renderBadges(){
  const nr=document.getElementById('nbRecords');if(nr)nr.textContent=scopeRecords().filter(isOpen).length;
  const nt=document.getElementById('nbTasks');if(nt)nt.textContent=scopeTasks().filter(t=>!t.d).length;
- const nc=document.getElementById('nbCustomers');if(nc){const d=dueCustomers();nc.textContent=d||'';nc.style.display=d?'':'none';}
  const ni=document.getElementById('nbInventory');if(ni&&DB.get('products')){const n=DB.get('products').filter(p=>prodStatus(p)!=='ok').length;ni.textContent=n||'';ni.style.display=n?'':'none';}
- const np=document.getElementById('nbPulse');if(np&&CFG.modules.pulse){const n=pulseData(scopeMembers()).filter(x=>x.band==='risk'||x.band==='critical').length;np.textContent=n||'';np.style.display=n?'':'none';}
- const nk=document.getElementById('nbCheckin');if(nk&&CFG.modules.pulse){const n=todayCheckins().length;nk.textContent=n||'';nk.style.display=n?'':'none';}
+ /* ONE BADGE FOR THREE MODES. Members, Pulse and Check-in each used to carry
+    their own count on their own row. With one row the badge must mean one
+    thing, so it carries the number that needs a PERSON: members who are
+    fading. A due-payment count and a checked-in-today count are both facts
+    rather than requests, and they live on the tabs inside the page. */
+ const npl=document.getElementById('nbPeople');
+ if(npl){
+  const n=CFG.modules.pulse?pulseData(scopeMembers()).filter(x=>x.band==='risk'||x.band==='critical').length:0;
+  npl.textContent=n||''; npl.style.display=n?'':'none';
+ }
 }
 /* ══ COACHING THE BAR CALL ══════════════════════════════════════════════
    The app's headline feature, and until now the gym had no say in it at all.
@@ -5912,7 +6006,83 @@ function maSetContent(k,v){
  if(lab)lab.textContent=v.length+lab.textContent.slice(lab.textContent.indexOf(' of '));
 }
 
-const RENDERERS={memberapp:renderMemberApp,website:renderWebsite,coach:renderCoach,dashboard:renderDashboard,reports:renderReports,checkin:renderCheckin,pulse:renderPulse,pipeline:renderBoard,records:renderRecords,customers:renderCustomers,quotes:renderQuotes,inventory:renderInventory,tasks:renderTasks,finance:renderFinance,recurring:renderRecurring,forecast:renderMMGrid,classes:renderClasses,ptpacks:renderPtPacks,commissions:renderCommissions,team:renderTeam,activity:renderActivity,settings:renderSettings};
+/* ══ PEOPLE: three modes over ONE list of members ══════════════════════════
+   Check-in, the roster and the at-risk board were three sidebar entries
+   reading the same people. They are one page now.
+
+   THE PERMISSION MODEL IS PRESERVED EXACTLY. Before the merge each of the
+   three carried its own role, position and module gate. Collapsing them into
+   one nav entry would have quietly handed the front desk the trainer's pages,
+   which is the kind of silent widening nobody notices until it matters. So the
+   gates moved onto the MODE BUTTONS, unchanged, and the People entry appears
+   only if at least one mode is allowed.
+
+   THE COMMAND CENTRE LESSON: when its nav went 20 to 9, twelve working pages
+   became unreachable because nothing pointed at them any more, and weeks later
+   a feature that already existed was asked for as new work. So nothing here is
+   deleted or renamed: go('checkin') still works, still lands on the right
+   mode, and the harness now walks every page and fails if one cannot be
+   reached. */
+const PEOPLE_MODES=['checkin','customers','pulse'];
+const PEOPLE_MODE_GATE={          /* exactly the old nav gates, moved not changed */
+ checkin:  {pos:'frontdesk', module:'pulse'},
+ customers:{pos:'trainer',   module:'customers'},
+ pulse:    {pos:'trainer',   module:'pulse'}
+};
+let PEOPLE_MODE='checkin';
+function peopleModeAllowed(m){
+ const g=PEOPLE_MODE_GATE[m]; if(!g)return false;
+ if(g.module&&!CFG.modules[g.module])return false;
+ if(isMaster())return true;
+ return g.pos.split(',').includes(CURRENT.pos||'');
+}
+function peopleAllowedModes(){return PEOPLE_MODES.filter(peopleModeAllowed);}
+function peopleMode(m,quiet){
+ const ok=peopleAllowedModes();
+ if(ok.indexOf(m)<0)m=ok[0]||'checkin';
+ PEOPLE_MODE=m;
+ PEOPLE_MODES.forEach(function(x){
+  const el=document.getElementById('pmode-'+x);
+  if(el)el.style.display=(x===m)?'':'none';
+ });
+ document.querySelectorAll('#peopleSeg .segt').forEach(function(b){
+  b.classList.toggle('active',b.dataset.pm===m);
+  b.style.display=peopleModeAllowed(b.dataset.pm)?'':'none';
+ });
+ /* THE MODE IS ANNOUNCED, LOUDLY. A tap means different things per mode: in
+    Arrivals it checks somebody in, in Everyone it opens their file. A quiet
+    switch is how the wrong member gets checked in. */
+ const h=document.getElementById('peopleHint');
+ if(h){
+  const say={checkin:['A tap checks them in','var(--brand)'],
+             customers:['A tap opens their file','var(--muted)'],
+             pulse:['A tap offers the next move','var(--muted)']}[m];
+  h.textContent=say[0]; h.style.color=say[1];
+ }
+ const t=TITLES['people'];
+ if(t&&document.getElementById('pgSub'))document.getElementById('pgSub').textContent=
+   {checkin:'Tap a member as they arrive',
+    customers:'Your roster by plan and trainer',
+    pulse:'Who is slipping away, and exactly why'}[m];
+ if(!quiet)renderPeople();
+}
+function renderPeople(){
+ const ok=peopleAllowedModes();
+ if(ok.indexOf(PEOPLE_MODE)<0)PEOPLE_MODE=ok[0]||'checkin';
+ peopleMode(PEOPLE_MODE,true);
+ /* the three renderers are UNTOUCHED and still own their own markup */
+ try{if(RENDERERS_PEOPLE[PEOPLE_MODE])RENDERERS_PEOPLE[PEOPLE_MODE]();}
+ catch(e){pageErrorBoundary('people',e);}
+ /* the counts on the tabs, so a person can see there is something waiting in
+    a mode they are not looking at */
+ const scoped=scopeMembers();
+ const nCk=todayCheckins().length;
+ const nRisk=pulseData(scoped).filter(function(x){return x.band==='risk'||x.band==='critical';}).length;
+ const set=function(id,v){const e=document.getElementById(id);if(e)e.textContent=v?' '+v:'';};
+ set('pmnCheckin',nCk); set('pmnCustomers',scoped.length); set('pmnPulse',nRisk);
+}
+const RENDERERS_PEOPLE={checkin:renderCheckin,customers:renderCustomers,pulse:renderPulse};
+const RENDERERS={people:renderPeople,memberapp:renderMemberApp,website:renderWebsite,coach:renderCoach,dashboard:renderDashboard,reports:renderReports,checkin:renderCheckin,pulse:renderPulse,pipeline:renderBoard,records:renderRecords,customers:renderCustomers,quotes:renderQuotes,inventory:renderInventory,tasks:renderTasks,finance:renderFinance,recurring:renderRecurring,forecast:renderMMGrid,classes:renderClasses,ptpacks:renderPtPacks,commissions:renderCommissions,team:renderTeam,activity:renderActivity,settings:renderSettings};
 
 /* ════════════════════════════════════════════════════════════════════
    SECTION 12 - SELF-TEST HARNESS (dev-only; the pre-deploy gate)
@@ -6197,6 +6367,79 @@ async function runSelfTest(opts){
     const cost=BBF.runs()-before;
     ok('Foundations: page renders do not drive the overlay machinery',cost<=3,
        cost+' sync runs for 4 navigations'+(cost>3?', the observer storm is back':''));
+   })();
+   /* ── AN INTERRUPTED COUNT-UP STILL TELLS THE TRUTH ── */
+   (function(){
+    go('people');
+    const els=Array.from(document.querySelectorAll('#page-people [data-to]'));
+    if(!els.length){ok('Counters: an interrupted count-up still lands on the real number',false,
+      'CANNOT MEASURE: no counters found on the page, so this proves nothing');return;}
+    /* interrupt them exactly as a tab switch does, then demand the truth */
+    animateCounts(document.getElementById('page-people'));
+    snapAllCounts();
+    const wrong=els.filter(function(e){
+     return e.textContent!==fmtNum(parseFloat(e.getAttribute('data-to')),e.getAttribute('data-fmt')||'int');
+    }).map(function(e){return e.textContent+' should be '+e.getAttribute('data-to');});
+    ok('Counters: an interrupted count-up still lands on the real number',wrong.length===0,
+       wrong.length?('STALE: '+wrong.join(', ')):els.length+' counters snap to their true value');
+   })();
+   /* ── EVERY PAGE IS REACHABLE. THE COMMAND CENTRE LESSON. ──────────────
+      When the CC nav went 20 entries to 9, every old page was kept so deep
+      links would survive, but nothing in the UI pointed at them any more.
+      TWELVE built, working, tested features became invisible, and weeks later
+      one of them was asked for as new work because it looked like it did not
+      exist. No check anywhere would have caught it.
+      This is that check. It walks every .page in the document and proves a
+      person can actually get to it: either a visible sidebar entry, or a
+      visible mode button inside a page that is itself reachable. A page with
+      no route is a FAIL, not a curiosity. */
+   (function(){
+    /* REASON FROM THE RULES, NOT FROM THE DOM. The first version of this read
+       inline display styles and failed, because the harness signs in and out
+       of roles and left stale 'none' values behind. A check whose verdict
+       depends on what an earlier check happened to leave on screen is not a
+       check. Ask instead: does a ROUTE exist for this page at all. */
+    const routed=new Set(['page-login','page-dashboard']);
+    document.querySelectorAll('.nav-item[data-pg]').forEach(function(n){
+     routed.add('page-'+n.dataset.pg);
+    });
+    PEOPLE_MODES.forEach(function(m){routed.add('pmode-'+m);});
+    /* A SWITCHED-OFF MODULE IS A DELIBERATE ABSENCE, NOT AN ORPHAN. This cast
+       runs with classes, PT packs, quotes, forecast, stock and commissions
+       off, so their pages are correctly not on offer. Judging them as missing
+       would train a person to ignore this check, which is how a real orphan
+       gets through. */
+    const off=new Set();
+    document.querySelectorAll('.nav-item[data-pg][data-module]').forEach(function(n){
+     if(!CFG.modules[n.dataset.module])off.add('page-'+n.dataset.pg);
+    });
+    PEOPLE_MODES.forEach(function(m){
+     const g=PEOPLE_MODE_GATE[m];
+     if(g&&g.module&&!CFG.modules[g.module])off.add('pmode-'+m);
+    });
+    const orphans=[];
+    document.querySelectorAll('.page,.pmode').forEach(function(el){
+     if(!routed.has(el.id)&&!off.has(el.id))orphans.push(el.id);
+    });
+    ok('Nav: every page a person can be shown has a route to it',orphans.length===0,
+       orphans.length?('UNREACHABLE, the Command Centre fault: '+orphans.join(', '))
+                     :(routed.size-1)+' routes, '+off.size+' switched off on purpose');
+   })();
+   /* ── THE THREE MERGED ROUTES STILL LAND ── */
+   (function(){
+    const back=(document.querySelector('.nav-item.active')||{dataset:{}}).dataset.pg||'dashboard';
+    const bad=[];
+    ['checkin','customers','pulse'].forEach(function(pg){
+     try{
+      go(pg);
+      const onPeople=document.getElementById('page-people').classList.contains('active');
+      const modeOn=(document.getElementById('pmode-'+pg)||{style:{}}).style.display!=='none';
+      if(!onPeople||!modeOn)bad.push(pg);
+     }catch(e){bad.push(pg+' threw');}
+    });
+    try{go(back);}catch(e){}
+    ok('Nav: the three old routes still land on their own mode',bad.length===0,
+       bad.length?('broken: '+bad.join(', ')):'checkin, customers and pulse all resolve');
    })();
    /* ── A CONTROL'S OWN LABEL SITS IN THE MIDDLE OF IT ── */
    (function(){
@@ -6576,14 +6819,26 @@ async function runSelfTest(opts){
   if(trn&&fdk){
    signIn(trn);
    let v=Array.from(document.querySelectorAll('.nav-item[data-pg]')).filter(n=>n.style.display!=='none').map(n=>n.dataset.pg);
-   ok('Gym roles: trainer sees pulse+members, not checkin/memberships/enquiries',v.includes('pulse')&&v.includes('customers')&&!v.includes('checkin')&&!v.includes('recurring')&&!v.includes('records'),v.join(','));
+   /* THE MERGE MOVED THIS GATE, IT DID NOT REMOVE IT. Check-in, the roster and
+      the at-risk board are one People page now, so the position rules that used
+      to hide whole sidebar rows hide MODE BUTTONS instead. Assert them where
+      they now live, or a merge could quietly hand the front desk the trainer's
+      screens and every check would still be green. */
+   ok('Gym roles: trainer gets the roster and the at-risk board, never Arrivals',
+      v.includes('people')&&peopleModeAllowed('pulse')&&peopleModeAllowed('customers')
+      &&!peopleModeAllowed('checkin')&&!v.includes('recurring')&&!v.includes('records'),
+      'nav: '+v.join(',')+' · modes: '+peopleAllowedModes().join(','));
    let bounced=['finance','reports','team','settings','recurring','checkin','records'].every(pg=>{go(pg);return document.querySelector('.page.active').id==='page-dashboard';});
    ok('Gym roles: trainer hand-typed go() bounces on every gated page',bounced);
    ok('Gym roles: trainer dashboard is the my-day view',(document.getElementById('greet').innerHTML||'').indexOf('your day')>-1);
    ok('Gym roles: trainer sees ONLY own clients',scopeMembers().every(c=>c.owner===trn.id)&&scopeMembers().length>0,scopeMembers().length+' clients');
    signIn(fdk);
    v=Array.from(document.querySelectorAll('.nav-item[data-pg]')).filter(n=>n.style.display!=='none').map(n=>n.dataset.pg);
-   ok('Gym roles: front desk sees checkin+memberships+enquiries, not pulse/members',v.includes('checkin')&&v.includes('recurring')&&v.includes('records')&&!v.includes('pulse')&&!v.includes('customers'),v.join(','));
+   ok('Gym roles: front desk gets Arrivals, never the at-risk board',
+      v.includes('people')&&peopleModeAllowed('checkin')
+      &&!peopleModeAllowed('pulse')&&!peopleModeAllowed('customers')
+      &&v.includes('recurring')&&v.includes('records'),
+      'nav: '+v.join(',')+' · modes: '+peopleAllowedModes().join(','));
    bounced=['pulse','customers','finance','reports','team','settings'].every(pg=>{go(pg);return document.querySelector('.page.active').id==='page-dashboard';});
    ok('Gym roles: front desk hand-typed go() bounces on every gated page',bounced);
    go('dashboard');
